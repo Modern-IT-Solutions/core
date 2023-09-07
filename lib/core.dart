@@ -8,6 +8,7 @@ export 'core/domain/repository.dart';
 export 'core/extensions/extensions.dart';
 export 'core/model_manager.dart';
 export 'services/services.dart';
+export 'services/defaults/service.dart';
 
 /// features
 export 'features/users/users.dart';
