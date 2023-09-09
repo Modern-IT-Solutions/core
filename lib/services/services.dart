@@ -12,6 +12,21 @@ class Services {
    Services._();
   static final instance = Services._();
 
+  /// stream controller for SevicesEvent
+  final _eventController = StreamController<SevicesEvent>.broadcast();
+
+  /// steam for SevicesEvent
+  Stream<T> onEvent<T extends SevicesEvent>() {
+    return _eventController.stream.where((event) => event is T).cast<T>();
+  }
+
+
+  /// stream controller for init on every service
+  final _initController = StreamController<Service>.broadcast();
+
+  /// steam for init on every service
+  Stream<Service> get onInit => _initController.stream;
+
 
   /// register a new service
   void register(Service service) {
@@ -30,6 +45,7 @@ class Services {
     for (final service in _services) {
       if (!service.initialized) {
         await service.init();
+        _initController.add(service);
         log.info('Service ${service.runtimeType} initialized');
       } else {
         log.info('Service ${service.runtimeType} already initialized!');
@@ -41,9 +57,11 @@ class Services {
   /// dispose all services
   void dispose() {
     for (final service in _services) {
-      service.dispose();
+      service?.dispose();
       log.info('Service ${service.runtimeType} disposed');
     }
+    _initController.close();
+
     log.info('All services disposed');
   }
 
@@ -56,15 +74,35 @@ class Services {
   }
 }
 
-// abstract class AppBase {
-//   Services get services;
-//   Future<void> init() async {
-//     await services.init();
-//     log.info('App initialized');
-//   }
+abstract class SevicesEvent {}
 
-//   void dispose() {
-//     services.dispose();
-//     log.info('All services disposed');
-//   }
-// }
+
+/// [ServicesInitEvent] fired when init any service
+class ServicesInitEvent extends SevicesEvent {
+  final Service service;
+  ServicesInitEvent(this.service);
+}
+
+/// [ServicesDisposeEvent] fired when dispose any service
+class ServicesDisposeEvent extends SevicesEvent {
+  final Service service;
+  ServicesDisposeEvent(this.service);
+}
+
+/// [ServicesRegisterEvent] fired when register any service
+class ServicesRegisterEvent extends SevicesEvent {
+  final Service service;
+  ServicesRegisterEvent(this.service);
+}
+
+/// [ServicesRegisterAllEvent] fired when register all services
+class ServicesRegisterAllEvent extends SevicesEvent {
+  final List<Service> services;
+  ServicesRegisterAllEvent(this.services);
+}
+
+/// [ServicesInitAllEvent] fired when init all services
+class ServicesInitAllEvent extends SevicesEvent {
+  final List<Service> services;
+  ServicesInitAllEvent(this.services);
+}
