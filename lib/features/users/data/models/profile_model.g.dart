@@ -26,6 +26,7 @@ _$_ProfileModel _$$_ProfileModelFromJson(Map<String, dynamic> json) =>
           .toList(),
       emailVerified: json['emailVerified'] as bool,
       metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
+      customClaims: json['customClaims'] as Map<String, dynamic>? ?? const {},
       createdAt:
           const TimestampDateTimeSerializer().fromJson(json['createdAt']),
       updatedAt:
@@ -50,6 +51,7 @@ Map<String, dynamic> _$$_ProfileModelToJson(_$_ProfileModel instance) =>
       'roles': instance.roles.map((e) => _$RoleEnumMap[e]!).toList(),
       'emailVerified': instance.emailVerified,
       'metadata': instance.metadata,
+      'customClaims': instance.customClaims,
       'createdAt':
           const TimestampDateTimeSerializer().toJson(instance.createdAt),
       'updatedAt': _$JsonConverterToJson<dynamic, DateTime>(

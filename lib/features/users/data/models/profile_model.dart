@@ -25,6 +25,7 @@ class ProfileModel with _$ProfileModel implements Model {
     required List<Role> roles,
     required bool emailVerified,
     @Default({}) Map<String,dynamic> metadata,
+    @Default({}) Map<String,dynamic> customClaims,
     @TimestampDateTimeSerializer()
     required DateTime createdAt,
     @TimestampDateTimeSerializer()
@@ -87,4 +88,13 @@ extension MapExtension on Map<String, dynamic> {
 
 
 
+/// fcm token extension to set and get the fcm tokens
+extension FcmTokenExtension on ProfileModel {
+  /// get the fcm token
+  String? get fcmToken => metadata['fcmToken'];
 
+  /// set the fcm token
+  set fcmToken(String? token) {
+    metadata['fcmToken'] = token;
+  }
+}

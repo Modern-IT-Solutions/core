@@ -47,12 +47,12 @@ class Services {
     log.info('All services disposed');
   }
 
-  T get<T extends Service>([String? id]) {
+  T? get<T extends Service>([String? id]) {
     var list = _services.whereType<T>();
     if (id != null) {
       list = list.where((s) => s.id == id);
     }
-    return list.first;
+    return list.firstOrNull;
   }
 }
 

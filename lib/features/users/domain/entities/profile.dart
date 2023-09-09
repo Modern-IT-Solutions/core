@@ -1,33 +1,23 @@
-// // ignore_for_file: public_member_api_docs, sort_constructors_first
-// import 'dart:convert';
+import 'package:core/core.dart';
+import 'package:core/models/address.dart';
+import 'package:core/temp.dart';
 
-// import 'package:intl/intl.dart';
-
-// import '../../data/models/user_model.dart';
-// import 'user.dart';
-
-// class Profile {
-//   final String uid;
-//   final String? email;
-//   final String? address;
-//   final bool emailVerified;
-//   final String? displayName;
-//   final String? photoURL;
-//   final String? phoneNumber;
-//   final bool disabled;
-//   final Set<Role>  roles;
-//   final Map<String,dynamic> extradata;
-//   Profile({
-//     required this.uid,
-//     this.email,
-//     this.address,
-//     required this.emailVerified,
-//     this.displayName,
-//     this.photoURL,
-//     this.phoneNumber,
-//     required this.disabled,
-//     required this.roles,
-//     required this.extradata,
-//   });
-
-// }
+abstract class Profile {
+  ModelRef get ref;
+  String get displayName;
+  String get email;
+  String get phoneNumber;
+  DateTime? get birthday;
+  String get photoUrl;
+  Address? get address;
+  String get uid;
+  bool get disabled;
+  List<Role> get roles;
+  bool get emailVerified;
+  Map<String, dynamic> get metadata;
+  Map<String, dynamic> get customClaims;
+  DateTime get createdAt;
+  DateTime? get updatedAt;
+  DateTime? get deletedAt;
+  DateTime? get lastSignInAt;
+}
