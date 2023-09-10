@@ -63,7 +63,7 @@ class ColorSerializer implements JsonConverter<Color, int> {
 
   @override
   Color fromJson(int color) {
-    return Color(color);
+    return Color(int.tryParse(color.toString()) ?? 0);
   }
 
   @override
