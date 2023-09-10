@@ -1,6 +1,3 @@
-
-
-
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,8 +6,7 @@ import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:core/core.dart';
 
 /// json coverter for [GeoFirePoint]
-class GeoFirePointConverter
-    implements JsonConverter<GeoFirePoint?, Map<String, dynamic>?> {
+class GeoFirePointConverter implements JsonConverter<GeoFirePoint?, Map<String, dynamic>?> {
   const GeoFirePointConverter();
 
   @override
@@ -24,7 +20,7 @@ class GeoFirePointConverter
     return point?.data;
   }
 }
- 
+
 /// timestamp coverter for [Timestamp]
 class TimestampDateTimeSerializer implements JsonConverter<DateTime, dynamic> {
   const TimestampDateTimeSerializer();
@@ -42,7 +38,6 @@ class TimestampDateTimeSerializer implements JsonConverter<DateTime, dynamic> {
   Timestamp toJson(DateTime date) => Timestamp.fromDate(date);
 }
 
-
 /// ModelRefSerializer
 class ModelRefSerializer implements JsonConverter<ModelRef, String> {
   const ModelRefSerializer();
@@ -56,14 +51,22 @@ class ModelRefSerializer implements JsonConverter<ModelRef, String> {
   String toJson(ModelRef ref) => ref.path;
 }
 
-
 /// ColorSerializer
 class ColorSerializer implements JsonConverter<Color, int> {
   const ColorSerializer();
 
   @override
   Color fromJson(dynamic color) {
-    return Color(int.tryParse(color.toString()) ?? 0);
+    try {
+      return Color(int.parse('0xFF${color.toString().substring(
+          // the camine color is "xxxxxxFF" string
+          // but we need only "xxxxxx"
+          0, 6)}'));
+    } catch (e) {
+      return Color(int.tryParse("0xFF" + color.toString()) ??
+          /// purple
+          0xFF6200EE);
+    }
   }
 
   @override
