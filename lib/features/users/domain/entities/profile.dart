@@ -6,7 +6,7 @@ abstract class Profile {
   ModelRef get ref;
   String get displayName;
   String get email;
-  String get phoneNumber;
+  String? get phoneNumber;
   DateTime? get birthday;
   String get photoUrl;
   Address? get address;

@@ -11,7 +11,7 @@ _$_ProfileModel _$$_ProfileModelFromJson(Map<String, dynamic> json) =>
       ref: const ModelRefSerializer().fromJson(json['ref'] as String),
       displayName: json['displayName'] as String,
       email: json['email'] as String,
-      phoneNumber: json['phoneNumber'] as String,
+      phoneNumber: json['phoneNumber'] as String?,
       birthday: json['birthday'] == null
           ? null
           : DateTime.parse(json['birthday'] as String),

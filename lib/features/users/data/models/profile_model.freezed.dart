@@ -24,7 +24,7 @@ mixin _$ProfileModel {
   ModelRef get ref => throw _privateConstructorUsedError;
   String get displayName => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
-  String get phoneNumber => throw _privateConstructorUsedError;
+  String? get phoneNumber => throw _privateConstructorUsedError;
   DateTime? get birthday => throw _privateConstructorUsedError;
   String get photoUrl => throw _privateConstructorUsedError;
   Address? get address => throw _privateConstructorUsedError;
@@ -59,7 +59,7 @@ abstract class $ProfileModelCopyWith<$Res> {
       {@ModelRefSerializer() ModelRef ref,
       String displayName,
       String email,
-      String phoneNumber,
+      String? phoneNumber,
       DateTime? birthday,
       String photoUrl,
       Address? address,
@@ -93,7 +93,7 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
     Object? ref = null,
     Object? displayName = null,
     Object? email = null,
-    Object? phoneNumber = null,
+    Object? phoneNumber = freezed,
     Object? birthday = freezed,
     Object? photoUrl = null,
     Object? address = freezed,
@@ -121,10 +121,10 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
               as String,
-      phoneNumber: null == phoneNumber
+      phoneNumber: freezed == phoneNumber
           ? _value.phoneNumber
           : phoneNumber // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       birthday: freezed == birthday
           ? _value.birthday
           : birthday // ignore: cast_nullable_to_non_nullable
@@ -205,7 +205,7 @@ abstract class _$$_ProfileModelCopyWith<$Res>
       {@ModelRefSerializer() ModelRef ref,
       String displayName,
       String email,
-      String phoneNumber,
+      String? phoneNumber,
       DateTime? birthday,
       String photoUrl,
       Address? address,
@@ -238,7 +238,7 @@ class __$$_ProfileModelCopyWithImpl<$Res>
     Object? ref = null,
     Object? displayName = null,
     Object? email = null,
-    Object? phoneNumber = null,
+    Object? phoneNumber = freezed,
     Object? birthday = freezed,
     Object? photoUrl = null,
     Object? address = freezed,
@@ -266,10 +266,10 @@ class __$$_ProfileModelCopyWithImpl<$Res>
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
               as String,
-      phoneNumber: null == phoneNumber
+      phoneNumber: freezed == phoneNumber
           ? _value.phoneNumber
           : phoneNumber // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       birthday: freezed == birthday
           ? _value.birthday
           : birthday // ignore: cast_nullable_to_non_nullable
@@ -333,7 +333,7 @@ class _$_ProfileModel implements _ProfileModel {
       {@ModelRefSerializer() required this.ref,
       required this.displayName,
       required this.email,
-      required this.phoneNumber,
+      this.phoneNumber,
       this.birthday,
       required this.photoUrl,
       required this.address,
@@ -362,7 +362,7 @@ class _$_ProfileModel implements _ProfileModel {
   @override
   final String email;
   @override
-  final String phoneNumber;
+  final String? phoneNumber;
   @override
   final DateTime? birthday;
   @override
@@ -495,7 +495,7 @@ abstract class _ProfileModel implements ProfileModel {
           {@ModelRefSerializer() required final ModelRef ref,
           required final String displayName,
           required final String email,
-          required final String phoneNumber,
+          final String? phoneNumber,
           final DateTime? birthday,
           required final String photoUrl,
           required final Address? address,
@@ -522,7 +522,7 @@ abstract class _ProfileModel implements ProfileModel {
   @override
   String get email;
   @override
-  String get phoneNumber;
+  String? get phoneNumber;
   @override
   DateTime? get birthday;
   @override

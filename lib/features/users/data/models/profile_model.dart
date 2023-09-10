@@ -14,7 +14,7 @@ class ProfileModel with _$ProfileModel implements Model {
     required ModelRef ref,
     required String displayName,
     required String email,
-    required String phoneNumber,
+    String? phoneNumber,
     DateTime? birthday,
     required String photoUrl,
     required Address? address,

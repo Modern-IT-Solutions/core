@@ -83,23 +83,23 @@ class _FindProfileFormState extends State<FindProfileForm> {
           // show error if not null, in box with red background rounded corners and icon and dismiss button
           if (_error != null)
             Container(
-              padding: EdgeInsets.all(12),
-              margin: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.red[100],
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     FluentIcons.people_error_24_regular,
                     color: Colors.red,
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       _error!,
-                      style: TextStyle(color: Colors.red),
+                      style: const TextStyle(color: Colors.red),
                     ),
                   ),
                   IconButton(
@@ -108,7 +108,7 @@ class _FindProfileFormState extends State<FindProfileForm> {
                         _error = null;
                       });
                     },
-                    icon: Icon(
+                    icon: const Icon(
                       FluentIcons.dismiss_24_regular,
                       color: Colors.red,
                     ),
@@ -178,7 +178,7 @@ class _FindProfileFormState extends State<FindProfileForm> {
                                             color:
                                                 Colors.black.withOpacity(0.5),
                                             blurRadius: 5,
-                                            offset: Offset(0, 4),
+                                            offset: const Offset(0, 4),
                                           ),
                                         ],
                                       ),
@@ -194,10 +194,10 @@ class _FindProfileFormState extends State<FindProfileForm> {
                                     ),
                                     const SizedBox(height: 12),
                                     station?.displayName == null
-                                        ? TextPlaceholder()
+                                        ? const TextPlaceholder()
                                         : Text(
                                             station!.displayName,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 16,
                                             ),
@@ -209,7 +209,7 @@ class _FindProfileFormState extends State<FindProfileForm> {
                             ],
                           ),
                         ),
-                  title: Text('Find Profile'),
+                  title: const Text('Find Profile'),
                   leading: const BackButton(),
                   actions: [
                     ...widget.actions,
@@ -220,7 +220,7 @@ class _FindProfileFormState extends State<FindProfileForm> {
                   child: Center(
                     child: ConstrainedBox(
                       /// max width is 600
-                      constraints: BoxConstraints(maxWidth: 600),
+                      constraints: const BoxConstraints(maxWidth: 600),
                       child: Form(
                         key: _formKey,
                         child: Column(
@@ -228,14 +228,14 @@ class _FindProfileFormState extends State<FindProfileForm> {
                           children: [
                             const SizedBox(height: 20),
                             ListTile(
-                              leading: Icon(FluentIcons.gas_pump_24_regular),
+                              leading: const Icon(FluentIcons.gas_pump_24_regular),
                               contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 24),
-                              visualDensity: VisualDensity(vertical: -3),
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              visualDensity: const VisualDensity(vertical: -3),
                               title: station?.displayName == null
-                                  ? TextPlaceholder()
+                                  ? const TextPlaceholder()
                                   : Text(station!.displayName),
-                              subtitle: Text(
+                              subtitle: const Text(
                                 'Name',
                                 style: TextStyle(
                                   color: Colors.grey,
@@ -245,14 +245,14 @@ class _FindProfileFormState extends State<FindProfileForm> {
                             ),
                             const SizedBox(height: 10),
                             ListTile(
-                              leading: Icon(FluentIcons.location_24_regular),
+                              leading: const Icon(FluentIcons.location_24_regular),
                               contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 24),
-                              visualDensity: VisualDensity(vertical: -3),
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              visualDensity: const VisualDensity(vertical: -3),
                               title: station?.displayName == null
-                                  ? TextPlaceholder()
+                                  ? const TextPlaceholder()
                                   : Text(station!.address?.raw ?? ''),
-                              subtitle: Text(
+                              subtitle: const Text(
                                 'Address',
                                 style: TextStyle(
                                   color: Colors.grey,
@@ -262,15 +262,15 @@ class _FindProfileFormState extends State<FindProfileForm> {
                             ),
                             const SizedBox(height: 10),
                             ListTile(
-                              leading: Icon(FluentIcons.location_24_regular),
+                              leading: const Icon(FluentIcons.location_24_regular),
                               contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 24),
-                              visualDensity: VisualDensity(vertical: -3),
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              visualDensity: const VisualDensity(vertical: -3),
                               title: station?.displayName == null
-                                  ? TextPlaceholder()
+                                  ? const TextPlaceholder()
                                   : Text(
                                       "${station!.address?.location?.geopoint.latitude}, ${station!.address?.location?.geopoint.longitude}"),
-                              subtitle: Text(
+                              subtitle: const Text(
                                 'Location',
                                 style: TextStyle(
                                   color: Colors.grey,
@@ -280,16 +280,16 @@ class _FindProfileFormState extends State<FindProfileForm> {
                             ),
                             const SizedBox(height: 10),
                             ListTile(
-                              leading: Icon(FluentIcons.phone_24_regular),
+                              leading: const Icon(FluentIcons.phone_24_regular),
                               contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 24),
-                              visualDensity: VisualDensity(vertical: -3),
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              visualDensity: const VisualDensity(vertical: -3),
                               title: station?.displayName == null
-                                  ? TextPlaceholder()
+                                  ? const TextPlaceholder()
                                   : Text(
-                                      station!.phoneNumber
+                                      station!.phoneNumber ?? '',
                                     ),
-                              subtitle: Text(
+                              subtitle: const Text(
                                 'Phone Numbers',
                                 style: TextStyle(
                                   color: Colors.grey,
@@ -299,14 +299,14 @@ class _FindProfileFormState extends State<FindProfileForm> {
                             ),
                             const SizedBox(height: 10),
                             ListTile(
-                              leading: Icon(FluentIcons.mail_24_regular),
+                              leading: const Icon(FluentIcons.mail_24_regular),
                               contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 24),
-                              visualDensity: VisualDensity(vertical: -3),
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              visualDensity: const VisualDensity(vertical: -3),
                               title: station?.displayName == null
-                                  ? TextPlaceholder()
+                                  ? const TextPlaceholder()
                                   : Text(station!.email.toString()),
-                              subtitle: Text(
+                              subtitle: const Text(
                                 'Email',
                                 style: TextStyle(
                                   color: Colors.grey,
@@ -314,7 +314,7 @@ class _FindProfileFormState extends State<FindProfileForm> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 24),
+                            const SizedBox(height: 24),
                           ],
                         ),
                       ),
