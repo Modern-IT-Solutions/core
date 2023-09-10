@@ -9,6 +9,10 @@ abstract class BaseRequest<T extends Model> {
   const BaseRequest();
   Map<String, dynamic> toMap();
   /// [toJsonMap] remove fields that are not json serializable
+
+}
+
+extension BaseRequestExtension on BaseRequest {
   Map<String, dynamic> toJsonMap() {
     var map = toMap();
     var serializableTypes = [
@@ -25,6 +29,8 @@ abstract class BaseRequest<T extends Model> {
     return map;
   }
 }
+
+
 /// [UpdateRequest] is a base class for update requests
 abstract class UpdateRequest<T extends Model> extends BaseRequest<T> {
   final Map<String, dynamic> data;
@@ -38,7 +44,8 @@ abstract class UpdateRequest<T extends Model> extends BaseRequest<T> {
       'id': id,
       'data': data,
     };
-  }}
+  }
+}
 // create request
  class CreateRequest<T extends Model> extends BaseRequest<T> {
 

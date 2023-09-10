@@ -1,8 +1,6 @@
 
-import 'package:core/converters.dart';
 import 'package:core/core.dart';
 
-import '../../../../models/base.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 
@@ -43,6 +41,8 @@ class ProfileModel with _$ProfileModel implements Model {
 /// [Role] is an enum that represents the role of the user.
 /// it contains :  [ClientModel], [Technician], [Commercial], [Admin]
 enum Role {
+  /// Role.client
+  student,
   /// Role.client
   client,
 

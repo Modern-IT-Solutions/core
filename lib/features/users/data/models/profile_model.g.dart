@@ -45,7 +45,7 @@ Map<String, dynamic> _$$_ProfileModelToJson(_$_ProfileModel instance) =>
       'phoneNumber': instance.phoneNumber,
       'birthday': instance.birthday?.toIso8601String(),
       'photoUrl': instance.photoUrl,
-      'address': instance.address,
+      'address': instance.address?.toJson(),
       'uid': instance.uid,
       'disabled': instance.disabled,
       'roles': instance.roles.map((e) => _$RoleEnumMap[e]!).toList(),
@@ -63,6 +63,7 @@ Map<String, dynamic> _$$_ProfileModelToJson(_$_ProfileModel instance) =>
     };
 
 const _$RoleEnumMap = {
+  Role.student: 'student',
   Role.client: 'client',
   Role.technicianL1: 'technicianL1',
   Role.technicianL2: 'technicianL2',

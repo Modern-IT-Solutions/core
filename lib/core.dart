@@ -22,3 +22,9 @@ export './models/address.dart';
 export './models/base.dart';
 
 export './temp.dart';
+
+
+/// nullIfEmpty extension to String
+extension NullIfEmpty on String {
+  String? get nullIfEmpty => this.isEmpty ? null : this;
+}

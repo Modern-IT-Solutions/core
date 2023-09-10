@@ -37,7 +37,7 @@ Map<String, dynamic> _$$_InterventionModelToJson(
       'description': instance.description,
       'attachments': instance.attachments,
       'type': _$InterventionTypeEnumMap[instance.type]!,
-      'intervener': instance.intervener,
+      'intervener': instance.intervener.toJson(),
     };
 
 const _$InterventionStatusEnumMap = {
