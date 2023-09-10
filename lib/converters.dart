@@ -62,7 +62,7 @@ class ColorSerializer implements JsonConverter<Color, int> {
   const ColorSerializer();
 
   @override
-  Color fromJson(int color) {
+  Color fromJson(dynamic color) {
     return Color(int.tryParse(color.toString()) ?? 0);
   }
 
