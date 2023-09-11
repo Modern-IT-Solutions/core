@@ -11,7 +11,7 @@ abstract class Model {
 
   ModelRef get ref;
   DateTime get createdAt;
-  DateTime? get updatedAt;
+  DateTime get updatedAt;
   DateTime? get deletedAt;
 }
 

@@ -16,7 +16,7 @@ class ProfileModel with _$ProfileModel implements Model {
     required String email,
     String? phoneNumber,
     DateTime? birthday,
-    required String photoUrl,
+    @Default("") String photoUrl,
     required Address? address,
     required String uid,
     required bool disabled,
