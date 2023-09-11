@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:core/core.dart';
