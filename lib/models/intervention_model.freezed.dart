@@ -23,7 +23,7 @@ mixin _$InterventionModel {
   @ModelRefSerializer()
   ModelRef get ref => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
   DateTime? get deletedAt => throw _privateConstructorUsedError;
   InterventionStatus get status => throw _privateConstructorUsedError;
   DateTime get date => throw _privateConstructorUsedError;
@@ -48,7 +48,7 @@ abstract class $InterventionModelCopyWith<$Res> {
   $Res call(
       {@ModelRefSerializer() ModelRef ref,
       DateTime createdAt,
-      DateTime? updatedAt,
+      DateTime updatedAt,
       DateTime? deletedAt,
       InterventionStatus status,
       DateTime date,
@@ -75,7 +75,7 @@ class _$InterventionModelCopyWithImpl<$Res, $Val extends InterventionModel>
   $Res call({
     Object? ref = null,
     Object? createdAt = null,
-    Object? updatedAt = freezed,
+    Object? updatedAt = null,
     Object? deletedAt = freezed,
     Object? status = null,
     Object? date = null,
@@ -93,10 +93,10 @@ class _$InterventionModelCopyWithImpl<$Res, $Val extends InterventionModel>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
-      updatedAt: freezed == updatedAt
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       deletedAt: freezed == deletedAt
           ? _value.deletedAt
           : deletedAt // ignore: cast_nullable_to_non_nullable
@@ -148,7 +148,7 @@ abstract class _$$_InterventionModelCopyWith<$Res>
   $Res call(
       {@ModelRefSerializer() ModelRef ref,
       DateTime createdAt,
-      DateTime? updatedAt,
+      DateTime updatedAt,
       DateTime? deletedAt,
       InterventionStatus status,
       DateTime date,
@@ -174,7 +174,7 @@ class __$$_InterventionModelCopyWithImpl<$Res>
   $Res call({
     Object? ref = null,
     Object? createdAt = null,
-    Object? updatedAt = freezed,
+    Object? updatedAt = null,
     Object? deletedAt = freezed,
     Object? status = null,
     Object? date = null,
@@ -192,10 +192,10 @@ class __$$_InterventionModelCopyWithImpl<$Res>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
-      updatedAt: freezed == updatedAt
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       deletedAt: freezed == deletedAt
           ? _value.deletedAt
           : deletedAt // ignore: cast_nullable_to_non_nullable
@@ -234,7 +234,7 @@ class _$_InterventionModel implements _InterventionModel {
   _$_InterventionModel(
       {@ModelRefSerializer() required this.ref,
       required this.createdAt,
-      this.updatedAt,
+      required this.updatedAt,
       this.deletedAt,
       required this.status,
       required this.date,
@@ -253,7 +253,7 @@ class _$_InterventionModel implements _InterventionModel {
   @override
   final DateTime createdAt;
   @override
-  final DateTime? updatedAt;
+  final DateTime updatedAt;
   @override
   final DateTime? deletedAt;
   @override
@@ -339,7 +339,7 @@ abstract class _InterventionModel implements InterventionModel {
   factory _InterventionModel(
       {@ModelRefSerializer() required final ModelRef ref,
       required final DateTime createdAt,
-      final DateTime? updatedAt,
+      required final DateTime updatedAt,
       final DateTime? deletedAt,
       required final InterventionStatus status,
       required final DateTime date,
@@ -357,7 +357,7 @@ abstract class _InterventionModel implements InterventionModel {
   @override
   DateTime get createdAt;
   @override
-  DateTime? get updatedAt;
+  DateTime get updatedAt;
   @override
   DateTime? get deletedAt;
   @override

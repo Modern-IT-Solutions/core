@@ -72,7 +72,7 @@ class AuthService extends Service {
           metadata: {},
           customClaims: {},
           createdAt: DateTime.now(),
-          updatedAt: null,
+          updatedAt: DateTime.now(),
           deletedAt: null,
           lastSignInAt: null,
         );

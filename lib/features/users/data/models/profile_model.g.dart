@@ -15,7 +15,7 @@ _$_ProfileModel _$$_ProfileModelFromJson(Map<String, dynamic> json) =>
       birthday: json['birthday'] == null
           ? null
           : DateTime.parse(json['birthday'] as String),
-      photoUrl: json['photoUrl'] as String,
+      photoUrl: json['photoUrl'] as String? ?? "",
       address: json['address'] == null
           ? null
           : Address.fromJson(json['address'] as Map<String, dynamic>),
@@ -54,8 +54,8 @@ Map<String, dynamic> _$$_ProfileModelToJson(_$_ProfileModel instance) =>
       'customClaims': instance.customClaims,
       'createdAt':
           const TimestampDateTimeSerializer().toJson(instance.createdAt),
-      'updatedAt': _$JsonConverterToJson<dynamic, DateTime>(
-          instance.updatedAt, const TimestampDateTimeSerializer().toJson),
+      'updatedAt':
+          const TimestampDateTimeSerializer().toJson(instance.updatedAt),
       'deletedAt': _$JsonConverterToJson<dynamic, DateTime>(
           instance.deletedAt, const TimestampDateTimeSerializer().toJson),
       'lastSignInAt': _$JsonConverterToJson<dynamic, DateTime>(

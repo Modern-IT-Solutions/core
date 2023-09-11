@@ -27,7 +27,7 @@ class ProfileModel with _$ProfileModel implements Model {
     @TimestampDateTimeSerializer()
     required DateTime createdAt,
     @TimestampDateTimeSerializer()
-    DateTime? updatedAt,
+    required DateTime updatedAt,
     @TimestampDateTimeSerializer()
     DateTime? deletedAt,
     @TimestampDateTimeSerializer()

@@ -19,7 +19,7 @@ class InterventionModel extends Model with _$InterventionModel {
     @ModelRefSerializer()
     required ModelRef ref,
     required DateTime createdAt,
-    DateTime? updatedAt,
+    required DateTime updatedAt,
     DateTime? deletedAt,
     required InterventionStatus status,
     required DateTime date,

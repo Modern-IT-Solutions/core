@@ -37,7 +37,7 @@ mixin _$ProfileModel {
   @TimestampDateTimeSerializer()
   DateTime get createdAt => throw _privateConstructorUsedError;
   @TimestampDateTimeSerializer()
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
   @TimestampDateTimeSerializer()
   DateTime? get deletedAt => throw _privateConstructorUsedError;
   @TimestampDateTimeSerializer()
@@ -70,7 +70,7 @@ abstract class $ProfileModelCopyWith<$Res> {
       Map<String, dynamic> metadata,
       Map<String, dynamic> customClaims,
       @TimestampDateTimeSerializer() DateTime createdAt,
-      @TimestampDateTimeSerializer() DateTime? updatedAt,
+      @TimestampDateTimeSerializer() DateTime updatedAt,
       @TimestampDateTimeSerializer() DateTime? deletedAt,
       @TimestampDateTimeSerializer() DateTime? lastSignInAt});
 
@@ -104,7 +104,7 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
     Object? metadata = null,
     Object? customClaims = null,
     Object? createdAt = null,
-    Object? updatedAt = freezed,
+    Object? updatedAt = null,
     Object? deletedAt = freezed,
     Object? lastSignInAt = freezed,
   }) {
@@ -165,10 +165,10 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
-      updatedAt: freezed == updatedAt
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       deletedAt: freezed == deletedAt
           ? _value.deletedAt
           : deletedAt // ignore: cast_nullable_to_non_nullable
@@ -216,7 +216,7 @@ abstract class _$$_ProfileModelCopyWith<$Res>
       Map<String, dynamic> metadata,
       Map<String, dynamic> customClaims,
       @TimestampDateTimeSerializer() DateTime createdAt,
-      @TimestampDateTimeSerializer() DateTime? updatedAt,
+      @TimestampDateTimeSerializer() DateTime updatedAt,
       @TimestampDateTimeSerializer() DateTime? deletedAt,
       @TimestampDateTimeSerializer() DateTime? lastSignInAt});
 
@@ -249,7 +249,7 @@ class __$$_ProfileModelCopyWithImpl<$Res>
     Object? metadata = null,
     Object? customClaims = null,
     Object? createdAt = null,
-    Object? updatedAt = freezed,
+    Object? updatedAt = null,
     Object? deletedAt = freezed,
     Object? lastSignInAt = freezed,
   }) {
@@ -310,10 +310,10 @@ class __$$_ProfileModelCopyWithImpl<$Res>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
-      updatedAt: freezed == updatedAt
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       deletedAt: freezed == deletedAt
           ? _value.deletedAt
           : deletedAt // ignore: cast_nullable_to_non_nullable
@@ -335,7 +335,7 @@ class _$_ProfileModel implements _ProfileModel {
       required this.email,
       this.phoneNumber,
       this.birthday,
-      required this.photoUrl,
+      this.photoUrl = "",
       required this.address,
       required this.uid,
       required this.disabled,
@@ -344,7 +344,7 @@ class _$_ProfileModel implements _ProfileModel {
       final Map<String, dynamic> metadata = const {},
       final Map<String, dynamic> customClaims = const {},
       @TimestampDateTimeSerializer() required this.createdAt,
-      @TimestampDateTimeSerializer() this.updatedAt,
+      @TimestampDateTimeSerializer() required this.updatedAt,
       @TimestampDateTimeSerializer() this.deletedAt,
       @TimestampDateTimeSerializer() this.lastSignInAt})
       : _roles = roles,
@@ -366,6 +366,7 @@ class _$_ProfileModel implements _ProfileModel {
   @override
   final DateTime? birthday;
   @override
+  @JsonKey()
   final String photoUrl;
   @override
   final Address? address;
@@ -406,7 +407,7 @@ class _$_ProfileModel implements _ProfileModel {
   final DateTime createdAt;
   @override
   @TimestampDateTimeSerializer()
-  final DateTime? updatedAt;
+  final DateTime updatedAt;
   @override
   @TimestampDateTimeSerializer()
   final DateTime? deletedAt;
@@ -497,7 +498,7 @@ abstract class _ProfileModel implements ProfileModel {
           required final String email,
           final String? phoneNumber,
           final DateTime? birthday,
-          required final String photoUrl,
+          final String photoUrl,
           required final Address? address,
           required final String uid,
           required final bool disabled,
@@ -506,7 +507,7 @@ abstract class _ProfileModel implements ProfileModel {
           final Map<String, dynamic> metadata,
           final Map<String, dynamic> customClaims,
           @TimestampDateTimeSerializer() required final DateTime createdAt,
-          @TimestampDateTimeSerializer() final DateTime? updatedAt,
+          @TimestampDateTimeSerializer() required final DateTime updatedAt,
           @TimestampDateTimeSerializer() final DateTime? deletedAt,
           @TimestampDateTimeSerializer() final DateTime? lastSignInAt}) =
       _$_ProfileModel;
@@ -546,7 +547,7 @@ abstract class _ProfileModel implements ProfileModel {
   DateTime get createdAt;
   @override
   @TimestampDateTimeSerializer()
-  DateTime? get updatedAt;
+  DateTime get updatedAt;
   @override
   @TimestampDateTimeSerializer()
   DateTime? get deletedAt;

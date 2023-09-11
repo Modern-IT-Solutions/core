@@ -25,7 +25,7 @@ mixin _$AttachmentModel {
   @TimestampDateTimeSerializer()
   DateTime get createdAt => throw _privateConstructorUsedError;
   @TimestampDateTimeSerializer()
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
   @TimestampDateTimeSerializer()
   DateTime? get deletedAt => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
@@ -47,7 +47,7 @@ abstract class $AttachmentModelCopyWith<$Res> {
   $Res call(
       {@ModelRefSerializer() ModelRef ref,
       @TimestampDateTimeSerializer() DateTime createdAt,
-      @TimestampDateTimeSerializer() DateTime? updatedAt,
+      @TimestampDateTimeSerializer() DateTime updatedAt,
       @TimestampDateTimeSerializer() DateTime? deletedAt,
       String name,
       String type,
@@ -69,7 +69,7 @@ class _$AttachmentModelCopyWithImpl<$Res, $Val extends AttachmentModel>
   $Res call({
     Object? ref = null,
     Object? createdAt = null,
-    Object? updatedAt = freezed,
+    Object? updatedAt = null,
     Object? deletedAt = freezed,
     Object? name = null,
     Object? type = null,
@@ -84,10 +84,10 @@ class _$AttachmentModelCopyWithImpl<$Res, $Val extends AttachmentModel>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
-      updatedAt: freezed == updatedAt
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       deletedAt: freezed == deletedAt
           ? _value.deletedAt
           : deletedAt // ignore: cast_nullable_to_non_nullable
@@ -119,7 +119,7 @@ abstract class _$$_AttachmentModelCopyWith<$Res>
   $Res call(
       {@ModelRefSerializer() ModelRef ref,
       @TimestampDateTimeSerializer() DateTime createdAt,
-      @TimestampDateTimeSerializer() DateTime? updatedAt,
+      @TimestampDateTimeSerializer() DateTime updatedAt,
       @TimestampDateTimeSerializer() DateTime? deletedAt,
       String name,
       String type,
@@ -139,7 +139,7 @@ class __$$_AttachmentModelCopyWithImpl<$Res>
   $Res call({
     Object? ref = null,
     Object? createdAt = null,
-    Object? updatedAt = freezed,
+    Object? updatedAt = null,
     Object? deletedAt = freezed,
     Object? name = null,
     Object? type = null,
@@ -154,10 +154,10 @@ class __$$_AttachmentModelCopyWithImpl<$Res>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
-      updatedAt: freezed == updatedAt
+      updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       deletedAt: freezed == deletedAt
           ? _value.deletedAt
           : deletedAt // ignore: cast_nullable_to_non_nullable
@@ -184,7 +184,7 @@ class _$_AttachmentModel implements _AttachmentModel {
   _$_AttachmentModel(
       {@ModelRefSerializer() required this.ref,
       @TimestampDateTimeSerializer() required this.createdAt,
-      @TimestampDateTimeSerializer() this.updatedAt,
+      @TimestampDateTimeSerializer() required this.updatedAt,
       @TimestampDateTimeSerializer() this.deletedAt,
       required this.name,
       required this.type,
@@ -201,7 +201,7 @@ class _$_AttachmentModel implements _AttachmentModel {
   final DateTime createdAt;
   @override
   @TimestampDateTimeSerializer()
-  final DateTime? updatedAt;
+  final DateTime updatedAt;
   @override
   @TimestampDateTimeSerializer()
   final DateTime? deletedAt;
@@ -257,7 +257,7 @@ abstract class _AttachmentModel implements AttachmentModel {
   factory _AttachmentModel(
       {@ModelRefSerializer() required final ModelRef ref,
       @TimestampDateTimeSerializer() required final DateTime createdAt,
-      @TimestampDateTimeSerializer() final DateTime? updatedAt,
+      @TimestampDateTimeSerializer() required final DateTime updatedAt,
       @TimestampDateTimeSerializer() final DateTime? deletedAt,
       required final String name,
       required final String type,
@@ -274,7 +274,7 @@ abstract class _AttachmentModel implements AttachmentModel {
   DateTime get createdAt;
   @override
   @TimestampDateTimeSerializer()
-  DateTime? get updatedAt;
+  DateTime get updatedAt;
   @override
   @TimestampDateTimeSerializer()
   DateTime? get deletedAt;

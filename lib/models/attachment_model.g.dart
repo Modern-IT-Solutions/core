@@ -25,8 +25,8 @@ Map<String, dynamic> _$$_AttachmentModelToJson(_$_AttachmentModel instance) =>
       'ref': const ModelRefSerializer().toJson(instance.ref),
       'createdAt':
           const TimestampDateTimeSerializer().toJson(instance.createdAt),
-      'updatedAt': _$JsonConverterToJson<dynamic, DateTime>(
-          instance.updatedAt, const TimestampDateTimeSerializer().toJson),
+      'updatedAt':
+          const TimestampDateTimeSerializer().toJson(instance.updatedAt),
       'deletedAt': _$JsonConverterToJson<dynamic, DateTime>(
           instance.deletedAt, const TimestampDateTimeSerializer().toJson),
       'name': instance.name,

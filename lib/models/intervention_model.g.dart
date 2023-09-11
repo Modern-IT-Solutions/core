@@ -10,9 +10,7 @@ _$_InterventionModel _$$_InterventionModelFromJson(Map<String, dynamic> json) =>
     _$_InterventionModel(
       ref: const ModelRefSerializer().fromJson(json['ref'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
       deletedAt: json['deletedAt'] == null
           ? null
           : DateTime.parse(json['deletedAt'] as String),
@@ -30,7 +28,7 @@ Map<String, dynamic> _$$_InterventionModelToJson(
     <String, dynamic>{
       'ref': const ModelRefSerializer().toJson(instance.ref),
       'createdAt': instance.createdAt.toIso8601String(),
-      'updatedAt': instance.updatedAt?.toIso8601String(),
+      'updatedAt': instance.updatedAt.toIso8601String(),
       'deletedAt': instance.deletedAt?.toIso8601String(),
       'status': _$InterventionStatusEnumMap[instance.status]!,
       'date': instance.date.toIso8601String(),
