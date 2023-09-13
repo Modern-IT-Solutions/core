@@ -54,19 +54,22 @@ class ModelRefSerializer implements JsonConverter<ModelRef, String> {
 class ColorSerializer implements JsonConverter<Color, int> {
   const ColorSerializer();
 
+
   @override
   Color fromJson(dynamic color) {
-    try {
-      return Color(int.parse('0xFF${color.toString().substring(
-          // the camine color is "xxxxxxFF" string
-          // but we need only "xxxxxx"
-          0, 6)}'));
-    } catch (e) {
-      return Color(int.tryParse("0xFF" + color.toString()) ??
-          /// purple
-          0xFF6200EE);
-    }
+    if (color is Color) return color;
+    if (color is int) return Color(color);
+    if (color is String) return _fromString(color);
+    throw Exception('${color.runtimeType} is not a valid color that can be parsed - only int|Color|String are supported');
   }
+
+  Color _fromString(String color) {
+    if (color.startsWith('#')) {
+      return Color(int.parse(color.substring(3, 9), radix: 16));
+    }
+    throw Exception('Invalid color format');
+  }
+
 
   @override
   int toJson(Color color) => color.value;
