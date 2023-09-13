@@ -66,8 +66,15 @@ class ColorSerializer implements JsonConverter<Color, int> {
   Color _fromString(String color) {
     if (color.startsWith('#')) {
       return Color(int.parse(color.substring(3, 9), radix: 16));
+    } else if (color.startsWith('0x')) {
+      return Color(int.parse(color.substring(2, 8), radix: 16));
+    } else  {
+      try {
+        return Color(int.parse(color));
+      } catch (e) {
+        throw Exception('Invalid color format');
+      }
     }
-    throw Exception('Invalid color format');
   }
 
 
