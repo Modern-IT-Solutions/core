@@ -91,7 +91,7 @@ extension MapExtension on Map<String, dynamic> {
 /// fcm token extension to set and get the fcm tokens
 extension FcmTokenExtension on ProfileModel {
   /// get the fcm token
-  List<String> get fcmTokens => metadata['fcmTokens'] ?? [];
+  List<String> get fcmTokens => List<String>.from(metadata['fcmTokens'] ?? []);
 
   /// set the fcm token
   set fcmTokens(List<String> tokens) {
