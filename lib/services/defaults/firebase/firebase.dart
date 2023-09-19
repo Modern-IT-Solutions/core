@@ -1,10 +1,13 @@
+import 'package:firebase_app_check/firebase_app_check.dart' show ReCaptchaV3Provider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_apple/firebase_ui_oauth_apple.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
+// ignore: depend_on_referenced_packages
 import 'package:flutter/foundation.dart';
 import 'package:universal_io/io.dart';
-import '../../consts/consts.dart';
+
 import '../../../imports/firebase.dart' as fb;
+import '../../consts/consts.dart';
 import '../service.dart';
 
 /// [FirebaseService] responsible for firebase services
@@ -112,7 +115,10 @@ class FirebaseService extends Service {
   /// https://firebase.flutter.dev/docs/app-check/usage
   Future<void> _initAppCheck() async {
     if (webRecaptureSiteKey != null) {
-      await fb.FirebaseAppCheck.instance.activate(webRecaptchaSiteKey: webRecaptureSiteKey);
+      await fb.FirebaseAppCheck.instance.activate(
+
+        webProvider: ReCaptchaV3Provider(webRecaptureSiteKey!),
+      );
       log.info('App~Service: App check initialized');
     } else {
       log.info('App~Service: App check not initialized');
