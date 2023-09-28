@@ -64,7 +64,7 @@ mixin ModelMnanagerViewMixin<M extends Model> {
 
   // load
   Future<void> reload() async {
-    await reload();
+    await load();
   }
 
   // update station

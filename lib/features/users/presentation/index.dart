@@ -1,6 +1,6 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:feather_icons/feather_icons.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-// ignore: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:lib/lib.dart';
 import 'package:recase/recase.dart';
@@ -8,6 +8,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:visibility_detector/visibility_detector.dart';
 
 import 'package:core/core.dart';
+import 'package:core/services/defaults/helpers.dart';
 
 import 'find.dart';
 import 'forms/create_profile.dart';
@@ -719,4 +720,211 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       },
     );
   }
+}
+
+
+
+
+class ModelListView<M extends Model> extends StatelessWidget {
+  final ModelListViewController<M> controller;
+  ModelListView({super.key, required this.controller});
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<ModelListViewValue<M>?>(
+      valueListenable: controller,
+      builder: (context, value, child) {
+        return child!;
+      },
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            // search
+            const TextField(
+              decoration: InputDecoration(
+                prefixIcon: Icon(FluentIcons.search_24_regular),
+                label: Text('Search'),
+                alignLabelWithHint: true,
+              ),
+            ),
+            // filters
+            for (var filter in controller.value?.filters ?? [])
+              CheckboxListTile(
+                value: controller.value?.activeFilters[controller.value?.filters.indexOf(filter) ?? 0] ?? false,
+                onChanged: (value) {
+                  controller.value?.activeFilters[controller.value?.filters.indexOf(filter) ?? 0] = value ?? false;
+                  controller.value = controller.value?.copyWith();
+                },
+                title: Text(filter.name),
+              ),
+            // list
+            for (var model in controller.value?.models ?? [])
+              ListTile(
+                title: controller.description.tileBuilder(model).title,
+                subtitle: controller.description.tileBuilder(model).subtitle,
+                leading: controller.description.tileBuilder(model).leading,
+                trailing: controller.description.tileBuilder(model).trailing,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+typedef LocalFilterBuilder<T extends Model> = bool Function(T model);
+typedef RemoteFilterBuilder<T extends Model> = Query<T> Function(Query<T> query);
+/// [IndexViewFilter] is a class to hold the state of the filter
+class IndexViewFilter<T extends Model> {
+  final String name;
+  final LocalFilterBuilder<T> local;
+  final RemoteFilterBuilder<T> remote;
+  IndexViewFilter({
+    required this.name,
+    required this.local,
+    required this.remote,
+  });
+
+  IndexViewFilter<T> copyWith({
+    String? name,
+    LocalFilterBuilder<T>? local,
+    RemoteFilterBuilder<T>? remote,
+  }) {
+    return IndexViewFilter<T>(
+      name: name ?? this.name,
+      local: local ?? this.local,
+      remote: remote ?? this.remote,
+    );
+  }
+}
+/// [ModelListViewValue] is a class to hold the state of the view
+class ModelListViewValue<M extends Model> {
+  final bool loading;
+  final List<M>? models;
+  final SearchQuery? searchQuery;
+  final List<IndexViewFilter<M>> filters;
+  final List<bool> activeFilters;
+  final List<(M, int)> selectedModels; 
+  final List<(M, int)> history; 
+  final Map<String, dynamic> metadata;
+  final String? error;
+
+  ModelListViewValue({
+    required this.loading,
+    this.models,
+    this.searchQuery,
+    this.filters = const [],
+    this.activeFilters = const [],
+    this.selectedModels = const [],
+    this.history = const [],
+    this.metadata = const {},
+    this.error,
+  });
+
+
+  ModelListViewValue<M> copyWith({
+    bool? loading,
+    List<M>? models,
+    SearchQuery? searchQuery,
+    List<IndexViewFilter<M>>? filters,
+    List<bool>? activeFilters,
+    List<(M, int)>? selectedModels,
+    List<(M, int)>? history,
+    Map<String, dynamic>? metadata,
+    String? error,
+  }) {
+    return ModelListViewValue<M>(
+      loading: loading ?? this.loading,
+      models: models ?? this.models,
+      searchQuery: searchQuery ?? this.searchQuery,
+      filters: filters ?? this.filters,
+      activeFilters: activeFilters ?? this.activeFilters,
+      selectedModels: selectedModels ?? this.selectedModels,
+      history: history ?? this.history,
+      metadata: metadata ?? this.metadata,
+      error: error ?? this.error,
+    );
+  }
+}
+/// [ModelListViewController] just like other controllers in flutter
+class ModelListViewController<M extends Model> extends ValueNotifier<ModelListViewValue<M>?> {
+  final ModelDescription<M> description;
+  ModelListViewController({ModelListViewValue<M>? value,required this.description}) :super(value);
+
+  /// [search] is a function to search for models
+  Future<void> search({Iterable<Timestamp>? startAfter}) async {
+    value = value?.copyWith(loading: true);
+    try {
+      value = value?.copyWith(
+        models: await getModelCollection(
+          path: description.path,
+          fromJson: description.fromJson,
+          builder: (query) {
+            for (var filter in value?.filters ?? []) {
+              query = filter.remote(query);
+            }
+            query = query.orderBy("updatedAt", descending: true);
+            if (startAfter != null) {
+              query = query.startAfter(startAfter);
+            }
+            return query;
+          },
+        ),
+        loading: false,
+      );
+    } catch (e) {
+      value = value?.copyWith(
+        error: e.toString(),
+        loading: false,
+      );
+    }
+  }
+
+  /// [load] is a function to load models
+  Future<void> load() async {
+    return search();
+  }
+
+  /// [more] is a function to load more models
+  Future<void> more() async {
+    return search(startAfter: [
+      // why 3 seconds? because we are not really sure about the date are the same
+      Timestamp.fromDate((value?.models?.last.updatedAt ?? DateTime.now()).add(const Duration(seconds: 3)))
+    ]);
+  }
+
+  /// to make sure that the controller is mounted on the view
+  var _mounted = false;
+  bool get mounted => _mounted;
+
+  /// [mounted] is a function to mount the controller on the view and bind it to the view
+}
+/// [ModelDescription] is a class to describe a model
+class ModelDescription<T> {
+  final String name;
+  // path to collection
+  final String path;
+  // fromJson
+  final T Function(Map<String, dynamic> data) fromJson;
+  // semantics (general title, description, icon, etc..)
+  final ModelTile Function(T model) tileBuilder;
+  ModelDescription({
+    required this.name,
+    required this.path,
+    required this.fromJson,
+    required this.tileBuilder,
+  });
+}
+
+class ModelTile {
+  final Widget title;
+  final Widget subtitle;
+  final Widget leading;
+  final Widget trailing;
+  ModelTile({
+    this.title = const SizedBox(),
+    this.subtitle = const SizedBox(),
+    this.leading = const SizedBox(),
+    this.trailing = const SizedBox(),
+  });
 }

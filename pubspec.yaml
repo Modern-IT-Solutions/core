@@ -44,6 +44,9 @@ dependencies:
   geoflutterfire_plus: 
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
+  # SharedPreferences
+  shared_preferences:
+  google_fonts:
 
 dependency_overrides:
   http: ^1.0.0

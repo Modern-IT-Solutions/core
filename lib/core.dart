@@ -22,6 +22,11 @@ export './models/address.dart';
 export './models/base.dart';
 
 export './temp.dart';
+
+export './services/defaults/preferences.dart';
+export './services/defaults/theme.dart';
+export './services/defaults/firebase/database.dart';
+export './services/defaults/helpers.dart';
 /// UI
 export './features/users/presentation/index.dart';
 
