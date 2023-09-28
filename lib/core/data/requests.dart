@@ -90,7 +90,7 @@ class ListRequest<T extends Model> extends BaseRequest<T> {
   /// limit of documents to return
   final int? limit;
   /// custom query builder
-  final Query<T> Function<T>(Query<T> query)? queryBuilder;
+  final Query<T> Function(Query<T> query)? queryBuilder;
   /// search query
   final SearchQuery? searchQuery;
 
@@ -113,6 +113,15 @@ class ListRequest<T extends Model> extends BaseRequest<T> {
     field: field,
     value: search,
   );
+
+  ListRequest<T> next(int limit) {
+    return ListRequest<T>(
+      withDeleted: withDeleted,
+      limit: limit,
+      queryBuilder: queryBuilder,
+      searchQuery: searchQuery,
+    );
+  }
 
   /// [toMap] returns a map with the request data
   @override

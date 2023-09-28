@@ -30,6 +30,9 @@ abstract class CFLUDInterface<
   Future<T> create(CreateRequest<T> request);
   Future<T?> find(FindRequest<T> request);
   Future<ListResult<T>> list(ListRequest<T> request);
+  // realtimelist like snapshot in firestore
+
+
   Future<void> update(UpdateRequest<T> request);
   Future<void> delete(DeleteRequest<T> request);
 }

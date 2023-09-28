@@ -4,6 +4,15 @@ import 'package:core/core.dart';
 
 extension QuerySnapshotToListResult<T extends Model> on QuerySnapshot<T> {
   ListResult<T> toListResult() {
-    return ListResult<T>(items: List<T>.from(docs.map((e) => e.data())));
+    List<T> items = [];
+    for (var i = 0; i < docs.length; i++) {
+      if (i>50) break;
+      items.add(docs[i].data());
+    }
+    return ListResult<T>(items: 
+    // List<T>.from(docs.map((e) => e.data()))
+    items,
+
+    );
   }
 }

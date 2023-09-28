@@ -1,16 +1,13 @@
 import 'package:core/core.dart';
 
-
-abstract class DataSource<
-    T extends Model> {}
+abstract class DataSource<T extends Model> {}
 
 abstract class NetworkDataSource {}
 
 abstract class CacheDataSource {}
 
 /// [FirestoreDataSource] is a mixin that implements the firestore methods
-abstract class FirestoreDataSource<
-    T extends Model> extends DataSource<T> {
+abstract class FirestoreDataSource<T extends Model> extends DataSource<T> {
   String get cref;
   FirebaseFirestore get db => FirebaseFirestore.instance;
   // collection getter with converter
@@ -19,10 +16,11 @@ abstract class FirestoreDataSource<
         toFirestore: toFirestore,
       );
   // collection withou converter (put ref: doc.path in the map)
-  CollectionReference<Map<String, dynamic>> get collectionMap => db
-          .collection(cref)
-          .withConverter<Map<String, dynamic>>(fromFirestore: (snapshot, _) {
-        return {"ref": snapshot.reference.path, ...snapshot.data()!};
+  CollectionReference<Map<String, dynamic>> get collectionMap => db.collection(cref).withConverter<Map<String, dynamic>>(fromFirestore: (snapshot, _) {
+        return {
+          "ref": snapshot.reference.path,
+          ...snapshot.data()!
+        };
       }, toFirestore: (model, _) {
         model.remove("ref");
         return model;
@@ -53,16 +51,14 @@ abstract class FirestoreDataSource<
     }
     if (request.searchQuery != null && request.searchQuery?.value != null) {
       // query is a list of where clauses
-      dbquery = dbquery
-          .where(request.searchQuery!.field, isGreaterThanOrEqualTo: request.searchQuery!.value)
-          .where(request.searchQuery!.field, isLessThanOrEqualTo: request.searchQuery!.value! + '\uf8ff');
+      dbquery = dbquery.where(request.searchQuery!.field, isGreaterThanOrEqualTo: request.searchQuery!.value).where(request.searchQuery!.field, isLessThanOrEqualTo: request.searchQuery!.value! + '\uf8ff');
     }
     if (request.queryBuilder != null) {
       dbquery = request.queryBuilder!(dbquery);
     }
     var ql = await dbquery.get(
-      request.options == null? null: request.options,
-     );
+      request.options == null ? null : request.options,
+    );
     return ql.toListResult();
   }
 
@@ -80,7 +76,7 @@ abstract class FirestoreDataSource<
         'deletedAt': FieldValue.serverTimestamp(),
       });
     } else
-    await collection.doc(request.id).delete();
+      await collection.doc(request.id).delete();
   }
 
   find(request) async {
@@ -89,11 +85,7 @@ abstract class FirestoreDataSource<
     } else {
       /// get list of documents limited to 1
       /// where deletedAt is null
-      var ql = await collection
-          .where('deletedAt', isNull: true)
-          .where('id', isEqualTo: request.id)
-          .limit(1)
-          .get();
+      var ql = await collection.where('deletedAt', isNull: true).where('id', isEqualTo: request.id).limit(1).get();
       if (ql.docs.length > 0) {
         return ql.docs.first.data();
       } else {
@@ -102,20 +94,16 @@ abstract class FirestoreDataSource<
     }
   }
 
-  T fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> snapshot, SnapshotOptions? _);
-  Map<String, dynamic> toFirestore(T model, SetOptions? _) =>
-      model.toJson();
+  T fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot, SnapshotOptions? _);
+  Map<String, dynamic> toFirestore(T model, SetOptions? _) => model.toJson();
 }
 
 /// [FirestoreDataSourceInterface] is an interface for firestore data sources
-abstract class FirestoreDataSourceInterface<
-    T extends Model> extends DataSource<T>{}
+abstract class FirestoreDataSourceInterface<T extends Model> extends DataSource<T> {}
 
 /// [FirestoreDataSourceMixin] is a mixin that implements the firestore methods
 /// for a firestore data source
-mixin FirestoreDataSourceMixin<
-    T extends Model> implements CFLUDInterface<T> {
+mixin FirestoreDataSourceMixin<T extends Model> implements CFLUDInterface<T> {
   String get cref;
   FirebaseFirestore get db => FirebaseFirestore.instance;
   // collection getter with converter
@@ -124,10 +112,11 @@ mixin FirestoreDataSourceMixin<
         toFirestore: toFirestore,
       );
   // collection withou converter (put ref: doc.path in the map)
-  CollectionReference<Map<String, dynamic>> get collectionMap => db
-          .collection(cref)
-          .withConverter<Map<String, dynamic>>(fromFirestore: (snapshot, _) {
-        return {"ref": snapshot.reference.path, ...snapshot.data()!};
+  CollectionReference<Map<String, dynamic>> get collectionMap => db.collection(cref).withConverter<Map<String, dynamic>>(fromFirestore: (snapshot, _) {
+        return {
+          "ref": snapshot.reference.path,
+          ...snapshot.data()!
+        };
       }, toFirestore: (model, _) {
         model.remove("ref");
         return model;
@@ -139,7 +128,7 @@ mixin FirestoreDataSourceMixin<
       'updatedAt': null,
       'deletedAt': null,
       ...request.data,
-    };//.toFirebaseJson();
+    }; //.toFirebaseJson();
     print(map);
     if (request.id != null) {
       await collectionMap.doc(request.id).set(map);
@@ -151,24 +140,18 @@ mixin FirestoreDataSourceMixin<
 
   list(request) async {
     Query<T> dbquery = collection;
-    if (request.limit != null) {
-      dbquery = dbquery.limit(request.limit!);
-    }
-    if (!request.withDeleted) {
-      dbquery = dbquery.where('deletedAt', isNull: true);
-    }
+    dbquery = dbquery.limit(request.limit ?? 50);
+    // if (!request.withDeleted) {
+    //   dbquery = dbquery.where('deletedAt', isNull: true);
+    // }
     if (request.searchQuery != null && request.searchQuery?.value != null) {
       // query is a list of where clauses
-      dbquery = dbquery
-          .where(request.searchQuery!.field, isGreaterThanOrEqualTo: request.searchQuery!.value)
-          .where(request.searchQuery!.field, isLessThanOrEqualTo: request.searchQuery!.value! + '\uf8ff');
+      dbquery = dbquery.where(request.searchQuery!.field, isGreaterThanOrEqualTo: request.searchQuery!.value).where(request.searchQuery!.field, isLessThanOrEqualTo: request.searchQuery!.value! + '\uf8ff');
     }
     if (request.queryBuilder != null) {
       dbquery = request.queryBuilder!(dbquery);
     }
-    var ql = await dbquery.get(
-      request.options == null? null: request.options,
-     );
+    var ql = await dbquery.get(request.options);
     return ql.toListResult();
   }
 
@@ -186,7 +169,7 @@ mixin FirestoreDataSourceMixin<
         'deletedAt': FieldValue.serverTimestamp(),
       });
     } else
-    await collection.doc(request.id).delete();
+      await collection.doc(request.id).delete();
   }
 
   find(request) async {
@@ -195,11 +178,7 @@ mixin FirestoreDataSourceMixin<
     } else {
       /// get list of documents limited to 1
       /// where deletedAt is null
-      var ql = await collection
-          .where('deletedAt', isNull: true)
-          .where('id', isEqualTo: request.id)
-          .limit(1)
-          .get();
+      var ql = await collection.where('deletedAt', isNull: true).where('id', isEqualTo: request.id).limit(1).get();
       if (ql.docs.length > 0) {
         return ql.docs.first.data();
       } else {
@@ -208,12 +187,9 @@ mixin FirestoreDataSourceMixin<
     }
   }
 
-  T fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> snapshot, SnapshotOptions? _);
-  Map<String, dynamic> toFirestore(T model, SetOptions? _) =>
-      model.toJson().toFirebaseJson();
+  T fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot, SnapshotOptions? _);
+  Map<String, dynamic> toFirestore(T model, SetOptions? _) => model.toJson().toFirebaseJson();
 }
-
 
 /// [toFirebaseJson] extension on [Map<String, dynamic>]
 extension FirebaseMapExtension on Map<String, dynamic> {

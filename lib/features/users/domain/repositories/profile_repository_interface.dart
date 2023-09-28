@@ -12,4 +12,4 @@ abstract class ProfileRepositoryInterface<T extends ProfileModel>
   Future<ListResult<T>> list([ListRequest<T>? request]);
   Future<void> update(ProfileUpdateRequest<T> request);
   Future<void> delete(DeleteRequest<T> request);
-    }
+}

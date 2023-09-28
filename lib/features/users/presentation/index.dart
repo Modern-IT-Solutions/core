@@ -1,16 +1,17 @@
-import 'package:core/core.dart';
 import 'package:feather_icons/feather_icons.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+// ignore: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:lib/lib.dart';
 import 'package:recase/recase.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:visibility_detector/visibility_detector.dart';
 
-import '../data/repositories/profile_repository.dart';
-import '../domain/repositories/profile_repository_interface.dart';
+import 'package:core/core.dart';
+
 import 'find.dart';
 import 'forms/create_profile.dart';
 import 'forms/update_profile.dart';
-
 
 /// [ProfilesSearchType] is a class to build a query to search
 enum ProfilesSearchType implements SearchType {
@@ -26,71 +27,161 @@ enum ProfilesSearchType implements SearchType {
     }
   }
 
-  String get field => this.name;
+  String get field {
+    if (this == ProfilesSearchType.name) {
+      return "displayName";
+    } else {
+      return "email";
+    }
+  }
 }
 
 /// [ManageProfilesView] is a tab for stations
 class ManageProfilesView<M extends ProfileModel> extends ModelMnanagerView<M> {
   final ProfileRepositoryInterface<M> repository;
+  final Map<String, QueryFilterInterface<M>> filters;
+  final List<ModelAction<M>> actions;
 
   ManageProfilesView({
     super.key,
+    this.filters = const {},
+    this.actions = const [],
   }) : repository = ProfileRepository.instance as ProfileRepositoryInterface<M>;
 
   @override
   State<ManageProfilesView> createState() => ManageProfilesViewState<M>();
 }
 
-class ManageProfilesViewState<M extends ProfileModel>
-    extends State<ManageProfilesView> with ModelMnanagerViewMixin<M> {
-  var searchType = ValueNotifier(ProfilesSearchType.name);
+class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfilesView> with ModelMnanagerViewMixin<M> {
+  var searchType = ValueNotifier(ProfilesSearchType.email);
+  Map<String, QueryFilterInterface<M>> filters = {};
 
   @override
   void initState() {
     super.initState();
+    filters['All'] = QueryFilter(
+      name: 'All',
+      fields: [],
+      server: (query) => query,
+      active: !widget.filters.values.any((element) => element.active),
+      onSelect: (filters) {
+        for (var filter in filters.keys.where((e) => e != 'All')) {
+          filters[filter]?.active= false;
+        }
+      },
+      fixed: true,
+    );
+    // filters = widget.filters;
+    filters.addAll(widget.filters as Map<String, QueryFilterInterface<M>>);
+    for (var filter in activeFilters) {
+      filter.onSelect?.call(filters);
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       load();
     });
   }
 
-  Future<void> load() async {
-    loading.value = true;
-    try {
-      models.value =
-          await widget.repository.list(ListRequest()) as ListResult<M>;
-    } catch (e) {
-      print(e);
+  List<QueryFilterInterface<M>> get activeFilters {
+    return filters.values.where((element) => element.active).toList();
+  }
+
+  Map<DateTime, bool> history = {};
+  DateTime? get currentStartAt => history.keys.lastOrNull;
+
+  bool get hasNext => filteredModels.isNotEmpty && nextStartAt != null && nextStartAt != currentStartAt;
+  DateTime? get nextStartAt => models.value?.items.lastOrNull?.updatedAt;
+
+  // prevStartAt
+  DateTime? get prevStartAt {
+    // index of latest item
+    var index = models.value?.items.indexWhere((element) => element.updatedAt == currentStartAt);
+    if (index != null && index > 0) {
+      return models.value?.items[index - 1].updatedAt;
     }
-    // await Future.delayed(const Duration(seconds: 2));
-    loading.value = false;
+    return null;
+  }
+
+  bool get hasPrev => prevStartAt != null && prevStartAt != currentStartAt;
+
+  @override
+  Future<void> load() async {
+    return search();
   }
 
   /// [search] is a function to search for profiles
   /// it takes a [query] and a [type] to search by
-  Future<void> search(String query, SearchType type) async {
+  Future<void> search({String? query, SearchType? type, Iterable<Timestamp>? startAfter}) async {
+    if (loading.value) {
+      return;
+    }
     loading.value = true;
+    var concat = false;
     try {
-      models.value = await widget.repository.list(
-        ListRequest(searchQuery: SearchQuery(field: type.name, value: query)),
-      ) as ListResult<M>;
+      if (startAfter != null && startAfter.isNotEmpty == true) {
+        history[startAfter.first.toDate()] = true;
+        concat = true;
+      }
+
+      ListResult<M> data = (await widget.repository.list(
+        ListRequest(
+            searchQuery: query != null && query.isNotEmpty && type != null ? SearchQuery(field: type.name, value: query) : null,
+            queryBuilder: (query) {
+              for (QueryFilterInterface<M> filter in activeFilters) {
+                query = filter.server(query as Query<M>);
+              }
+              query = query.orderBy("updatedAt", descending: true);
+              if (startAfter != null) {
+                query = query.startAfter(startAfter);
+              }
+              return query;
+            },
+            limit: 10,
+            options: const GetOptions(
+              source: Source.server,
+            )),
+      )) as ListResult<M>;
+      if (concat) {
+        models.value = ListResult(
+          items: [
+            ...models.value!.items,
+            ...data.items
+          ],
+        );
+      } else {
+        models.value = data;
+      }
     } catch (e) {
       print(e);
     }
-
     loading.value = false;
   }
 
-  List<ProfileModel> get filteredProfiles {
-    var query = searchController.text.trim();
-    if (query.isEmpty) {
-      return models.value!.items;
+  List<ProfileModel> get filteredModels {
+    if (models.value == null) {
+      return [];
+    }
+    bool _filters(ProfileModel model) {
+      for (var filter in activeFilters) {
+        if (filter.local != null) {
+          if (filter.local!(model as M) == false) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    if (searchController.text.isEmpty) {
+      return models.value!.items.where(_filters).toList();
     }
     // search in display name and email and phone number and uid
-    return models.value!.items.where((station) {
-      return station.displayName.contains(query) == true ||
-          station.address?.raw.contains(query) == true ||
-          // station.?.contains(query) == true ||
-          station.ref.toString().contains(query);
+    return models.value!.items.where((profile) {
+      var query = searchController.text.toLowerCase();
+      if (!_filters(profile)) {
+        return false;
+      }
+      return profile.toString().toLowerCase().contains(query);
     }).toList();
   }
 
@@ -99,186 +190,223 @@ class ManageProfilesViewState<M extends ProfileModel>
     return ListenableBuilder(
       listenable: Listenable.merge([
         loading,
+        models
       ]),
       builder: (context, _) {
-        return Container(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  SizedBox(
-                    child: FilledButton.icon(
-                      onPressed: () => showCreateModelDailog(context),
-                      label: const Text('Add'),
-                      icon: const Icon(FeatherIcons.plus),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                SizedBox(
+                  child: FilledButton.icon(
+                    onPressed: () => showCreateModelDailog(context),
+                    label: const Text('Add'),
+                    icon: const Icon(FeatherIcons.plus),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: AppTextFormField.min(
+                    // enabled: !loading.value,
+                    onSubmitted: (String value) {
+                      search(query: value, type: searchType.value);
+                    },
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(FluentIcons.search_24_regular),
+                      label: const Text('Search'),
+                      alignLabelWithHint: true,
+                      suffixIcon: ListenableBuilder(
+                          listenable: searchType,
+                          builder: (context, _) {
+                            return MenuAnchor(
+                              builder: (context, controller, __) {
+                                return TextButton.icon(
+                                  icon: const Icon(
+                                    FluentIcons.filter_24_regular,
+                                  ),
+                                  onPressed: () => controller.open(),
+                                  label: Text(searchType.value.name.titleCase),
+                                );
+                              },
+                              menuChildren: [
+                                for (var type in ProfilesSearchType.values)
+                                  MenuItemButton(
+                                    leadingIcon: Icon(type.icon),
+                                    trailingIcon: searchType.value == type ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                                    onPressed: searchType.value == type
+                                        ? null
+                                        : () {
+                                            searchType.value = type;
+                                          },
+                                    child: Text(type.name.titleCase),
+                                  ),
+                              ],
+                            );
+                          }),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: AppTextFormField.min(
-                      enabled: !loading.value,
-                      onSubmitted: (String value) =>
-                          search(value, searchType.value),
-                      controller: searchController,
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(FluentIcons.search_24_regular),
-                        label: Text('Search'),
-                        alignLabelWithHint: true,
-                        suffixIcon: ListenableBuilder(
-                            listenable: searchType,
-                            builder: (context, _) {
-                              return MenuAnchor(
-                                builder: (context, controller, __) {
-                                  return TextButton.icon(
-                                    icon: const Icon(
-                                      FluentIcons.filter_24_regular,
-                                    ),
-                                    onPressed: () => controller.open(),
-                                    label:
-                                        Text(searchType.value.name.titleCase),
-                                  );
+                ),
+              ],
+            ),
+            // row of filters using chips, each chip is a filter can be remove
+            // if no filters, hide this row
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: Wrap(
+                  spacing: 8,
+                  children: [
+                    for (var filter in filters.values)
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            filters[filter.name]?.active = !(filters[filter.name]?.active ?? false);
+                            filters[filter.name]!.onSelect?.call(filters);
+                            search();
+                          });
+                        },
+                        child: Chip(
+                          label: Text(filter.name),
+                          backgroundColor: filter.active ? Theme.of(context).colorScheme.primary : null,
+                          side: filter.active ? const BorderSide(color: Colors.transparent) : BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
+                          labelStyle: TextStyle(color: filter.active ? Theme.of(context).colorScheme.onPrimary : null),
+                          deleteIcon: filter.fixed
+                              ? null
+                              : const Icon(
+                                  FluentIcons.dismiss_24_regular,
+                                  size: 15,
+                                ),
+                          deleteIconColor: filter.active ? Theme.of(context).colorScheme.onPrimary : null,
+                          onDeleted: filter.fixed
+                              ? null
+                              : () {
+                                  setState(() {
+                                    filters.remove(filter.name);
+                                    search();
+                                  });
                                 },
-                                menuChildren: [
-                                  for (var type in ProfilesSearchType.values)
-                                    MenuItemButton(
-                                      leadingIcon: Icon(type.icon),
-                                      trailingIcon: searchType.value == type
-                                          ? const Icon(
-                                              FluentIcons.checkmark_24_regular)
-                                          : null,
-                                      onPressed: searchType.value == type
-                                          ? null
-                                          : () {
-                                              searchType.value = type;
-                                            },
-                                      child: Text(type.name.titleCase),
-                                    ),
-                                ],
-                              );
-                            }),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              // table of stations, station is the same as firebase
-              // use ListTile for each station
-              FlexTable(
-                selectable: false,
-                scrollable: true,
-                // the space bitween each item called gap
-                configs: const [
-                  FlexTableItemConfig.square(30),
-                  FlexTableItemConfig.flex(2),
-                  FlexTableItemConfig.flex(3),
-                  FlexTableItemConfig.flex(2),
-                  FlexTableItemConfig.square(40),
-                ],
-                child: ListenableBuilder(
-                  listenable: searchController,
-                  builder: (context, child) {
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: const FlexTableItem(children: [
+            ),
+
+            // table of profiles, profile is the same as firebase
+            // use ListTile for each profile
+            FlexTable(
+              selectable: false,
+              scrollable: false,
+              // the space bitween each item called gap
+              configs: const [
+                FlexTableItemConfig.square(30),
+                FlexTableItemConfig.flex(2),
+                FlexTableItemConfig.flex(2),
+                FlexTableItemConfig.flex(2),
+                FlexTableItemConfig.square(40),
+              ],
+              child: ListenableBuilder(
+                listenable: searchController,
+                builder: (context, child) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: FlexTableItem(
+                          children: [
                             SizedBox(),
                             Text(
                               'Name',
                               style: TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            // create at
+                            Text(
+                              'Last Update',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                             Text(
-                              'Address',
+                              'Roles',
                               style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Techs',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                             SizedBox(),
-                          ]),
+                          ],
                         ),
-                        loading.value
-                            ? LinearProgressIndicator(minHeight: 2)
-                            : const Divider(height: 2),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (models.value != null)
-                              for (ProfileModel stationRecord
-                                  in filteredProfiles)
-                                InkWell(
-                                  highlightColor: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withOpacity(0.1),
-                                  focusColor: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withOpacity(0.1),
-                                  hoverColor: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
+                      ),
+                      loading.value ? const LinearProgressIndicator(minHeight: 2) : const Divider(height: 2),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (models.value != null)
+                            ListView.builder(
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: filteredModels.length,
+                              itemBuilder: (context, index) {
+                                var model = filteredModels[index];
+                                return InkWell(
+                                  highlightColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  focusColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  hoverColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  borderRadius:
+
+                                      //  BorderRadius.circular(8),
+                                      // in first
+                                      index == 0
+                                          ? const BorderRadius.only(
+                                              bottomLeft: Radius.circular(8),
+                                              bottomRight: Radius.circular(8),
+                                            )
+                                          : BorderRadius.circular(8),
                                   onTap: () {
-                                    showDetailsModelDailog(
-                                        context, stationRecord);
+                                    showDetailsModelDailog(context, model);
                                   },
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 5, horizontal: 8),
+                                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
                                     child: FlexTableItem(
                                       children: [
                                         CircleAvatar(
                                           radius: 15,
-                                          child: stationRecord.photoUrl == null
+                                          backgroundImage: NetworkImage(model.photoUrl),
+                                          child: model.photoUrl.isEmpty
                                               ? Text(
-                                                  stationRecord.displayName
-                                                              ?.isNotEmpty ==
-                                                          true
-                                                      ? stationRecord.displayName![0]
-                                                          .toUpperCase()
-                                                      : "?",
-                                                  style: const TextStyle(
-                                                      fontSize: 18),
+                                                  model.displayName.trim().isNotEmpty == true ? model.displayName.trim()[0].toUpperCase() : "?",
+                                                  style: const TextStyle(fontSize: 18),
                                                 )
                                               : null,
-                                          backgroundImage:
-                                              stationRecord.photoUrl == null
-                                                  ? null
-                                                  : NetworkImage(
-                                                      stationRecord.photoUrl!),
                                         ),
                                         Text(
-                                          stationRecord.displayName ?? "No name",
+                                          model.displayName.isNotEmpty ? model.displayName : "(No name)",
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
-                                        Text(
-                                          stationRecord.address.toString() ??
-                                              "No phone",
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                        // roles
 
+                                        Text(
+                                          timeago.format(model.updatedAt.toLocal()),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                         SizedBox(
                                           width: 70,
                                           child: Wrap(
                                             spacing: 5,
-                                            children: [],
+                                            children: [
+                                              for (var role in model.roles) Text(role.name)
+                                            ],
                                           ),
                                         ),
-
-                                        // IconButton(
-                                        //   icon: const Icon(FeatherIcons.moreVertical),
-                                        //   onPressed: () {},
-                                        // ),
                                         MenuAnchor(
-                                          builder:
-                                              (context, controller, child) {
+                                          builder: (context, controller, child) {
                                             return IconButton(
                                               onPressed: () {
                                                 if (controller.isOpen) {
@@ -291,46 +419,45 @@ class ManageProfilesViewState<M extends ProfileModel>
                                             );
                                           },
                                           menuChildren: [
-                                            SizedBox(
+                                            const SizedBox(
                                               height: 8,
                                             ),
+                                            if (widget.actions.isNotEmpty) ...[
+                                              for (var action in widget.actions)
+                                                MenuItemButton(
+                                                  onPressed: () => action.onPressed?.call(model),
+                                                  leadingIcon: action.icon,
+                                                  child: action.label,
+                                                ),
+                                              const Divider(),
+                                            ],
                                             MenuItemButton(
                                               onPressed: () {},
-                                              leadingIcon: const Icon(
-                                                  FluentIcons
-                                                      .person_tag_28_regular),
-                                              child: Text('change roles'),
+                                              leadingIcon: const Icon(FluentIcons.person_tag_28_regular),
+                                              child: const Text('change roles'),
                                             ),
-                                            Divider(),
+                                            const Divider(),
                                             MenuItemButton(
                                               onPressed: () {
-                                                showUpdateModelDailog(
-                                                    context, stationRecord);
+                                                showUpdateModelDailog(context, model);
                                               },
-                                              leadingIcon: const Icon(
-                                                  FluentIcons.edit_28_regular),
-                                              child: Text('Edit'),
+                                              leadingIcon: const Icon(FluentIcons.edit_28_regular),
+                                              child: const Text('Edit'),
                                             ),
                                             MenuItemButton(
                                               onPressed: () {
-                                                showDeleteModelDailog(
-                                                    context, stationRecord);
+                                                showDeleteModelDailog(context, model);
                                               },
                                               leadingIcon: Icon(
                                                 FluentIcons.delete_28_regular,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .error,
+                                                color: Theme.of(context).colorScheme.error,
                                               ),
                                               child: Text(
                                                 'Remove',
-                                                style: TextStyle(
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .error),
+                                                style: TextStyle(color: Theme.of(context).colorScheme.error),
                                               ),
                                             ),
-                                            SizedBox(
+                                            const SizedBox(
                                               height: 8,
                                             ),
                                           ],
@@ -338,46 +465,85 @@ class ManageProfilesViewState<M extends ProfileModel>
                                       ],
                                     ),
                                   ),
-                                ),
-                            if (loading.value)
-                              Center(
-                                child: Container(
-                                  margin: EdgeInsets.all(24.0),
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator.adaptive(
-                                      strokeWidth: 2),
-                                ),
-                              ),
-                            if (models.value != null &&
-                                models.value!.items.isEmpty &&
-                                !loading.value)
-                              Row(
+                                );
+                              },
+                            ),
+                          Center(
+                            child: SizedBox(
+                              height: 80,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 24.0,
-                                      horizontal: 12,
-                                    ),
-                                    child: Text('No stations found'),
-                                  ),
-                                  // refresh
-                                  OutlinedButton(
-                                    onPressed: load,
-                                    child: Text("Refresh"),
-                                  )
+                                  if (loading.value)
+                                    Container(
+                                      margin: const EdgeInsets.all(24.0),
+                                      height: 20,
+                                      width: 20,
+                                      child: const CircularProgressIndicator.adaptive(strokeWidth: 2),
+                                    )
+                                  else ...[
+                                    if (models.value != null && models.value!.items.isEmpty)
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 24.0,
+                                              horizontal: 12,
+                                            ),
+                                            child: Text('No profiles found'),
+                                          ),
+                                          // refresh
+                                          OutlinedButton(
+                                            onPressed: load,
+                                            child: const Text("Refresh"),
+                                          )
+                                        ],
+                                      )
+                                    else if (hasNext)
+                                      VisibilityDetector(
+                                        key: Key(nextStartAt.toString()),
+                                        onVisibilityChanged: (info) {
+                                          if (info.visibleFraction > 0) {
+                                            search(startAfter: [
+                                              Timestamp.fromDate(nextStartAt!)
+                                            ]);
+                                          }
+                                        },
+                                        child: OutlinedButton(
+                                          onPressed: () async {
+                                            await search(startAfter: [
+                                              Timestamp.fromDate(nextStartAt!)
+                                            ]);
+                                          },
+                                          child: const Text("load more"),
+                                        ),
+                                      )
+                                    else
+                                    // you reached the end text
+                                    if (models.value != null && models.value!.items.isNotEmpty)
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 24.0,
+                                          horizontal: 12,
+                                        ),
+                                        child: Text('You reached the end.'),
+                                      )
+                                  ]
                                 ],
                               ),
-                          ],
-                        ),
-                      ],
-                    );
-                  },
-                ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
@@ -424,8 +590,7 @@ class ManageProfilesViewState<M extends ProfileModel>
   }
 
   // update station
-  Future<void> showUpdateModelDailog(
-      BuildContext context, ProfileModel station) async {
+  Future<void> showUpdateModelDailog(BuildContext context, ProfileModel station) async {
     var child = Container(
       constraints: const BoxConstraints(maxWidth: 500),
       child: UpdateProfileForm(
@@ -466,15 +631,13 @@ class ManageProfilesViewState<M extends ProfileModel>
   }
 
   // delete station, a simple dialog with a text and two buttons
-  Future<void> showDeleteModelDailog(
-      BuildContext context, ProfileModel model) async {
+  Future<void> showDeleteModelDailog(BuildContext context, ProfileModel model) async {
     bool _loading = false;
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm delete'),
-        content: Text(
-            'this action cannot be undone, are you sure you want to continue?'),
+        content: const Text('this action cannot be undone, are you sure you want to continue?'),
         actions: [
           TextButton(
             onPressed: () {
@@ -500,8 +663,7 @@ class ManageProfilesViewState<M extends ProfileModel>
                               action: SnackBarAction(
                                 label: 'Close',
                                 onPressed: () {
-                                  ScaffoldMessenger.of(context)
-                                      .hideCurrentSnackBar();
+                                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
                                 },
                               )),
                         );
@@ -512,9 +674,7 @@ class ManageProfilesViewState<M extends ProfileModel>
                         _loading = false;
                       });
                     },
-              child: _loading
-                  ? CircularProgressIndicator.adaptive()
-                  : const Text('Delete'),
+              child: _loading ? const CircularProgressIndicator.adaptive() : const Text('Delete'),
             );
           }),
         ],
@@ -538,7 +698,7 @@ class ManageProfilesViewState<M extends ProfileModel>
             },
             icon: const Icon(FluentIcons.edit_16_regular),
           ),
-          SizedBox(
+          const SizedBox(
             width: 8,
           ),
         ],

@@ -67,7 +67,9 @@ class AuthService extends Service {
           address: null,
           uid: fb.FirebaseAuth.instance.currentUser!.uid,
           disabled: false,
-          roles: [Role.student],
+          roles: [
+            Role.student
+          ],
           emailVerified: fb.FirebaseAuth.instance.currentUser!.emailVerified,
           metadata: {},
           customClaims: {},
@@ -76,8 +78,11 @@ class AuthService extends Service {
           deletedAt: null,
           lastSignInAt: null,
         );
-         FirebaseFirestore.instance.collection('profiles').doc(fb.FirebaseAuth.instance.currentUser!.uid).set(profile.toJson());
-         return null;
+        FirebaseFirestore.instance.collection('profiles').doc(fb.FirebaseAuth.instance.currentUser!.uid).set({
+          ...profile.toJson(),
+          "_fromLocal": true,
+        });
+        return null;
       }
       return ProfileModel.fromJson(doc.data()!);
     }).listen((profile) {
@@ -105,5 +110,11 @@ class AuthService extends Service {
     });
 
     log.info('App: Auth state changes initialized');
+  }
+
+  /// signout
+  Future<void> signout() async {
+    await fb.FirebaseAuth.instance.signOut();
+    log.info('App: Auth signout');
   }
 }
