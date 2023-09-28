@@ -67,7 +67,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       active: !widget.filters.values.any((element) => element.active),
       onSelect: (filters) {
         for (var filter in filters.keys.where((e) => e != 'All')) {
-          filters[filter]?.active= false;
+          filters[filter]?.active = false;
         }
       },
       fixed: true,
@@ -599,16 +599,17 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
         onUpdated: (station) {
           ScaffoldMessenger.maybeOf(context)?.showSnackBar(
             SnackBar(
-                behavior: SnackBarBehavior.floating,
-                width: 400.0,
-                content: Text('Profile ${station.displayName} updated'),
-                action: SnackBarAction(
-                  label: 'Show',
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    showUpdateModelDailog(context, station as M);
-                  },
-                )),
+              behavior: SnackBarBehavior.floating,
+              width: 400.0,
+              content: Text('Profile ${station.displayName} updated'),
+              action: SnackBarAction(
+                label: 'Show',
+                onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  showUpdateModelDailog(context, station as M);
+                },
+              ),
+            ),
           );
           Navigator.of(context).pop();
           load();
@@ -722,58 +723,305 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
   }
 }
 
-
-
-
 class ModelListView<M extends Model> extends StatelessWidget {
   final ModelListViewController<M> controller;
-  ModelListView({super.key, required this.controller});
+  final Widget? header;
+  final Widget Function(M model)? itemBuilder;
+  ModelListView({
+    super.key,
+    required this.controller,
+    this.header,
+    this.itemBuilder,
+  });
+
+
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.load();
+    });
+    var searchController = TextEditingController();
     return ValueListenableBuilder<ModelListViewValue<M>?>(
-      valueListenable: controller,
-      builder: (context, value, child) {
-        return child!;
-      },
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            // search
-            const TextField(
-              decoration: InputDecoration(
-                prefixIcon: Icon(FluentIcons.search_24_regular),
-                label: Text('Search'),
-                alignLabelWithHint: true,
-              ),
-            ),
-            // filters
-            for (var filter in controller.value?.filters ?? [])
-              CheckboxListTile(
-                value: controller.value?.activeFilters[controller.value?.filters.indexOf(filter) ?? 0] ?? false,
-                onChanged: (value) {
-                  controller.value?.activeFilters[controller.value?.filters.indexOf(filter) ?? 0] = value ?? false;
-                  controller.value = controller.value?.copyWith();
-                },
-                title: Text(filter.name),
-              ),
-            // list
-            for (var model in controller.value?.models ?? [])
-              ListTile(
-                title: controller.description.tileBuilder(model).title,
-                subtitle: controller.description.tileBuilder(model).subtitle,
-                leading: controller.description.tileBuilder(model).leading,
-                trailing: controller.description.tileBuilder(model).trailing,
-              ),
+            valueListenable: controller,
+            builder: (context, value, child) {
+
+        return FlexTable(
+          selectable: false,
+          scrollable: false,
+          // the space bitween each item called gap
+          configs: const [
+            FlexTableItemConfig.square(30),
+            FlexTableItemConfig.flex(2),
+            FlexTableItemConfig.flex(2),
+            FlexTableItemConfig.square(40),
           ],
-        ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          // showCreateModelDailog(context);
+                        },
+                        label: const Text('Add'),
+                        icon: const Icon(FeatherIcons.plus),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: AppTextFormField.min(
+                        controller: searchController,
+                        // enabled: !loading.value,
+                        onSubmitted: (String value) {
+                          // search(query: value, type: searchType.value);
+                        },
+                        onChanged: (String value) async {
+                          controller.setSearchQueryValue(value);
+                        },
+                        decoration:  InputDecoration(
+                          prefixIcon: const Icon(FluentIcons.search_24_regular),
+                          label: const Text('Search'),
+                          alignLabelWithHint: true,
+                          // select search field
+                          suffixIcon:value?.searchQuery == null? null: MenuAnchor(
+                            builder: (context, controller, child) {
+                              return TextButton.icon(
+                                icon: const Icon(
+                                  FluentIcons.filter_24_regular,
+                                ),
+                                onPressed: () => controller.open(),
+                                label: Text(value!.searchQuery!.field),
+                              );
+                            },
+                            menuChildren: [
+                              for (var field in controller.description.fields)
+                                MenuItemButton(
+                                  leadingIcon: const Icon(FeatherIcons.user),
+                                  trailingIcon: value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                                  onPressed: value.searchQuery!.field == field
+                                      ? null
+                                      : () {
+                                          controller.setSearchQueryField(field);
+                                        },
+                                  child: Text(field.titleCase),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: FlexTableItem(
+                  children: [
+                    SizedBox(),
+                    Text(
+                      'Title',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    Text(
+                      'Subtitle',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    SizedBox(),
+                  ],
+                ),
+              ),
+              ValueListenableBuilder<ModelListViewValue<M>?>(
+                valueListenable: controller,
+                builder: (context, value, child) {
+                  return Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          value?.loading == true ? const LinearProgressIndicator(minHeight: 2) : const Divider(height: 2),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (controller.filtered != null)
+                                ListView.builder(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: controller.filtered!.length,
+                                  itemBuilder: (context, index) {
+                                    var model = controller.filtered![index];
+                                    var tile = controller.description.tileBuilder(model);
+                                    return itemBuilder?.call(model) ??
+                                        ModelTile(
+                                          child: FlexTableItem(
+                                            children: [
+                                              if (tile.leading != null) tile.leading! else const SizedBox(),
+                                              Text(
+                                                tile.title ?? "(No title)",
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              Text(
+                                                tile.subtitle ?? "(No subtitle)",
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              if (tile.trailing != null)
+                                                tile.trailing!
+                                              else
+                                                MenuAnchor(
+                                                  builder: (context, controller, child) {
+                                                    return IconButton(
+                                                      onPressed: () {
+                                                        if (controller.isOpen) {
+                                                          controller.close();
+                                                        } else {
+                                                          controller.open();
+                                                        }
+                                                      },
+                                                      icon: const Icon(Icons.more_vert),
+                                                    );
+                                                  },
+                                                  menuChildren: [],
+                                                )
+                                            ],
+                                          ),
+                                        );
+                                  },
+                                ),
+                              Center(
+                                child: SizedBox(
+                                  height: 80,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      if (value?.loading != false)
+                                        const Center(
+                                          child: CircularProgressIndicator(),
+                                        )
+                                      // if controller.filtered is empty but controller.value is not empty suggest to clear searchQuery
+                                      else if (controller.value?.models != null && controller.value!.models!.isEmpty && controller.value!.searchQuery != null)
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: 24.0,
+                                                horizontal: 12,
+                                              ),
+                                              child: Text('No profiles found'),
+                                            ),
+                                            // refresh
+                                            OutlinedButton(
+                                              onPressed: searchController.clear,
+                                              child: const Text("Clear search"),
+                                            )
+                                          ],
+                                        )
+                                      else if (controller.value!.models?.isEmpty == true)
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: 24.0,
+                                                horizontal: 12,
+                                              ),
+                                              child: Text('No profiles found'),
+                                            ),
+                                            // refresh
+                                            OutlinedButton(
+                                              onPressed: controller.load,
+                                              child: const Text("Refresh"),
+                                            )
+                                          ],
+                                        )
+                                      else if (controller.hasNext)
+                                        // VisibilityDetector(
+                                        //   key: Key(controller..toString()),
+                                        //   onVisibilityChanged: (info) {
+                                        //     if (info.visibleFraction > 0) {
+                                        //       search(startAfter: [
+                                        //         Timestamp.fromDate(nextStartAt!)
+                                        //       ]);
+                                        //     }
+                                        //   },
+                                        //   child:
+                                        OutlinedButton(
+                                          onPressed: () async {
+                                            await controller.more();
+                                          },
+                                          child: const Text("load more"),
+                                        )
+                                      // )
+                                      else
+                                      // you reached the end text
+                                      if (controller.value?.models != null && controller.value!.models!.isNotEmpty)
+                                        const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: 24.0,
+                                            horizontal: 12,
+                                          ),
+                                          child: Text('You reached the end.'),
+                                        )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      }
+    );
+  }
+}
+
+class ModelTile extends StatelessWidget {
+  const ModelTile({
+    super.key,
+    required this.child,
+    this.onTap,
+  });
+
+  final Widget child;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      highlightColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+      focusColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+      hoverColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+        child: child,
       ),
     );
   }
 }
 
-
 typedef LocalFilterBuilder<T extends Model> = bool Function(T model);
 typedef RemoteFilterBuilder<T extends Model> = Query<T> Function(Query<T> query);
+
 /// [IndexViewFilter] is a class to hold the state of the filter
 class IndexViewFilter<T extends Model> {
   final String name;
@@ -797,6 +1045,7 @@ class IndexViewFilter<T extends Model> {
     );
   }
 }
+
 /// [ModelListViewValue] is a class to hold the state of the view
 class ModelListViewValue<M extends Model> {
   final bool loading;
@@ -804,13 +1053,21 @@ class ModelListViewValue<M extends Model> {
   final SearchQuery? searchQuery;
   final List<IndexViewFilter<M>> filters;
   final List<bool> activeFilters;
-  final List<(M, int)> selectedModels; 
-  final List<(M, int)> history; 
+  final List<
+      (
+        M,
+        int
+      )> selectedModels;
+  final List<
+      (
+        M,
+        int
+      )> history;
   final Map<String, dynamic> metadata;
   final String? error;
 
-  ModelListViewValue({
-    required this.loading,
+  const ModelListViewValue({
+    this.loading = false,
     this.models,
     this.searchQuery,
     this.filters = const [],
@@ -821,15 +1078,24 @@ class ModelListViewValue<M extends Model> {
     this.error,
   });
 
-
   ModelListViewValue<M> copyWith({
     bool? loading,
     List<M>? models,
     SearchQuery? searchQuery,
     List<IndexViewFilter<M>>? filters,
     List<bool>? activeFilters,
-    List<(M, int)>? selectedModels,
-    List<(M, int)>? history,
+    List<
+            (
+              M,
+              int
+            )>?
+        selectedModels,
+    List<
+            (
+              M,
+              int
+            )>?
+        history,
     Map<String, dynamic>? metadata,
     String? error,
   }) {
@@ -846,32 +1112,54 @@ class ModelListViewValue<M extends Model> {
     );
   }
 }
+
 /// [ModelListViewController] just like other controllers in flutter
 class ModelListViewController<M extends Model> extends ValueNotifier<ModelListViewValue<M>?> {
   final ModelDescription<M> description;
-  ModelListViewController({ModelListViewValue<M>? value,required this.description}) :super(value);
+  ModelListViewController({ModelListViewValue<M>? value, required this.description}) : super(value?.copyWith(
+    searchQuery: value.searchQuery ?? SearchQuery(
+      field: description.fields.firstOrNull ?? "",
+      value: "",
+    ),
+  ));
 
   /// [search] is a function to search for models
-  Future<void> search({Iterable<Timestamp>? startAfter}) async {
-    value = value?.copyWith(loading: true);
+  Future<void> search({Iterable<Timestamp>? startAfter, bool concat = false}) async {
+    value = (value ?? ModelListViewValue<M>()).copyWith(loading: true);
     try {
-      value = value?.copyWith(
-        models: await getModelCollection(
-          path: description.path,
-          fromJson: description.fromJson,
-          builder: (query) {
-            for (var filter in value?.filters ?? []) {
-              query = filter.remote(query);
-            }
-            query = query.orderBy("updatedAt", descending: true);
-            if (startAfter != null) {
-              query = query.startAfter(startAfter);
-            }
-            return query;
-          },
-        ),
-        loading: false,
+      var _models = await getModelCollection(
+        path: description.path,
+        fromJson: description.fromJson,
+        builder: (query) {
+          for (var filter in value?.filters ?? []) {
+            query = filter.remote(query);
+          }
+          query = query.orderBy("updatedAt", descending: true);
+          if (startAfter != null) {
+            query = query.startAfter(startAfter);
+          }
+          return query;
+        },
       );
+      if (concat) {
+        // check if the first item equal to the last item in the current models
+        if (value?.models?.lastOrNull != null && value!.models!.lastOrNull!.ref.path == _models.firstOrNull?.ref.path) {
+          // delete the last item
+          value!.models!.removeAt(value!.models!.length - 1);
+        }
+        value = value!.copyWith(
+          models: [
+            ...(value!.models ?? []),
+            ..._models
+          ],
+          loading: false,
+        );
+      } else {
+        value = value?.copyWith(
+          models: _models,
+          loading: false,
+        );
+      }
     } catch (e) {
       value = value?.copyWith(
         error: e.toString(),
@@ -890,25 +1178,94 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     return search(startAfter: [
       // why 3 seconds? because we are not really sure about the date are the same
       Timestamp.fromDate((value?.models?.last.updatedAt ?? DateTime.now()).add(const Duration(seconds: 3)))
-    ]);
+    ], concat: true);
+  }
+
+  /// [models] getter to get the models
+  List<M>? get models => value?.models;
+
+  /// [filtered] is a function to get the filtered models
+  List<M>? get filtered {
+    if (models == null) {
+      return null;
+    }
+    bool _filters(M model) {
+      for (var filter in value?.filters ?? []) {
+        if (filter.local != null) {
+          if (filter.local!(model) == false) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    if (value?.searchQuery?.value?.isEmpty == true) {
+      return models!.where(_filters).toList() ?? [];
+    }
+    // search in display name and email and phone number and uid
+    return models!.where((model) {
+      if (!_filters(model)) {
+        return false;
+      }
+      var query = value?.searchQuery?.value?.toLowerCase();
+      if (query != null) {
+        return model.toString().toLowerCase().contains(query);
+      } else {
+        return true;
+      }
+    }).toList();
+  }
+
+  /// [history]
+  Map<M, bool> history = {};
+
+  /// [hasNext] is a function to check if there is more models to load
+  bool get hasNext {
+    return value?.models?.lastOrNull?.ref.path != history.keys.lastOrNull?.ref.path;
   }
 
   /// to make sure that the controller is mounted on the view
   var _mounted = false;
   bool get mounted => _mounted;
 
+  void setSearchQuery(SearchQuery query) {
+    value = value?.copyWith(searchQuery: query);
+  }
+  void setSearchQueryField(String field) {
+    value = value?.copyWith(
+      searchQuery: SearchQuery(
+        field: field,
+        value: value?.searchQuery?.value ?? "",
+      ),
+    );
+  }
+  void setSearchQueryValue(String _value) {
+    value = value?.copyWith(
+      searchQuery: SearchQuery(
+        field: value?.searchQuery?.field ?? description.fields.firstOrNull ?? "",
+        value: _value,
+      )
+    );
+  }
+
   /// [mounted] is a function to mount the controller on the view and bind it to the view
 }
+
 /// [ModelDescription] is a class to describe a model
 class ModelDescription<T> {
+  // fields to search in
+  final List<String> fields;
+  // name of the collection
   final String name;
   // path to collection
   final String path;
   // fromJson
   final T Function(Map<String, dynamic> data) fromJson;
   // semantics (general title, description, icon, etc..)
-  final ModelTile Function(T model) tileBuilder;
+  final ModelGeneralData Function(T model) tileBuilder;
   ModelDescription({
+    required this.fields,
     required this.name,
     required this.path,
     required this.fromJson,
@@ -916,15 +1273,15 @@ class ModelDescription<T> {
   });
 }
 
-class ModelTile {
-  final Widget title;
-  final Widget subtitle;
-  final Widget leading;
-  final Widget trailing;
-  ModelTile({
-    this.title = const SizedBox(),
-    this.subtitle = const SizedBox(),
-    this.leading = const SizedBox(),
-    this.trailing = const SizedBox(),
+class ModelGeneralData {
+  final String? title;
+  final String? subtitle;
+  final Widget? leading;
+  final Widget? trailing;
+  ModelGeneralData({
+    this.title,
+    this.subtitle,
+    this.leading,
+    this.trailing,
   });
 }
