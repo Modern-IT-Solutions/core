@@ -30,6 +30,7 @@ mixin _$ProfileModel {
   Address? get address => throw _privateConstructorUsedError;
   String get uid => throw _privateConstructorUsedError;
   bool get disabled => throw _privateConstructorUsedError;
+  @RoleSerializer()
   List<Role> get roles => throw _privateConstructorUsedError;
   bool get emailVerified => throw _privateConstructorUsedError;
   Map<String, dynamic> get metadata => throw _privateConstructorUsedError;
@@ -65,7 +66,7 @@ abstract class $ProfileModelCopyWith<$Res> {
       Address? address,
       String uid,
       bool disabled,
-      List<Role> roles,
+      @RoleSerializer() List<Role> roles,
       bool emailVerified,
       Map<String, dynamic> metadata,
       Map<String, dynamic> customClaims,
@@ -194,11 +195,11 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
 }
 
 /// @nodoc
-abstract class _$$_ProfileModelCopyWith<$Res>
+abstract class _$$ProfileModelImplCopyWith<$Res>
     implements $ProfileModelCopyWith<$Res> {
-  factory _$$_ProfileModelCopyWith(
-          _$_ProfileModel value, $Res Function(_$_ProfileModel) then) =
-      __$$_ProfileModelCopyWithImpl<$Res>;
+  factory _$$ProfileModelImplCopyWith(
+          _$ProfileModelImpl value, $Res Function(_$ProfileModelImpl) then) =
+      __$$ProfileModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -211,7 +212,7 @@ abstract class _$$_ProfileModelCopyWith<$Res>
       Address? address,
       String uid,
       bool disabled,
-      List<Role> roles,
+      @RoleSerializer() List<Role> roles,
       bool emailVerified,
       Map<String, dynamic> metadata,
       Map<String, dynamic> customClaims,
@@ -225,11 +226,11 @@ abstract class _$$_ProfileModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_ProfileModelCopyWithImpl<$Res>
-    extends _$ProfileModelCopyWithImpl<$Res, _$_ProfileModel>
-    implements _$$_ProfileModelCopyWith<$Res> {
-  __$$_ProfileModelCopyWithImpl(
-      _$_ProfileModel _value, $Res Function(_$_ProfileModel) _then)
+class __$$ProfileModelImplCopyWithImpl<$Res>
+    extends _$ProfileModelCopyWithImpl<$Res, _$ProfileModelImpl>
+    implements _$$ProfileModelImplCopyWith<$Res> {
+  __$$ProfileModelImplCopyWithImpl(
+      _$ProfileModelImpl _value, $Res Function(_$ProfileModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -253,7 +254,7 @@ class __$$_ProfileModelCopyWithImpl<$Res>
     Object? deletedAt = freezed,
     Object? lastSignInAt = freezed,
   }) {
-    return _then(_$_ProfileModel(
+    return _then(_$ProfileModelImpl(
       ref: null == ref
           ? _value.ref
           : ref // ignore: cast_nullable_to_non_nullable
@@ -328,8 +329,8 @@ class __$$_ProfileModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_ProfileModel implements _ProfileModel {
-  _$_ProfileModel(
+class _$ProfileModelImpl implements _ProfileModel {
+  _$ProfileModelImpl(
       {@ModelRefSerializer() required this.ref,
       required this.displayName,
       required this.email,
@@ -339,7 +340,7 @@ class _$_ProfileModel implements _ProfileModel {
       required this.address,
       required this.uid,
       required this.disabled,
-      required final List<Role> roles,
+      @RoleSerializer() required final List<Role> roles,
       required this.emailVerified,
       final Map<String, dynamic> metadata = const {},
       final Map<String, dynamic> customClaims = const {},
@@ -351,8 +352,8 @@ class _$_ProfileModel implements _ProfileModel {
         _metadata = metadata,
         _customClaims = customClaims;
 
-  factory _$_ProfileModel.fromJson(Map<String, dynamic> json) =>
-      _$$_ProfileModelFromJson(json);
+  factory _$ProfileModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ProfileModelImplFromJson(json);
 
   @override
   @ModelRefSerializer()
@@ -376,6 +377,7 @@ class _$_ProfileModel implements _ProfileModel {
   final bool disabled;
   final List<Role> _roles;
   @override
+  @RoleSerializer()
   List<Role> get roles {
     if (_roles is EqualUnmodifiableListView) return _roles;
     // ignore: implicit_dynamic_type
@@ -424,7 +426,7 @@ class _$_ProfileModel implements _ProfileModel {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_ProfileModel &&
+            other is _$ProfileModelImpl &&
             (identical(other.ref, ref) || other.ref == ref) &&
             (identical(other.displayName, displayName) ||
                 other.displayName == displayName) &&
@@ -480,12 +482,12 @@ class _$_ProfileModel implements _ProfileModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_ProfileModelCopyWith<_$_ProfileModel> get copyWith =>
-      __$$_ProfileModelCopyWithImpl<_$_ProfileModel>(this, _$identity);
+  _$$ProfileModelImplCopyWith<_$ProfileModelImpl> get copyWith =>
+      __$$ProfileModelImplCopyWithImpl<_$ProfileModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_ProfileModelToJson(
+    return _$$ProfileModelImplToJson(
       this,
     );
   }
@@ -502,7 +504,7 @@ abstract class _ProfileModel implements ProfileModel {
           required final Address? address,
           required final String uid,
           required final bool disabled,
-          required final List<Role> roles,
+          @RoleSerializer() required final List<Role> roles,
           required final bool emailVerified,
           final Map<String, dynamic> metadata,
           final Map<String, dynamic> customClaims,
@@ -510,10 +512,10 @@ abstract class _ProfileModel implements ProfileModel {
           @TimestampDateTimeSerializer() required final DateTime updatedAt,
           @TimestampDateTimeSerializer() final DateTime? deletedAt,
           @TimestampDateTimeSerializer() final DateTime? lastSignInAt}) =
-      _$_ProfileModel;
+      _$ProfileModelImpl;
 
   factory _ProfileModel.fromJson(Map<String, dynamic> json) =
-      _$_ProfileModel.fromJson;
+      _$ProfileModelImpl.fromJson;
 
   @override
   @ModelRefSerializer()
@@ -535,6 +537,7 @@ abstract class _ProfileModel implements ProfileModel {
   @override
   bool get disabled;
   @override
+  @RoleSerializer()
   List<Role> get roles;
   @override
   bool get emailVerified;
@@ -556,6 +559,6 @@ abstract class _ProfileModel implements ProfileModel {
   DateTime? get lastSignInAt;
   @override
   @JsonKey(ignore: true)
-  _$$_ProfileModelCopyWith<_$_ProfileModel> get copyWith =>
+  _$$ProfileModelImplCopyWith<_$ProfileModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

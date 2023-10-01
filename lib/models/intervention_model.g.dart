@@ -6,8 +6,9 @@ part of 'intervention_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_InterventionModel _$$_InterventionModelFromJson(Map<String, dynamic> json) =>
-    _$_InterventionModel(
+_$InterventionModelImpl _$$InterventionModelImplFromJson(
+        Map<String, dynamic> json) =>
+    _$InterventionModelImpl(
       ref: const ModelRefSerializer().fromJson(json['ref'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
@@ -23,8 +24,8 @@ _$_InterventionModel _$$_InterventionModelFromJson(Map<String, dynamic> json) =>
           ProfileModel.fromJson(json['intervener'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$$_InterventionModelToJson(
-        _$_InterventionModel instance) =>
+Map<String, dynamic> _$$InterventionModelImplToJson(
+        _$InterventionModelImpl instance) =>
     <String, dynamic>{
       'ref': const ModelRefSerializer().toJson(instance.ref),
       'createdAt': instance.createdAt.toIso8601String(),

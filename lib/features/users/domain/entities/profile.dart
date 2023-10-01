@@ -2,6 +2,8 @@ import 'package:core/core.dart';
 import 'package:core/models/address.dart';
 import 'package:core/temp.dart';
 
+import '../../data/models/role.dart';
+
 abstract class Profile {
   ModelRef get ref;
   String get displayName;

@@ -3,6 +3,7 @@
 
 import 'package:core/core/data/requests.dart';
 
+import '../../data/models/role.dart';
 import '../../users.dart';
 
 class ProfileCreateRequest<T extends ProfileModel> extends CreateRequest<T> {

@@ -2,6 +2,7 @@
 import 'package:feather_icons/feather_icons.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:lib/lib.dart';
 import 'package:recase/recase.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -10,6 +11,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 import 'package:core/core.dart';
 import 'package:core/services/defaults/helpers.dart';
 
+import 'dailogs.dart';
 import 'find.dart';
 import 'forms/create_profile.dart';
 import 'forms/update_profile.dart';
@@ -42,6 +44,23 @@ class ManageProfilesView<M extends ProfileModel> extends ModelMnanagerView<M> {
   final ProfileRepositoryInterface<M> repository;
   final Map<String, QueryFilterInterface<M>> filters;
   final List<ModelAction<M>> actions;
+
+  Map<String, List<ModelAction<M>>> get groupedActions {
+    var map = <String, List<ModelAction<M>>>{};
+    for (var action in actions) {
+      if (action.group == null) {
+        continue;
+      }
+      if (map.containsKey(action.group)) {
+        map[action.group]!.add(action);
+      } else {
+        map[action.group!] = [
+          action
+        ];
+      }
+    }
+    return map;
+  }
 
   ManageProfilesView({
     super.key,
@@ -423,14 +442,16 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                             const SizedBox(
                                               height: 8,
                                             ),
-                                            if (widget.actions.isNotEmpty) ...[
-                                              for (var action in widget.actions)
-                                                MenuItemButton(
-                                                  onPressed: () => action.onPressed?.call(model),
-                                                  leadingIcon: action.icon,
-                                                  child: action.label,
-                                                ),
-                                              const Divider(),
+                                            if (widget.groupedActions.keys.isNotEmpty) ...[
+                                              for (var group in widget.groupedActions.keys) ...[
+                                                for (var action in widget.groupedActions[group]!)
+                                                  MenuItemButton(
+                                                    onPressed: () => action.single?.call(model),
+                                                    leadingIcon: action.icon,
+                                                    child: Text(action.label),
+                                                  ),
+                                                const Divider()
+                                              ]
                                             ],
                                             MenuItemButton(
                                               onPressed: () {},
@@ -480,9 +501,9 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                   if (loading.value)
                                     Container(
                                       margin: const EdgeInsets.all(24.0),
-                                      height: 20,
-                                      width: 20,
-                                      child: const CircularProgressIndicator.adaptive(strokeWidth: 2),
+                                      height: 15,
+                                      width: 15,
+                                      child: const CircularProgressIndicator.adaptive(strokeWidth: 2, strokeCap: StrokeCap.round),
                                     )
                                   else ...[
                                     if (models.value != null && models.value!.items.isEmpty)
@@ -513,13 +534,14 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                             ]);
                                           }
                                         },
-                                        child: OutlinedButton(
+                                        child: OutlinedButton.icon(
                                           onPressed: () async {
                                             await search(startAfter: [
                                               Timestamp.fromDate(nextStartAt!)
                                             ]);
                                           },
-                                          child: const Text("load more"),
+                                          label: const Text("LOAD MORE"),
+                                          icon: const Icon(FluentIcons.chevron_down_24_regular),
                                         ),
                                       )
                                     else
@@ -555,79 +577,82 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
     var child = Container(
       constraints: const BoxConstraints(maxWidth: 500),
       child: CreateProfileForm(
-        onCreated: (station) {
-          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-            SnackBar(
-                behavior: SnackBarBehavior.floating,
-                width: 400.0,
-                content: Text('Profile ${station.displayName} updated'),
-                action: SnackBarAction(
-                  label: 'Show',
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    showUpdateModelDailog(context, station);
-                  },
-                )),
-          );
-          Navigator.of(context).pop();
-          load();
-        },
-      ),
-    );
-    await showDialog(
-      context: context,
-      builder: (context) {
-        if (MediaQuery.of(context).size.width > 600)
-          return Dialog(
-            clipBehavior: Clip.antiAlias,
-            child: child,
-          );
-        else
-          return Dialog.fullscreen(
-            child: child,
-          );
-      },
-    );
-  }
-
-  // update station
-  Future<void> showUpdateModelDailog(BuildContext context, ProfileModel station) async {
-    var child = Container(
-      constraints: const BoxConstraints(maxWidth: 500),
-      child: UpdateProfileForm(
-        model: station,
-        onUpdated: (station) {
+        onCreated: (model) {
           ScaffoldMessenger.maybeOf(context)?.showSnackBar(
             SnackBar(
               behavior: SnackBarBehavior.floating,
               width: 400.0,
-              content: Text('Profile ${station.displayName} updated'),
+              content: Text('Profile ${model.displayName} updated'),
               action: SnackBarAction(
                 label: 'Show',
                 onPressed: () {
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  showUpdateModelDailog(context, station as M);
+                  showUpdateModelDailog(context, model);
                 },
               ),
             ),
           );
           Navigator.of(context).pop();
-          load();
+          // load();
         },
       ),
     );
     await showDialog(
       context: context,
       builder: (context) {
-        if (MediaQuery.of(context).size.width > 600)
+        if (MediaQuery.of(context).size.width > 600) {
           return Dialog(
             clipBehavior: Clip.antiAlias,
             child: child,
           );
-        else
+        } else {
           return Dialog.fullscreen(
             child: child,
           );
+        }
+      },
+    );
+  }
+
+  // update station
+  Future<void> showUpdateModelDailog(BuildContext context, ProfileModel model) async {
+    var child = Container(
+      constraints: const BoxConstraints(maxWidth: 500),
+      child: UpdateProfileForm(
+        model: model,
+        onUpdated: (model) {
+          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              width: 400.0,
+              content: Text('Profile ${model.displayName} updated'),
+              action: SnackBarAction(
+                label: 'Show',
+                onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  showUpdateModelDailog(context, model as M);
+                },
+              ),
+            ),
+          );
+          Navigator.of(context).pop();
+          // load();
+        },
+      ),
+    );
+    await showDialog(
+      context: context,
+      builder: (context) {
+        if (MediaQuery.of(context).size.width > 600) {
+          return Dialog(
+            clipBehavior: Clip.antiAlias,
+            child: child,
+          );
+        } else {
+          return Dialog.fullscreen(
+            child: child,
+          );
+        }
       },
     );
   }
@@ -709,56 +734,82 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
     await showDialog(
       context: context,
       builder: (context) {
-        if (MediaQuery.of(context).size.width > 600)
+        if (MediaQuery.of(context).size.width > 600) {
           return Dialog(
             clipBehavior: Clip.antiAlias,
             child: child,
           );
-        else
+        } else {
           return Dialog.fullscreen(
             child: child,
           );
+        }
       },
     );
   }
 }
 
-class ModelListView<M extends Model> extends StatelessWidget {
+class ModelListView<M extends Model> extends StatefulWidget {
   final ModelListViewController<M> controller;
   final Widget? header;
+  final double gap;
   final Widget Function(M model)? itemBuilder;
-  ModelListView({
+  final List<
+      ({
+        FlexTableItemConfig config,
+        Widget header,
+        Widget Function(M model) builder
+      })>? flexTableItemBuilders;
+  final bool useFlexTable;
+  final List<FlexTableItemConfig> flexTableConfigs;
+  final Widget? flexTableHeader;
+  final void Function(M model)? onModelTap;
+  const ModelListView({
     super.key,
     required this.controller,
     this.header,
+    this.gap = 14,
     this.itemBuilder,
-  });
+    this.useFlexTable = true,
+    this.flexTableConfigs = const [
+      FlexTableItemConfig.square(30),
+      FlexTableItemConfig.flex(2),
+      FlexTableItemConfig.flex(2),
+      FlexTableItemConfig.flex(2),
+    ],
+    this.flexTableHeader,
+    this.flexTableItemBuilders,
+    this.onModelTap,
+  }) : assert(itemBuilder == null || flexTableItemBuilders == null, "you can't use both itemBuilder and flexTableItemBuilder");
 
+  @override
+  State<ModelListView<M>> createState() => _ModelListViewState<M>();
+}
+
+class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
+  var searchController = TextEditingController();
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.controller.load();
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.load();
-    });
-    var searchController = TextEditingController();
-    return ValueListenableBuilder<ModelListViewValue<M>?>(
-            valueListenable: controller,
-            builder: (context, value, child) {
 
-        return FlexTable(
-          selectable: false,
-          scrollable: false,
-          // the space bitween each item called gap
-          configs: const [
-            FlexTableItemConfig.square(30),
-            FlexTableItemConfig.flex(2),
-            FlexTableItemConfig.flex(2),
-            FlexTableItemConfig.square(40),
-          ],
-          child: Column(
+    return DefaultTextStyle(
+      style: Theme.of(context).textTheme.bodyMedium!,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      child: ValueListenableBuilder<ModelListViewValue<M>?>(
+        valueListenable: widget.controller,
+        builder: (context, value, _) {
+          var child = Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.symmetric(horizontal: widget.gap),
                 child: Row(
                   children: [
                     SizedBox(
@@ -776,219 +827,449 @@ class ModelListView<M extends Model> extends StatelessWidget {
                         controller: searchController,
                         // enabled: !loading.value,
                         onSubmitted: (String value) {
-                          // search(query: value, type: searchType.value);
+                          widget.controller.value = widget.controller.value!.copyWith(
+                            searchQuery: SearchQuery(
+                              field: widget.controller.value!.searchQuery?.field ?? widget.controller.description.fields.keys.firstOrNull ?? "",
+                              value: value,
+                            ),
+                          );
+                          widget.controller.search();
                         },
                         onChanged: (String value) async {
-                          controller.setSearchQueryValue(value);
+                          widget.controller.setSearchQueryValue(value);
                         },
-                        decoration:  InputDecoration(
+                        decoration: InputDecoration(
                           prefixIcon: const Icon(FluentIcons.search_24_regular),
                           label: const Text('Search'),
                           alignLabelWithHint: true,
                           // select search field
-                          suffixIcon:value?.searchQuery == null? null: MenuAnchor(
-                            builder: (context, controller, child) {
-                              return TextButton.icon(
-                                icon: const Icon(
-                                  FluentIcons.filter_24_regular,
+                          suffixIcon: value?.searchQuery == null
+                              ? null
+                              : MenuAnchor(
+                                  builder: (context, controller, child) {
+                                    return TextButton.icon(
+                                      icon: const Icon(
+                                        FluentIcons.filter_24_regular,
+                                      ),
+                                      onPressed: () => controller.open(),
+                                      label: Text(value!.searchQuery!.field),
+                                    );
+                                  },
+                                  menuChildren: [
+                                    for (var field in widget.controller.description.fields.keys)
+                                      MenuItemButton(
+                                        leadingIcon: const Icon(FeatherIcons.user),
+                                        trailingIcon: value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                                        onPressed: value.searchQuery!.field == field
+                                            ? null
+                                            : () {
+                                                widget.controller.setSearchQueryField(field);
+                                              },
+                                        child: Text(field.titleCase),
+                                      ),
+                                  ],
                                 ),
-                                onPressed: () => controller.open(),
-                                label: Text(value!.searchQuery!.field),
-                              );
-                            },
-                            menuChildren: [
-                              for (var field in controller.description.fields)
-                                MenuItemButton(
-                                  leadingIcon: const Icon(FeatherIcons.user),
-                                  trailingIcon: value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
-                                  onPressed: value.searchQuery!.field == field
-                                      ? null
-                                      : () {
-                                          controller.setSearchQueryField(field);
-                                        },
-                                  child: Text(field.titleCase),
-                                ),
-                            ],
-                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: FlexTableItem(
-                  children: [
-                    SizedBox(),
-                    Text(
-                      'Title',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    Text(
-                      'Subtitle',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    SizedBox(),
-                  ],
+              SizedBox(height: widget.gap),
+    
+              /// filters chips
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: widget.gap),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Wrap(
+                    spacing: 8,
+                    children: [
+                      SizedBox(
+                        height: 40,
+                        child: ActionChip(
+                          label: Icon(
+                            FluentIcons.add_24_regular,
+                            size: 20,
+                          ),
+                          onPressed: () async {
+                            var filter = await showFilterWizard(context, widget.controller.description);
+                            print(filter);
+                            if (filter != null) {
+                              widget.controller.value = widget.controller.value!.copyWith(filters: [
+                                ...widget.controller.value!.filters,
+                                filter
+                              ]);
+                            }
+                          },
+                        ),
+                      ),
+                      for (var filter in widget.controller.value!.filters)
+                        SizedBox(
+                          height: 40,
+                          child: Builder(
+                            builder: (context) {
+                              bool isActive = filter.active ?? false;
+                              bool isFixed = filter.fixed ?? false;
+                              return GestureDetector(
+                                onTap: () {
+                                  widget.controller.updateFilter(filter.copyWith(active: !filter.active));
+                                },
+                                child: Chip(
+                                  label: Text(filter.name),
+                                  backgroundColor: isActive == true ? Theme.of(context).colorScheme.primary : null,
+                                  side: isActive == true ? const BorderSide(color: Colors.transparent) : BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
+                                  labelStyle: TextStyle(color: isActive == true ? Theme.of(context).colorScheme.onPrimary : null),
+                                  deleteIcon: isFixed == true
+                                      ? null
+                                      : const Icon(
+                                          FluentIcons.dismiss_24_regular,
+                                          size: 15,
+                                        ),
+                                  deleteIconColor: isActive == true ? Theme.of(context).colorScheme.onPrimary : null,
+                                  onDeleted: isFixed == true
+                                      ? null
+                                      : () {
+                                          widget.controller.removeFilter(filter);
+                                        },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-              ValueListenableBuilder<ModelListViewValue<M>?>(
-                valueListenable: controller,
-                builder: (context, value, child) {
-                  return Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
+    
+              if (widget.useFlexTable)
+                Padding(
+                padding: EdgeInsets.symmetric(horizontal: widget.gap+8),
+                  child: widget.flexTableHeader ??
+                      FlexTableItem(
+                        isHeader: true,
+                        selected: widget.controller.filtered?.length == widget.controller.value!.selectedModels.length
+                            ? true
+                            : widget.controller.value!.selectedModels.isEmpty == true
+                                ? false
+                                : null,
+                        onSelectChanged: (val) {
+                          if (val == true) {
+                            widget.controller.value = widget.controller.value!.copyWith(selectedModels: widget.controller.models!.toSet());
+                          } else {
+                            widget.controller.value = widget.controller.value!.copyWith(selectedModels: const {});
+                          }
+                        },
                         children: [
-                          value?.loading == true ? const LinearProgressIndicator(minHeight: 2) : const Divider(height: 2),
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (controller.filtered != null)
-                                ListView.builder(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: controller.filtered!.length,
-                                  itemBuilder: (context, index) {
-                                    var model = controller.filtered![index];
-                                    var tile = controller.description.tileBuilder(model);
-                                    return itemBuilder?.call(model) ??
-                                        ModelTile(
-                                          child: FlexTableItem(
+                          if (widget.flexTableItemBuilders == null) ...[
+                            const SizedBox(),
+                            const Text(
+                              'Title',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            const Text(
+                              'Subtitle',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            const Text(
+                              'Last Update',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ] else
+                            for (var item in widget.flexTableItemBuilders!) item.header,
+                          Icon(
+                            FluentIcons.chevron_down_24_regular,
+                            size: 20,
+                          )
+                        ],
+                      ),
+                ),
+              value?.loading == true ? const LinearProgressIndicator(minHeight: 2) : const Divider(height: 2),
+              Expanded(
+                child: RefreshIndicator.adaptive(
+                  triggerMode: RefreshIndicatorTriggerMode.anywhere,
+                  onRefresh: widget.controller.load,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: widget.gap),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (widget.controller.filtered != null)
+                                  ListView.builder(
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemCount: widget.controller.filtered!.length,
+                                    itemBuilder: (context, index) {
+                                      var model = widget.controller.filtered![index];
+                                      var tile = widget.controller.description.tileBuilder(model);
+                                      return widget.itemBuilder?.call(model) ??
+                                          ModelTile(
+                                            selected: widget.controller.value!.selectedModels.contains(model),
+                                            onTap: () {
+                                              widget.onModelTap?.call(model);
+                                            },
+                                            child: FlexTableItem(
+                                              selected: widget.controller.value!.selectedModels.contains(model),
+                                              onSelectChanged: (val) {
+                                                if (val == true) {
+                                                  widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
+                                                    ...widget.controller.value!.selectedModels,
+                                                    model
+                                                  });
+                                                } else {
+                                                  widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
+                                                    ...widget.controller.value!.selectedModels..remove(model),
+                                                  });
+                                                }
+                                              },
+                                              children: [
+                                                if (widget.flexTableItemBuilders != null) ...[
+                                                  for (var item in widget.flexTableItemBuilders!) item.builder(model),
+                                                ] else ...[
+                                                  if (tile.leading != null) tile.leading! else const SizedBox(),
+                                                  Text(
+                                                    tile.title ?? "(No title)",
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  Text(
+                                                    tile.subtitle ?? "(No subtitle)",
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  // create at
+                                                  Text(
+                                                    timeago.format(model.updatedAt.toLocal()),
+                                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                                ],
+                                                if (tile.trailing != null)
+                                                  tile.trailing!
+                                                else
+                                                  MenuAnchor(
+                                                    builder: (context, controller, child) {
+                                                      return IconButton(
+                                                        onPressed: () {
+                                                          if (controller.isOpen) {
+                                                            controller.close();
+                                                          } else {
+                                                            controller.open();
+                                                          }
+                                                        },
+                                                        icon: const Icon(Icons.more_vert),
+                                                      );
+                                                    },
+                                                    menuChildren: [
+                                                      const SizedBox(
+                                                        height: 8,
+                                                      ),
+                                                      if (widget.controller.description.groupedActions.keys.isNotEmpty) ...[
+                                                        for (var group in widget.controller.description.groupedActions.keys) ...[
+                                                          for (var action in widget.controller.description.groupedActions[group]!)
+                                                            MenuItemButton(
+                                                              onPressed: () => action.single?.call(model),
+                                                              leadingIcon: action.icon,
+                                                              child: Text(action.label),
+                                                            ),
+                                                          const Divider()
+                                                        ]
+                                                      ],
+                                                      const SizedBox(
+                                                        height: 8,
+                                                      ),
+                                                    ],
+                                                  )
+                                              ],
+                                            ),
+                                          );
+                                    },
+                                  ),
+                                Center(
+                                  child: SizedBox(
+                                    height: 80,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        if (widget.controller.needIndexError != null)
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
-                                              if (tile.leading != null) tile.leading! else const SizedBox(),
-                                              Text(
-                                                tile.title ?? "(No title)",
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical: 24.0,
+                                                  horizontal: 12,
+                                                ),
+                                                child: Text(widget.controller.needIndexError!.name),
                                               ),
-                                              Text(
-                                                tile.subtitle ?? "(No subtitle)",
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
+                                              // refresh
+                                              OutlinedButton(
+                                                onPressed: () async {
+                                                  await launchUrl(Uri.parse(widget.controller.needIndexError!.url));
+                                                },
+                                                child: const Text("Create index"),
+                                              )
+                                            ],
+                                          )
+                                        else if (value?.loading != false)
+                                          Center(
+                                              child: Container(
+                                            margin: const EdgeInsets.all(24.0),
+                                            height: 15,
+                                            width: 15,
+                                            child: const CircularProgressIndicator.adaptive(strokeWidth: 2, strokeCap: StrokeCap.round),
+                                          ))
+                                        // if controller.filtered is empty but controller.value is not empty suggest to clear searchQuery
+                                        else if (widget.controller.value?.models != null && widget.controller.value!.models!.isEmpty && widget.controller.value!.searchQuery != null)
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              const Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical: 24.0,
+                                                  horizontal: 12,
+                                                ),
+                                                child: Text('No profiles found'),
                                               ),
-                                              if (tile.trailing != null)
-                                                tile.trailing!
-                                              else
-                                                MenuAnchor(
-                                                  builder: (context, controller, child) {
-                                                    return IconButton(
-                                                      onPressed: () {
-                                                        if (controller.isOpen) {
-                                                          controller.close();
-                                                        } else {
-                                                          controller.open();
-                                                        }
-                                                      },
-                                                      icon: const Icon(Icons.more_vert),
-                                                    );
+                                              // refresh
+                                              if (searchController.text.isNotEmpty)
+                                                OutlinedButton(
+                                                  onPressed: () {
+                                                    searchController.clear();
+                                                    widget.controller.value = widget.controller.value!.copyWith(searchQuery: null);
+                                                    widget.controller.search();
                                                   },
-                                                  menuChildren: [],
+                                                  child: const Text("Clear search"),
                                                 )
                                             ],
-                                          ),
-                                        );
-                                  },
+                                          )
+                                        else if (widget.controller.value!.models?.isEmpty == true)
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              const Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical: 24.0,
+                                                  horizontal: 12,
+                                                ),
+                                                child: Text('No profiles found'),
+                                              ),
+                                              // refresh
+                                              OutlinedButton(
+                                                onPressed: widget.controller.load,
+                                                child: const Text("Refresh"),
+                                              )
+                                            ],
+                                          )
+                                        else if (widget.controller.hasNext)
+                                          // VisibilityDetector(
+                                          //   key: Key(controller..toString()),
+                                          //   onVisibilityChanged: (info) {
+                                          //     if (info.visibleFraction > 0) {
+                                          //       search(startAfter: [
+                                          //         Timestamp.fromDate(nextStartAt!)
+                                          //       ]);
+                                          //     }
+                                          //   },
+                                          //   child:
+                                          OutlinedButton.icon(
+                                            onPressed: () async {
+                                              await widget.controller.more();
+                                            },
+                                            label: const Text("LOAD MORE"),
+                                            icon: const Icon(FluentIcons.chevron_down_24_regular),
+                                          )
+                                        // )
+                                        else
+                                        // you reached the end text
+                                        if (widget.controller.value?.models != null && widget.controller.value!.models!.isNotEmpty)
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 24.0,
+                                              horizontal: 12,
+                                            ),
+                                            child: Text('You reached the end.'),
+                                          )
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                              Center(
-                                child: SizedBox(
-                                  height: 80,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (widget.controller.value?.selectedModels.isNotEmpty == true)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: Container(
+                              // constraints: BoxConstraints(maxWidth: 600),
+                              margin: EdgeInsets.all(12),
+                              // height: 50,
+                              child: Material(
+                                // color: Theme.of(context).colorScheme.primary,
+                                borderRadius: BorderRadius.circular(50),
+    
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
                                     children: [
-                                      if (value?.loading != false)
-                                        const Center(
-                                          child: CircularProgressIndicator(),
-                                        )
-                                      // if controller.filtered is empty but controller.value is not empty suggest to clear searchQuery
-                                      else if (controller.value?.models != null && controller.value!.models!.isEmpty && controller.value!.searchQuery != null)
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            const Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                vertical: 24.0,
-                                                horizontal: 12,
-                                              ),
-                                              child: Text('No profiles found'),
-                                            ),
-                                            // refresh
-                                            OutlinedButton(
-                                              onPressed: searchController.clear,
-                                              child: const Text("Clear search"),
-                                            )
-                                          ],
-                                        )
-                                      else if (controller.value!.models?.isEmpty == true)
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            const Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                vertical: 24.0,
-                                                horizontal: 12,
-                                              ),
-                                              child: Text('No profiles found'),
-                                            ),
-                                            // refresh
-                                            OutlinedButton(
-                                              onPressed: controller.load,
-                                              child: const Text("Refresh"),
-                                            )
-                                          ],
-                                        )
-                                      else if (controller.hasNext)
-                                        // VisibilityDetector(
-                                        //   key: Key(controller..toString()),
-                                        //   onVisibilityChanged: (info) {
-                                        //     if (info.visibleFraction > 0) {
-                                        //       search(startAfter: [
-                                        //         Timestamp.fromDate(nextStartAt!)
-                                        //       ]);
-                                        //     }
-                                        //   },
-                                        //   child:
-                                        OutlinedButton(
-                                          onPressed: () async {
-                                            await controller.more();
+                                      IconButton(onPressed: () {}, icon: Icon(Icons.close)),
+                                      for (var action in widget.controller.description.actions.where((e) => e.multiple != null))
+                                        TextButton.icon(
+                                          onPressed: () {
+                                            // action.multiple?.call(controller.value!.selectedModels);
                                           },
-                                          child: const Text("load more"),
-                                        )
-                                      // )
-                                      else
-                                      // you reached the end text
-                                      if (controller.value?.models != null && controller.value!.models!.isNotEmpty)
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            vertical: 24.0,
-                                            horizontal: 12,
-                                          ),
-                                          child: Text('You reached the end.'),
-                                        )
+                                          icon: action.icon ?? const SizedBox(),
+                                          label: Text(action.label),
+                                        ),
                                     ],
                                   ),
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ],
-          ),
-        );
-      }
+          );
+          if (!widget.useFlexTable) return child;
+          return FlexTable(
+            selectable: true,
+            scrollable: false,
+            configs: widget.flexTableItemBuilders != null
+                ? [
+                    ...widget.flexTableItemBuilders!.map((e) => e.config).toList(),
+                    const FlexTableItemConfig.square(40),
+                  ]
+                : [
+                    ...widget.flexTableConfigs,
+                    const FlexTableItemConfig.square(40),
+                  ],
+            child: child,
+          );
+        },
+      ),
     );
   }
 }
@@ -998,10 +1279,12 @@ class ModelTile extends StatelessWidget {
     super.key,
     required this.child,
     this.onTap,
+    this.selected = false,
   });
 
   final Widget child;
   final VoidCallback? onTap;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -1014,6 +1297,13 @@ class ModelTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
         child: child,
+        // when selected
+        decoration: selected
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              )
+            : null,
       ),
     );
   }
@@ -1021,30 +1311,67 @@ class ModelTile extends StatelessWidget {
 
 typedef LocalFilterBuilder<T extends Model> = bool Function(T model);
 typedef RemoteFilterBuilder<T extends Model> = Query<T> Function(Query<T> query);
+typedef RemoteJsonFilterBuilder = Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> query);
 
 /// [IndexViewFilter] is a class to hold the state of the filter
 class IndexViewFilter<T extends Model> {
   final String name;
   final LocalFilterBuilder<T> local;
-  final RemoteFilterBuilder<T> remote;
-  IndexViewFilter({
+  final RemoteJsonFilterBuilder remote;
+  final bool active;
+  final bool fixed;
+  final bool strict;
+  const IndexViewFilter({
     required this.name,
-    required this.local,
-    required this.remote,
+    this.local = _defaultLocalFilter,
+    this.remote = _defaultRemoteFilter,
+    this.active = false,
+    this.fixed = false,
+    this.strict = true,
   });
+
+  static bool _defaultLocalFilter(model) {
+    return true;
+  }
+
+  static Query<Map<String, dynamic>> _defaultRemoteFilter(Query<Map<String, dynamic>> query) {
+    return query;
+  }
 
   IndexViewFilter<T> copyWith({
     String? name,
     LocalFilterBuilder<T>? local,
-    RemoteFilterBuilder<T>? remote,
+    RemoteJsonFilterBuilder? remote,
+    bool? active,
+    bool? fixed,
+    bool? strict,
   }) {
     return IndexViewFilter<T>(
       name: name ?? this.name,
       local: local ?? this.local,
       remote: remote ?? this.remote,
+      active: active ?? this.active,
+      fixed: fixed ?? this.fixed,
+      strict: strict ?? this.strict,
     );
   }
+
+  IndexViewFilter<T> toggle() {
+    return copyWith(active: !active);
+  }
 }
+
+// typedef IndexViewFilter<M extends Model> = ({
+//   bool? active,
+//   bool? fixed,
+//   bool Function(M)? local,
+//   Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>>)? remote,
+//   String name,
+// });
+typedef ModelIndexType<M extends Model> = (
+  M,
+  int
+);
 
 /// [ModelListViewValue] is a class to hold the state of the view
 class ModelListViewValue<M extends Model> {
@@ -1052,17 +1379,8 @@ class ModelListViewValue<M extends Model> {
   final List<M>? models;
   final SearchQuery? searchQuery;
   final List<IndexViewFilter<M>> filters;
-  final List<bool> activeFilters;
-  final List<
-      (
-        M,
-        int
-      )> selectedModels;
-  final List<
-      (
-        M,
-        int
-      )> history;
+  final Set<M> selectedModels;
+  final List<ModelIndexType<M>> history;
   final Map<String, dynamic> metadata;
   final String? error;
 
@@ -1071,8 +1389,7 @@ class ModelListViewValue<M extends Model> {
     this.models,
     this.searchQuery,
     this.filters = const [],
-    this.activeFilters = const [],
-    this.selectedModels = const [],
+    this.selectedModels = const {},
     this.history = const [],
     this.metadata = const {},
     this.error,
@@ -1083,19 +1400,8 @@ class ModelListViewValue<M extends Model> {
     List<M>? models,
     SearchQuery? searchQuery,
     List<IndexViewFilter<M>>? filters,
-    List<bool>? activeFilters,
-    List<
-            (
-              M,
-              int
-            )>?
-        selectedModels,
-    List<
-            (
-              M,
-              int
-            )>?
-        history,
+    Set<M>? selectedModels,
+    List<ModelIndexType<M>>? history,
     Map<String, dynamic>? metadata,
     String? error,
   }) {
@@ -1104,7 +1410,6 @@ class ModelListViewValue<M extends Model> {
       models: models ?? this.models,
       searchQuery: searchQuery ?? this.searchQuery,
       filters: filters ?? this.filters,
-      activeFilters: activeFilters ?? this.activeFilters,
       selectedModels: selectedModels ?? this.selectedModels,
       history: history ?? this.history,
       metadata: metadata ?? this.metadata,
@@ -1116,25 +1421,53 @@ class ModelListViewValue<M extends Model> {
 /// [ModelListViewController] just like other controllers in flutter
 class ModelListViewController<M extends Model> extends ValueNotifier<ModelListViewValue<M>?> {
   final ModelDescription<M> description;
-  ModelListViewController({ModelListViewValue<M>? value, required this.description}) : super(value?.copyWith(
-    searchQuery: value.searchQuery ?? SearchQuery(
-      field: description.fields.firstOrNull ?? "",
-      value: "",
-    ),
-  ));
+  ModelListViewController({ModelListViewValue<M>? value, required this.description})
+      : super(value?.copyWith(
+          searchQuery: value.searchQuery ??
+              SearchQuery(
+                field: description.fields.keys.firstOrNull ?? "",
+                value: "",
+              ),
+        ));
+
+  /// need index error
+  ({
+    String name,
+    String url
+  })? needIndexError;
 
   /// [search] is a function to search for models
   Future<void> search({Iterable<Timestamp>? startAfter, bool concat = false}) async {
+    needIndexError = null;
     value = (value ?? ModelListViewValue<M>()).copyWith(loading: true);
     try {
       var _models = await getModelCollection(
         path: description.path,
         fromJson: description.fromJson,
         builder: (query) {
-          for (var filter in value?.filters ?? []) {
-            query = filter.remote(query);
+          var strict = false;
+          if (value?.filters.isEmpty == false) {
+            for (var filter in value!.filters) {
+              if (!filter.active) continue;
+              if (filter.strict) {
+                strict = true;
+              }
+              var d = filter.remote.call(query);
+              if (d != null) {
+                query = d;
+              }
+            }
           }
-          query = query.orderBy("updatedAt", descending: true);
+
+          // search query, if searchQuery is not null
+          if (value?.searchQuery?.value?.isNotEmpty == true) {
+            query = query.where(value!.searchQuery!.field, isGreaterThanOrEqualTo: value!.searchQuery!.value).where(value!.searchQuery!.field, isLessThanOrEqualTo: value!.searchQuery!.value! + "\uf8ff").orderBy(value!.searchQuery!.field, descending: false);
+          } else {
+            if (!strict) {
+              query = query.orderBy("updatedAt", descending: true);
+            }
+          }
+
           if (startAfter != null) {
             query = query.startAfter(startAfter);
           }
@@ -1157,6 +1490,28 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       } else {
         value = value?.copyWith(
           models: _models,
+          loading: false,
+        );
+      }
+    }
+    // need index error from firebase
+    on FirebaseException catch (e) {
+      if (e.code == "failed-precondition") {
+        var data = e.message!.split("https");
+        var message = data[0];
+        var url = "https" + data[1];
+        needIndexError = (
+          name: message,
+          url: url,
+        );
+        value = value?.copyWith(
+          error: e.toString(),
+          loading: false,
+          models: [],
+        );
+      } else {
+        value = value?.copyWith(
+          error: e.toString(),
           loading: false,
         );
       }
@@ -1191,6 +1546,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     }
     bool _filters(M model) {
       for (var filter in value?.filters ?? []) {
+        if (!filter.active) continue;
         if (filter.local != null) {
           if (filter.local!(model) == false) {
             return false;
@@ -1217,6 +1573,38 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     }).toList();
   }
 
+  /// [activateFilter]
+  Future<void> updateFilter(IndexViewFilter<M> filter) async {
+    // check filter if extst, take the index and activat it
+    var index = value!.filters.indexWhere((f) => f.name == filter.name);
+    if (index >= 0) {
+      value!.filters[index] = filter;
+    } else {
+      value!.filters.add(filter);
+    }
+    value = value?.copyWith(
+      // disable all filters except the one we want to activate and add it to the list
+      filters: value!.filters.map((e) => e.copyWith(active: e.name == filter.name && filter.active)).toList(),
+    );
+    await search();
+  }
+
+  /// remove filter
+  Future<void> removeFilter(IndexViewFilter<M> filter) async {
+    value = value?.copyWith(
+      filters: value!.filters.where((e) => e.name != filter.name).toList(),
+    );
+    await search();
+  }
+
+  /// [clearFilters]
+  Future<void> clearFilters() async {
+    value = value?.copyWith(
+      filters: value!.filters.map((e) => e.copyWith(active: false)).toList(),
+    );
+    await search();
+  }
+
   /// [history]
   Map<M, bool> history = {};
 
@@ -1232,6 +1620,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   void setSearchQuery(SearchQuery query) {
     value = value?.copyWith(searchQuery: query);
   }
+
   void setSearchQueryField(String field) {
     value = value?.copyWith(
       searchQuery: SearchQuery(
@@ -1240,22 +1629,22 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       ),
     );
   }
+
   void setSearchQueryValue(String _value) {
     value = value?.copyWith(
-      searchQuery: SearchQuery(
-        field: value?.searchQuery?.field ?? description.fields.firstOrNull ?? "",
-        value: _value,
-      )
-    );
+        searchQuery: SearchQuery(
+      field: value?.searchQuery?.field ?? description.fields.keys.firstOrNull ?? "",
+      value: _value,
+    ));
   }
 
   /// [mounted] is a function to mount the controller on the view and bind it to the view
 }
 
 /// [ModelDescription] is a class to describe a model
-class ModelDescription<T> {
+class ModelDescription<T extends Model> {
   // fields to search in
-  final List<String> fields;
+  final Map<String, Type> fields;
   // name of the collection
   final String name;
   // path to collection
@@ -1264,13 +1653,33 @@ class ModelDescription<T> {
   final T Function(Map<String, dynamic> data) fromJson;
   // semantics (general title, description, icon, etc..)
   final ModelGeneralData Function(T model) tileBuilder;
+
+  /// actions
+  final List<ModelAction<T>> actions;
   ModelDescription({
     required this.fields,
     required this.name,
     required this.path,
     required this.fromJson,
     required this.tileBuilder,
+    required this.actions,
   });
+  Map<String, List<ModelAction<T>>> get groupedActions {
+    var map = <String, List<ModelAction<T>>>{};
+    for (var action in actions) {
+      if (action.group == null) {
+        continue;
+      }
+      if (map.containsKey(action.group)) {
+        map[action.group]!.add(action);
+      } else {
+        map[action.group!] = [
+          action
+        ];
+      }
+    }
+    return map;
+  }
 }
 
 class ModelGeneralData {
@@ -1284,4 +1693,165 @@ class ModelGeneralData {
     this.leading,
     this.trailing,
   });
+}
+
+/// [showFilterWizard] is a function to show a filter wizard dailog
+/// it is very useful to create a filter
+/// it contains a list of fields and a list of operators
+/// the operation dropdown will change based on the field selected
+/// the value field will change based on the operator selected
+Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext context, ModelDescription<M> description) async {
+  var _field = description.fields.keys.firstOrNull;
+  var _operator = QueryOperations.equal;
+  dynamic value;
+  return await showDialog<IndexViewFilter<M>?>(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: const Text('Add filter'),
+          content: Wrap(
+            children: [
+              // field
+              MenuAnchor(
+                builder: (context, controller, child) {
+                  return TextButton.icon(
+                    icon: const Icon(FluentIcons.filter_24_regular),
+                    onPressed: () => controller.open(),
+                    label: Text(_field?.titleCase ?? "Select field"),
+                  );
+                },
+                menuChildren: [
+                  for (var field in description.fields.keys)
+                    MenuItemButton(
+                      leadingIcon: const Icon(FluentIcons.filter_24_regular),
+                      trailingIcon: _field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                      onPressed: _field == field
+                          ? null
+                          : () {
+                              setState(() {
+                                _field = field;
+                              });
+                            },
+                      child: Text(field.titleCase),
+                    ),
+                ],
+              ),
+              // operator
+              MenuAnchor(
+                builder: (context, controller, child) {
+                  return TextButton(
+                    onPressed: () => controller.open(),
+                    child: Text(_operator.symbol),
+                  );
+                },
+                menuChildren: [
+                  for (var operator in QueryOperations.values)
+                    MenuItemButton(
+                      leadingIcon: const Icon(FluentIcons.calculator_24_regular),
+                      trailingIcon: _operator == operator ? Text(_operator.symbol) : null,
+                      onPressed: _operator == operator
+                          ? null
+                          : () {
+                              setState(() {
+                                _operator = operator;
+                              });
+                            },
+                      child: Text(operator.name.titleCase),
+                    ),
+                ],
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+              // value
+              if (description.fields[_field] == String || description.fields[_field] == int || description.fields[_field] == double || description.fields[_field] == List)
+                AppTextFormField(
+                  onChanged: (String v) async {
+                    value = v;
+                  },
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(FluentIcons.search_24_regular),
+                    label: const Text('Value'),
+                    alignLabelWithHint: true,
+                    hintText:
+                        // on list separate by |
+                        description.fields[_field] is List ? "value1|value2|value3" : null,
+                  ),
+                )
+              else if (description.fields[_field] == bool)
+                MenuAnchor(
+                  builder: (context, controller, child) {
+                    return TextButton.icon(
+                      icon: const Icon(FluentIcons.chevron_down_24_regular),
+                      onPressed: () => controller.open(),
+                      label: Text(value.toString().titleCase),
+                    );
+                  },
+                  menuChildren: [
+                    // true
+                    MenuItemButton(
+                      leadingIcon: const Icon(FluentIcons.checkmark_24_regular),
+                      trailingIcon: value == true ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                      onPressed: value == true
+                          ? null
+                          : () {
+                              setState(() {
+                                value = true;
+                              });
+                            },
+                      child: Text("True"),
+                    ),
+                    // false
+                    MenuItemButton(
+                      leadingIcon: const Icon(FluentIcons.dismiss_24_regular),
+                      trailingIcon: value == false ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                      onPressed: value == false
+                          ? null
+                          : () {
+                              setState(() {
+                                value = false;
+                              });
+                            },
+                      child: Text("False"),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: _field == null
+                  ? null
+                  : () {
+                      var filter = IndexViewFilter<M>(
+                        name: "${_field}${_operator.symbol}${value}",
+                        remote: (query) {
+                          if (description.fields[_field] is num) value = num.tryParse(value) ?? value;
+                          return _operator.remote(query: query, field: _field!, value: value);
+                        },
+                        local: (model) {
+                          return _operator.local(
+                            field: _field!,
+                            value: value,
+                            model: model,
+                          );
+                        },
+                      );
+                      print(filter);
+                      Navigator.of(context).pop<IndexViewFilter<M>>(filter);
+                    },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      });
+    },
+  );
 }

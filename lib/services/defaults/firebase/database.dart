@@ -323,6 +323,7 @@ class DatabaseService extends Service {
     if (builder != null) {
       query = builder(query);
     }
+    print(query.parameters);
 
 
     query = query
@@ -414,7 +415,8 @@ class DatabaseService extends Service {
       _cachedCollections.add(cachedCollection);
       // await
       _saveCache();
-      return cachedCollection.filter(withTrashed: withTrashed);
+      var data = cachedCollection.filter(withTrashed: withTrashed);
+      return data;
     }
     return null;
   }

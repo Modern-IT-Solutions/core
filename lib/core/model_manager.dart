@@ -145,12 +145,16 @@ class QueryFilter<T extends Model> implements QueryFilterInterface<T> {
 
 class ModelAction<M extends Model> {
   final Widget? icon;
-  final Widget label;
-  final void Function(M?)? onPressed;
+  final String? group;
+  final String label;
+  final void Function(M?)? single;
+  final void Function(List<M>?)? multiple;
   ModelAction({
     this.icon,
     required this.label,
-    this.onPressed,
+    this.group,
+    this.single,
+    this.multiple,
   });
 }
 
@@ -163,7 +167,93 @@ enum QueryOperations {
   greaterThanOrEqual,
   arrayContains,
   arrayContainsAny,
-  whereIn,
+  whereIn;
+
+  Query<Map<String,dynamic>> remote({required Query<Map<String,dynamic>> query,required String field,required dynamic value}) {
+    
+    if (this == QueryOperations.equal) {
+      query = query.where(field, isEqualTo: value);
+    } else if (this == QueryOperations.notEqual) {
+      query = query.where(field, isNotEqualTo: value);
+    } else if (this == QueryOperations.lessThan) {
+      query = query.where(field, isLessThan: value);
+    } else if (this == QueryOperations.lessThanOrEqual) {
+      query = query.where(field, isLessThanOrEqualTo: value);
+    } else if (this == QueryOperations.greaterThan) {
+      query = query.where(field, isGreaterThan: value);
+    } else if (this == QueryOperations.greaterThanOrEqual) {
+      query = query.where(field, isGreaterThanOrEqualTo: value);
+    } else if (this == QueryOperations.arrayContainsAny) {
+      query = query.where(field, arrayContainsAny: value.toString().split("|"));
+    } else if (this == QueryOperations.arrayContains) {
+      query = query.where(field, arrayContains: value);
+    } else if (this == QueryOperations.whereIn) {
+      query = query.where(field,whereIn: value.toString().split("|"));
+    } else {
+      query = query.where(field, isEqualTo: value);
+    }
+    return query;
+  }
+
+  bool local<T extends Model>({required T model,required String field,required dynamic value}) {
+    // return true;
+    if (this == QueryOperations.equal) {
+      return model.toJson()[field] == value;
+    } else if (this == QueryOperations.notEqual) {
+      return model.toJson()[field] != value;
+    } else if (this == QueryOperations.lessThan) {
+      return model.toJson()[field] < value;
+    } else if (this == QueryOperations.lessThanOrEqual) {
+      return model.toJson()[field] <= value;
+    } else if (this == QueryOperations.greaterThan) {
+      return model.toJson()[field] > value;
+    } else if (this == QueryOperations.greaterThanOrEqual) {
+      return model.toJson()[field] >= value;
+    } else if (this == QueryOperations.arrayContainsAny) {
+      // check if the field is a Iterable
+      assert(model.toJson()[field] is Iterable);
+      // check if the value is a Iterable
+      assert(value is Iterable);
+      // return true if the field contains any of the values
+      return (List.from(model.toJson()[field])).any((element) => (value as List).contains(element));
+    } else if (this == QueryOperations.arrayContains) {
+      // check if the field is a Iterable
+      assert(model.toJson()[field] is Iterable);
+      // check if the value is a Iterable
+      assert(value is Iterable);
+      // return true if the field contains any of the values
+      return (List.from(model.toJson()[field])).contains(value);
+    } else if (this == QueryOperations.whereIn) {
+      return (List.from(model.toJson()[field])).contains(value);
+    } else {
+      return false;
+    }
+  }
+
+  // symbol
+  String get symbol {
+    if (this == QueryOperations.equal) {
+      return "=";
+    } else if (this == QueryOperations.notEqual) {
+      return "!=";
+    } else if (this == QueryOperations.lessThan) {
+      return "<";
+    } else if (this == QueryOperations.lessThanOrEqual) {
+      return "<=";
+    } else if (this == QueryOperations.greaterThan) {
+      return ">";
+    } else if (this == QueryOperations.greaterThanOrEqual) {
+      return ">=";
+    } else if (this == QueryOperations.arrayContainsAny) {
+      return "array-contains-any";
+    } else if (this == QueryOperations.arrayContains) {
+      return "array-contains";
+    } else if (this == QueryOperations.whereIn) {
+      return "in";
+    } else {
+      return "=";
+    }
+  }
 }
 
 class DynamicQueryFilter<T extends Model> implements QueryFilterInterface<T> {
@@ -217,7 +307,7 @@ class DynamicQueryFilter<T extends Model> implements QueryFilterInterface<T> {
         // check if the value is a Iterable
         assert(value is Iterable);
         // return true if the field contains any of the values
-        return (List.from(m.toJson()[field]) as List).any((element) => (value as List).contains(element));
+        return (List.from(m.toJson()[field])).any((element) => (value as List).contains(element));
       };
     } else if (operations == QueryOperations.arrayContains) {
       return (T m) {
@@ -226,7 +316,7 @@ class DynamicQueryFilter<T extends Model> implements QueryFilterInterface<T> {
         // check if the value is a Iterable
         assert(value is Iterable);
         // return true if the field contains any of the values
-        return (List.from(m.toJson()[field]) as List).contains(value);
+        return (List.from(m.toJson()[field])).contains(value);
       };
     } else if (operations == QueryOperations.whereIn) {
       return (T m) {

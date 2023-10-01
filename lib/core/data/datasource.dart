@@ -152,6 +152,7 @@ mixin FirestoreDataSourceMixin<T extends Model> implements CFLUDInterface<T> {
       dbquery = request.queryBuilder!(dbquery);
     }
     var ql = await dbquery.get(request.options);
+    print(dbquery.parameters);
     return ql.toListResult();
   }
 
@@ -198,6 +199,8 @@ extension FirebaseMapExtension on Map<String, dynamic> {
     this.forEach((key, value) {
       if (value is DateTime) {
         json[key] = Timestamp.fromDate(value);
+      } else {
+        json[key] = value;
       }
     });
     return json;

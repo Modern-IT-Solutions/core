@@ -6,8 +6,9 @@ part of 'attachment_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_AttachmentModel _$$_AttachmentModelFromJson(Map<String, dynamic> json) =>
-    _$_AttachmentModel(
+_$AttachmentModelImpl _$$AttachmentModelImplFromJson(
+        Map<String, dynamic> json) =>
+    _$AttachmentModelImpl(
       ref: const ModelRefSerializer().fromJson(json['ref'] as String),
       createdAt:
           const TimestampDateTimeSerializer().fromJson(json['createdAt']),
@@ -20,7 +21,8 @@ _$_AttachmentModel _$$_AttachmentModelFromJson(Map<String, dynamic> json) =>
       url: json['url'] as String,
     );
 
-Map<String, dynamic> _$$_AttachmentModelToJson(_$_AttachmentModel instance) =>
+Map<String, dynamic> _$$AttachmentModelImplToJson(
+        _$AttachmentModelImpl instance) =>
     <String, dynamic>{
       'ref': const ModelRefSerializer().toJson(instance.ref),
       'createdAt':

@@ -109,11 +109,11 @@ class _$AttachmentModelCopyWithImpl<$Res, $Val extends AttachmentModel>
 }
 
 /// @nodoc
-abstract class _$$_AttachmentModelCopyWith<$Res>
+abstract class _$$AttachmentModelImplCopyWith<$Res>
     implements $AttachmentModelCopyWith<$Res> {
-  factory _$$_AttachmentModelCopyWith(
-          _$_AttachmentModel value, $Res Function(_$_AttachmentModel) then) =
-      __$$_AttachmentModelCopyWithImpl<$Res>;
+  factory _$$AttachmentModelImplCopyWith(_$AttachmentModelImpl value,
+          $Res Function(_$AttachmentModelImpl) then) =
+      __$$AttachmentModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -127,11 +127,11 @@ abstract class _$$_AttachmentModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_AttachmentModelCopyWithImpl<$Res>
-    extends _$AttachmentModelCopyWithImpl<$Res, _$_AttachmentModel>
-    implements _$$_AttachmentModelCopyWith<$Res> {
-  __$$_AttachmentModelCopyWithImpl(
-      _$_AttachmentModel _value, $Res Function(_$_AttachmentModel) _then)
+class __$$AttachmentModelImplCopyWithImpl<$Res>
+    extends _$AttachmentModelCopyWithImpl<$Res, _$AttachmentModelImpl>
+    implements _$$AttachmentModelImplCopyWith<$Res> {
+  __$$AttachmentModelImplCopyWithImpl(
+      _$AttachmentModelImpl _value, $Res Function(_$AttachmentModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -145,7 +145,7 @@ class __$$_AttachmentModelCopyWithImpl<$Res>
     Object? type = null,
     Object? url = null,
   }) {
-    return _then(_$_AttachmentModel(
+    return _then(_$AttachmentModelImpl(
       ref: null == ref
           ? _value.ref
           : ref // ignore: cast_nullable_to_non_nullable
@@ -180,8 +180,8 @@ class __$$_AttachmentModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_AttachmentModel implements _AttachmentModel {
-  _$_AttachmentModel(
+class _$AttachmentModelImpl implements _AttachmentModel {
+  _$AttachmentModelImpl(
       {@ModelRefSerializer() required this.ref,
       @TimestampDateTimeSerializer() required this.createdAt,
       @TimestampDateTimeSerializer() required this.updatedAt,
@@ -190,8 +190,8 @@ class _$_AttachmentModel implements _AttachmentModel {
       required this.type,
       required this.url});
 
-  factory _$_AttachmentModel.fromJson(Map<String, dynamic> json) =>
-      _$$_AttachmentModelFromJson(json);
+  factory _$AttachmentModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$AttachmentModelImplFromJson(json);
 
   @override
   @ModelRefSerializer()
@@ -221,7 +221,7 @@ class _$_AttachmentModel implements _AttachmentModel {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_AttachmentModel &&
+            other is _$AttachmentModelImpl &&
             (identical(other.ref, ref) || other.ref == ref) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
@@ -242,12 +242,13 @@ class _$_AttachmentModel implements _AttachmentModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_AttachmentModelCopyWith<_$_AttachmentModel> get copyWith =>
-      __$$_AttachmentModelCopyWithImpl<_$_AttachmentModel>(this, _$identity);
+  _$$AttachmentModelImplCopyWith<_$AttachmentModelImpl> get copyWith =>
+      __$$AttachmentModelImplCopyWithImpl<_$AttachmentModelImpl>(
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_AttachmentModelToJson(
+    return _$$AttachmentModelImplToJson(
       this,
     );
   }
@@ -261,10 +262,10 @@ abstract class _AttachmentModel implements AttachmentModel {
       @TimestampDateTimeSerializer() final DateTime? deletedAt,
       required final String name,
       required final String type,
-      required final String url}) = _$_AttachmentModel;
+      required final String url}) = _$AttachmentModelImpl;
 
   factory _AttachmentModel.fromJson(Map<String, dynamic> json) =
-      _$_AttachmentModel.fromJson;
+      _$AttachmentModelImpl.fromJson;
 
   @override
   @ModelRefSerializer()
@@ -286,6 +287,6 @@ abstract class _AttachmentModel implements AttachmentModel {
   String get url;
   @override
   @JsonKey(ignore: true)
-  _$$_AttachmentModelCopyWith<_$_AttachmentModel> get copyWith =>
+  _$$AttachmentModelImplCopyWith<_$AttachmentModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

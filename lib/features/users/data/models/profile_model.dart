@@ -3,6 +3,8 @@ import 'package:core/core.dart';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'role.dart';
+
 
 part 'profile_model.freezed.dart';
 part 'profile_model.g.dart';
@@ -20,6 +22,7 @@ class ProfileModel with _$ProfileModel implements Model {
     required Address? address,
     required String uid,
     required bool disabled,
+    @RoleSerializer() 
     required List<Role> roles,
     required bool emailVerified,
     @Default({}) Map<String,dynamic> metadata,
@@ -40,40 +43,40 @@ class ProfileModel with _$ProfileModel implements Model {
 
 /// [Role] is an enum that represents the role of the user.
 /// it contains :  [ClientModel], [Technician], [Commercial], [Admin]
-enum Role {
-  /// Role.client
-  student,
-  /// Role.client
-  client,
+// enum Role {
+//   /// Role.client
+//   student,
+//   /// Role.client
+//   client,
 
-  /// Role.technician
-  technicianL1,
-  technicianL2,
-  technicianL3,
+//   /// Role.technician
+//   technicianL1,
+//   technicianL2,
+//   technicianL3,
 
-  /// Role.commercial
-  commercial,
+//   /// Role.commercial
+//   commercial,
 
-  /// Role.admin
-  admin;
+//   /// Role.admin
+//   admin;
 
-  /// fromString
-  static Role? fromString(String? role) {
-    var r = Role.values.where(
-      (e) => e.name == role,
-    );
-    if (r.isNotEmpty) {
-      return r.first;
-    } else {
-      return null;
-    }
-  }
+//   /// fromString
+//   static Role? fromString(String? role) {
+//     var r = Role.values.where(
+//       (e) => e.name == role,
+//     );
+//     if (r.isNotEmpty) {
+//       return r.first;
+//     } else {
+//       return null;
+//     }
+//   }
 
-  /// fromListString
-  static List<Role> fromListString(List<String> roles) {
-    return roles.map((e) => fromString(e)!).toList();
-  }
-}
+//   /// fromListString
+//   static List<Role> fromListString(List<String> roles) {
+//     return roles.map((e) => fromString(e)!).toList();
+//   }
+// }
 
 
 

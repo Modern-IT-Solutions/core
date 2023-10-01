@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:core/features/users/data/models/role.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:core/core.dart';
@@ -48,6 +49,18 @@ class ModelRefSerializer implements JsonConverter<ModelRef, String> {
 
   @override
   String toJson(ModelRef ref) => ref.path;
+}
+/// ModelRefSerializer
+class RoleSerializer implements JsonConverter<Role, String> {
+  const RoleSerializer();
+
+  @override
+  Role fromJson(String role) {
+    return Role(role);
+  }
+
+  @override
+  String toJson(Role ref) => ref.name;
 }
 
 /// ColorSerializer

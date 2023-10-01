@@ -138,11 +138,11 @@ class _$InterventionModelCopyWithImpl<$Res, $Val extends InterventionModel>
 }
 
 /// @nodoc
-abstract class _$$_InterventionModelCopyWith<$Res>
+abstract class _$$InterventionModelImplCopyWith<$Res>
     implements $InterventionModelCopyWith<$Res> {
-  factory _$$_InterventionModelCopyWith(_$_InterventionModel value,
-          $Res Function(_$_InterventionModel) then) =
-      __$$_InterventionModelCopyWithImpl<$Res>;
+  factory _$$InterventionModelImplCopyWith(_$InterventionModelImpl value,
+          $Res Function(_$InterventionModelImpl) then) =
+      __$$InterventionModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -162,11 +162,11 @@ abstract class _$$_InterventionModelCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_InterventionModelCopyWithImpl<$Res>
-    extends _$InterventionModelCopyWithImpl<$Res, _$_InterventionModel>
-    implements _$$_InterventionModelCopyWith<$Res> {
-  __$$_InterventionModelCopyWithImpl(
-      _$_InterventionModel _value, $Res Function(_$_InterventionModel) _then)
+class __$$InterventionModelImplCopyWithImpl<$Res>
+    extends _$InterventionModelCopyWithImpl<$Res, _$InterventionModelImpl>
+    implements _$$InterventionModelImplCopyWith<$Res> {
+  __$$InterventionModelImplCopyWithImpl(_$InterventionModelImpl _value,
+      $Res Function(_$InterventionModelImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -183,7 +183,7 @@ class __$$_InterventionModelCopyWithImpl<$Res>
     Object? type = null,
     Object? intervener = null,
   }) {
-    return _then(_$_InterventionModel(
+    return _then(_$InterventionModelImpl(
       ref: null == ref
           ? _value.ref
           : ref // ignore: cast_nullable_to_non_nullable
@@ -230,8 +230,8 @@ class __$$_InterventionModelCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_InterventionModel implements _InterventionModel {
-  _$_InterventionModel(
+class _$InterventionModelImpl implements _InterventionModel {
+  _$InterventionModelImpl(
       {@ModelRefSerializer() required this.ref,
       required this.createdAt,
       required this.updatedAt,
@@ -244,8 +244,8 @@ class _$_InterventionModel implements _InterventionModel {
       required this.intervener})
       : _attachments = attachments;
 
-  factory _$_InterventionModel.fromJson(Map<String, dynamic> json) =>
-      _$$_InterventionModelFromJson(json);
+  factory _$InterventionModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$InterventionModelImplFromJson(json);
 
   @override
   @ModelRefSerializer()
@@ -286,7 +286,7 @@ class _$_InterventionModel implements _InterventionModel {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_InterventionModel &&
+            other is _$InterventionModelImpl &&
             (identical(other.ref, ref) || other.ref == ref) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
@@ -323,13 +323,13 @@ class _$_InterventionModel implements _InterventionModel {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_InterventionModelCopyWith<_$_InterventionModel> get copyWith =>
-      __$$_InterventionModelCopyWithImpl<_$_InterventionModel>(
+  _$$InterventionModelImplCopyWith<_$InterventionModelImpl> get copyWith =>
+      __$$InterventionModelImplCopyWithImpl<_$InterventionModelImpl>(
           this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_InterventionModelToJson(
+    return _$$InterventionModelImplToJson(
       this,
     );
   }
@@ -346,10 +346,10 @@ abstract class _InterventionModel implements InterventionModel {
       required final String description,
       required final List<dynamic> attachments,
       required final InterventionType type,
-      required final ProfileModel intervener}) = _$_InterventionModel;
+      required final ProfileModel intervener}) = _$InterventionModelImpl;
 
   factory _InterventionModel.fromJson(Map<String, dynamic> json) =
-      _$_InterventionModel.fromJson;
+      _$InterventionModelImpl.fromJson;
 
   @override
   @ModelRefSerializer()
@@ -374,6 +374,6 @@ abstract class _InterventionModel implements InterventionModel {
   ProfileModel get intervener;
   @override
   @JsonKey(ignore: true)
-  _$$_InterventionModelCopyWith<_$_InterventionModel> get copyWith =>
+  _$$InterventionModelImplCopyWith<_$InterventionModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

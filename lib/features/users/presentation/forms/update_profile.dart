@@ -7,6 +7,7 @@ import 'package:lib/lib.dart';
 import 'package:muskey/muskey.dart';
 import 'package:recase/recase.dart';
 
+import '../../data/models/role.dart';
 import '../../domain/request/profile_requests.dart';
 
 /// [UpdateProfileForm] is a form to update a new user
@@ -355,7 +356,7 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                                   children: [
                                     const SizedBox(width: 24),
                                     // selectable chips for roles
-                                    for (var role in Role.values)
+                                    for (var role in [Role('admin'),Role('user')])
                                       ...[InputChip(
                                         onSelected: (selected) {
                                           if (selected) {

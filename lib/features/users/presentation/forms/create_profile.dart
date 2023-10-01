@@ -8,6 +8,7 @@ import 'package:lib/lib.dart';
 import 'package:muskey/muskey.dart';
 import 'package:recase/recase.dart';
 
+import '../../data/models/role.dart';
 import '../../domain/request/profile_requests.dart';
 
 /// [CreateProfileForm] is a form to create a new user
@@ -347,7 +348,7 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
                                 children: [
                                   const SizedBox(width: 24),
                                   // selectable chips for roles
-                                  for (var role in Role.values)
+                                  for (var role in [Role('admin'),Role('user')])
                                     ...[InputChip(
                                       onSelected: (selected) {
                                           if (selected) {
@@ -602,7 +603,7 @@ class _SelectRolesDialogState extends State<SelectRolesDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            for (var role in Role.values)
+            for (var role in [Role('admin'),Role('user')])
               SwitchListTile(
                 value: widget.selectedRoles.contains(role),
                 onChanged: (e) {

@@ -6,8 +6,8 @@ part of 'profile_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_ProfileModel _$$_ProfileModelFromJson(Map<String, dynamic> json) =>
-    _$_ProfileModel(
+_$ProfileModelImpl _$$ProfileModelImplFromJson(Map<String, dynamic> json) =>
+    _$ProfileModelImpl(
       ref: const ModelRefSerializer().fromJson(json['ref'] as String),
       displayName: json['displayName'] as String,
       email: json['email'] as String,
@@ -22,7 +22,7 @@ _$_ProfileModel _$$_ProfileModelFromJson(Map<String, dynamic> json) =>
       uid: json['uid'] as String,
       disabled: json['disabled'] as bool,
       roles: (json['roles'] as List<dynamic>)
-          .map((e) => $enumDecode(_$RoleEnumMap, e))
+          .map((e) => const RoleSerializer().fromJson(e as String))
           .toList(),
       emailVerified: json['emailVerified'] as bool,
       metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
@@ -37,7 +37,7 @@ _$_ProfileModel _$$_ProfileModelFromJson(Map<String, dynamic> json) =>
           const TimestampDateTimeSerializer().fromJson(json['lastSignInAt']),
     );
 
-Map<String, dynamic> _$$_ProfileModelToJson(_$_ProfileModel instance) =>
+Map<String, dynamic> _$$ProfileModelImplToJson(_$ProfileModelImpl instance) =>
     <String, dynamic>{
       'ref': const ModelRefSerializer().toJson(instance.ref),
       'displayName': instance.displayName,
@@ -48,7 +48,7 @@ Map<String, dynamic> _$$_ProfileModelToJson(_$_ProfileModel instance) =>
       'address': instance.address?.toJson(),
       'uid': instance.uid,
       'disabled': instance.disabled,
-      'roles': instance.roles.map((e) => _$RoleEnumMap[e]!).toList(),
+      'roles': instance.roles.map(const RoleSerializer().toJson).toList(),
       'emailVerified': instance.emailVerified,
       'metadata': instance.metadata,
       'customClaims': instance.customClaims,
@@ -61,16 +61,6 @@ Map<String, dynamic> _$$_ProfileModelToJson(_$_ProfileModel instance) =>
       'lastSignInAt': _$JsonConverterToJson<dynamic, DateTime>(
           instance.lastSignInAt, const TimestampDateTimeSerializer().toJson),
     };
-
-const _$RoleEnumMap = {
-  Role.student: 'student',
-  Role.client: 'client',
-  Role.technicianL1: 'technicianL1',
-  Role.technicianL2: 'technicianL2',
-  Role.technicianL3: 'technicianL3',
-  Role.commercial: 'commercial',
-  Role.admin: 'admin',
-};
 
 Json? _$JsonConverterToJson<Json, Value>(
   Value? value,

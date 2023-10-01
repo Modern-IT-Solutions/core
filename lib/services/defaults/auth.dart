@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:core/core.dart';
+import 'package:core/features/users/data/models/role.dart';
+import 'package:lib/lib.dart';
 
 import '../consts/consts.dart';
 import '../../imports/firebase.dart' as fb;
@@ -55,7 +57,7 @@ class AuthService extends Service {
     notifyListeners();
 
     _currentProfileStreamSubscription = FirebaseFirestore.instance.collection('profiles').doc(fb.FirebaseAuth.instance.currentUser!.uid).snapshots().map((doc) {
-      if (!doc.exists) {
+      if (!doc.exists && fb.FirebaseAuth.instance.currentUser != null && (Platforms.isAndroid || Platforms.isIOS)) {
         // create a new profile using the current user
         final profile = ProfileModel(
           ref: ModelRef("profiles/${fb.FirebaseAuth.instance.currentUser!.uid}"),
@@ -67,9 +69,7 @@ class AuthService extends Service {
           address: null,
           uid: fb.FirebaseAuth.instance.currentUser!.uid,
           disabled: false,
-          roles: [
-            Role.student
-          ],
+          roles: [],
           emailVerified: fb.FirebaseAuth.instance.currentUser!.emailVerified,
           metadata: {},
           customClaims: {},
