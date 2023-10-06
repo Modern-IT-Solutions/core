@@ -38,6 +38,54 @@ class ProfileModel with _$ProfileModel implements Model {
   }) = _ProfileModel;
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) => _$ProfileModelFromJson(json);
+
+  static ModelDescription<ProfileModel> get description => ModelDescription<ProfileModel>(
+      fields: {
+        FieldDescription(
+          name: "uid",
+          map: (m)=>m.uid,
+          type: FieldType.text,
+          group: FieldGroup.metadata,
+        ),
+        FieldDescription(
+          name: "displayName",
+          map: (m)=>m.displayName,
+          type: FieldType.text,
+          group: FieldGroup.primary,
+        ),
+        FieldDescription(
+          name: "email",
+          map: (m)=>m.email,
+          type: FieldType.email,
+          group: FieldGroup.primary,
+        ),
+        FieldDescription(
+          name: "phoneNumber",
+          map: (m)=>m.phoneNumber,
+          type: FieldType.phone,
+          group: FieldGroup.primary,
+        ),
+        FieldDescription(
+          name: "updatedAt",
+          map: (m)=>m.updatedAt,
+          type: FieldType.datetime,
+          group: FieldGroup.metadata,
+        ),
+        FieldDescription(
+          name: "createdAt",
+          map: (m)=>m.createdAt,
+          type: FieldType.datetime,
+          group: FieldGroup.metadata,
+        ),
+      },
+      name: "Profile",
+      path: "profiles",
+      fromJson: ProfileModel.fromJson,
+      tileBuilder: (model) => ModelGeneralData(
+        title: model.displayName,
+      ),
+      actions: []
+    );
 }
 
 

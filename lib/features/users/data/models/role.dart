@@ -7,7 +7,7 @@ part 'role.g.dart';
 class Role with _$Role {
 
   factory Role(
-    String name,
+    String name
   ) = _Role;
 
   factory Role.fromJson(Map<String, dynamic> json) => _$RoleFromJson(json);

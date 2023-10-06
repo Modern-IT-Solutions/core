@@ -94,3 +94,17 @@ class ColorSerializer implements JsonConverter<Color, int> {
   @override
   int toJson(Color color) => color.value;
 }
+
+
+/// DurationSerializer
+class DurationSerializer implements JsonConverter<Duration, int> {
+  const DurationSerializer();
+
+  @override
+  Duration fromJson(int milliseconds) {
+    return Duration(milliseconds: milliseconds);
+  }
+
+  @override
+  int toJson(Duration duration) => duration.inMilliseconds;
+}

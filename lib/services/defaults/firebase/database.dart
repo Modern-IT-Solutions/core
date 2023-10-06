@@ -212,6 +212,52 @@ class DatabaseService extends Service {
     return doc.documents.first;
   }
 
+  /// create a new document
+  Future<CachedDocument> createDocument({
+    required String path,
+    required Map<String, dynamic> data,
+  }) async {
+    final document = await FirebaseFirestore.instance.collection(path).add(data);
+    final cachedDocument = CachedDocument(
+      ref: document.path,
+      data: data,
+      cachedAt: DateTime.now(),
+    );
+    _cachedDocuments.removeWhere((e) => e.ref == path);
+    _cachedDocuments.add(cachedDocument);
+    await _saveCache();
+    return cachedDocument;
+  }
+
+  /// update a document
+  Future<CachedDocument> updateDocument({
+    required String path,
+    required Map<String, dynamic> data,
+  }) async {
+    await FirebaseFirestore.instance.doc(path).update({
+      ...data,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+    final cachedDocument = CachedDocument(
+      ref: path,
+      data: data,
+      cachedAt: DateTime.now(),
+    );
+    _cachedDocuments.removeWhere((e) => e.ref == path);
+    _cachedDocuments.add(cachedDocument);
+    await _saveCache();
+    return cachedDocument;
+  }
+
+  /// delete a document
+  Future<void> deleteDocument({
+    required String path,
+  }) async {
+    await FirebaseFirestore.instance.doc(path).delete();
+    _cachedDocuments.removeWhere((e) => e.ref == path);
+    await _saveCache();
+  }
+
   /// getDocument
   /// first check cache,
   ///   if found:

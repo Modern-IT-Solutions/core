@@ -84,6 +84,37 @@ Future<CachedDocument?> getDocument({
       );
 }
 
+/// createDocument
+Future<CachedDocument> createDocument({
+  required String path,
+  required Map<String, dynamic> data,
+}) async {
+  return await Services.instance.get<DatabaseService>()!.createDocument(
+        path: path,
+        data: data,
+      );
+}
+
+/// updateDocument
+Future<CachedDocument> updateDocument({
+  required String path,
+  required Map<String, dynamic> data,
+}) async {
+  return await Services.instance.get<DatabaseService>()!.updateDocument(
+        path: path,
+        data: data,
+      );
+}
+
+/// deleteDocument
+Future<void> deleteDocument({
+  required String path,
+}) async {
+  return await Services.instance.get<DatabaseService>()!.deleteDocument(
+        path: path,
+      );
+}
+
 Future<T?> getModelDocument<T>({
   required String path,
   bool withExpired = false,

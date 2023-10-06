@@ -15,6 +15,15 @@ enum AppTextFormFieldMode {
 
   /// [AppTextFormFieldMode.upload] is the upload mode
   upload,
+
+  /// [AppTextFormFieldMode.date] is the date mode
+  date,
+
+  /// time
+  time,
+
+  /// date and time
+  dateTime,
 }
 
 /// [AppTextFormField] is a text field for app
@@ -107,6 +116,7 @@ class AppTextFormField extends StatefulWidget {
     this.fileUploadTriger,
   });
 
+
   /// [mode]
   final AppTextFormFieldMode mode;
 
@@ -145,6 +155,49 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
           margin: widget.margin,
           height: widget.height,
           child: TextFormField(
+            onTap: () async {
+              if (widget.mode == AppTextFormFieldMode.date) {
+                var date = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                );
+                if (date != null) {
+                  _controller.text = date.toIso8601String().split('T').first;
+                }
+              } else if (widget.mode == AppTextFormFieldMode.time) {
+                var time = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
+                );
+                if (time != null) {
+                  _controller.text = time.toString();
+                }
+              } else if (widget.mode == AppTextFormFieldMode.dateTime) {
+                var date = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                );
+                if (date != null) {
+                  var time = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  );
+                  if (time != null) {
+                    _controller.text = DateTime(
+                      date.year,
+                      date.month,
+                      date.day,
+                      time.hour,
+                      time.minute,
+                    ).toString();
+                  }
+                }
+              }
+            },
             onChanged: widget.onChanged,
             onFieldSubmitted: widget.onSubmitted,
             inputFormatters: widget.inputFormatters,

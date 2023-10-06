@@ -1,5 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:core/core.dart';
@@ -107,21 +109,27 @@ abstract class QueryFilterInterface<T extends Model> {
 /// QueryFilter
 class QueryFilter<T extends Model> implements QueryFilterInterface<T> {
   // name
+  @override
   String name;
   // fields
   List<String> fields;
   // active
+  @override
   bool active;
   // local filter
+  @override
   bool Function(T)? local;
   // remote filter
+  @override
   QueryBuilder<T> server;
   // onSelect
+  @override
   void Function(Map<String, QueryFilterInterface<T>> filters)? onSelect;
   // fixed
+  @override
   bool fixed;
 
-   QueryFilter({
+  QueryFilter({
     required this.name,
     this.local,
     this.active = true,
@@ -147,9 +155,9 @@ class ModelAction<M extends Model> {
   final Widget? icon;
   final String? group;
   final String label;
-  final void Function(M?)? single;
-  final void Function(List<M>?)? multiple;
-  ModelAction({
+  final FutureOr<M?> Function(BuildContext,M?)? single;
+  final FutureOr<List<M>?> Function(BuildContext,List<M>?)? multiple;
+  const ModelAction({
     this.icon,
     required this.label,
     this.group,
@@ -257,12 +265,16 @@ enum QueryOperations {
 }
 
 class DynamicQueryFilter<T extends Model> implements QueryFilterInterface<T> {
+  @override
   bool active;
+  @override
   bool fixed;
+  @override
   String name;
   String field;
   QueryOperations operations;
   Object? value;
+  @override
   void Function(Map<String, QueryFilterInterface<T>> filters)? onSelect;
   DynamicQueryFilter({
     required this.name,

@@ -203,7 +203,7 @@ class CachedCollection {
   DateTime get updatedAtOrCachedAt {
     if (documents.isNotEmpty) {
       // loop through all documents and find the latest updatedAt
-      final updatedAt = documents.map((e) => e.updatedAtOrCachedAt).reduce((value, element) => value!.isAfter(element!) ? value : element);
+      final updatedAt = documents.map((e) => e.updatedAtOrCachedAt).reduce((value, element) => element != null && value!.isAfter(element!) ? value : element);
       if (updatedAt != null) {
         if (updatedAt.microsecondsSinceEpoch > DateTime.now().microsecondsSinceEpoch) {
           return updatedAt;

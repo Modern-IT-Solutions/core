@@ -446,7 +446,12 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                               for (var group in widget.groupedActions.keys) ...[
                                                 for (var action in widget.groupedActions[group]!)
                                                   MenuItemButton(
-                                                    onPressed: () => action.single?.call(model),
+                                                    onPressed: () async {
+                                                      var updatedModel = await action.single?.call(context, model);
+                                                      if (updatedModel != null) {
+                                                        // con
+                                                      }
+                                                    },
                                                     leadingIcon: action.icon,
                                                     child: Text(action.label),
                                                   ),
@@ -515,7 +520,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                               vertical: 24.0,
                                               horizontal: 12,
                                             ),
-                                            child: Text('No profiles found'),
+                                            child: Text('Nothing to show'),
                                           ),
                                           // refresh
                                           OutlinedButton(
@@ -764,6 +769,7 @@ class ModelListView<M extends Model> extends StatefulWidget {
   final List<FlexTableItemConfig> flexTableConfigs;
   final Widget? flexTableHeader;
   final void Function(M model)? onModelTap;
+  final void Function()? onAddPressed;
   const ModelListView({
     super.key,
     required this.controller,
@@ -780,6 +786,7 @@ class ModelListView<M extends Model> extends StatefulWidget {
     this.flexTableHeader,
     this.flexTableItemBuilders,
     this.onModelTap,
+    this.onAddPressed,
   }) : assert(itemBuilder == null || flexTableItemBuilders == null, "you can't use both itemBuilder and flexTableItemBuilder");
 
   @override
@@ -798,7 +805,6 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
   @override
   Widget build(BuildContext context) {
-
     return DefaultTextStyle(
       style: Theme.of(context).textTheme.bodyMedium!,
       maxLines: 1,
@@ -806,452 +812,588 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
       child: ValueListenableBuilder<ModelListViewValue<M>?>(
         valueListenable: widget.controller,
         builder: (context, value, _) {
-          var child = Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: widget.gap),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      child: FilledButton.icon(
-                        onPressed: () {
-                          // showCreateModelDailog(context);
-                        },
-                        label: const Text('Add'),
-                        icon: const Icon(FeatherIcons.plus),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: AppTextFormField.min(
-                        controller: searchController,
-                        // enabled: !loading.value,
-                        onSubmitted: (String value) {
-                          widget.controller.value = widget.controller.value!.copyWith(
-                            searchQuery: SearchQuery(
-                              field: widget.controller.value!.searchQuery?.field ?? widget.controller.description.fields.keys.firstOrNull ?? "",
-                              value: value,
-                            ),
-                          );
-                          widget.controller.search();
-                        },
-                        onChanged: (String value) async {
-                          widget.controller.setSearchQueryValue(value);
-                        },
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(FluentIcons.search_24_regular),
-                          label: const Text('Search'),
-                          alignLabelWithHint: true,
-                          // select search field
-                          suffixIcon: value?.searchQuery == null
-                              ? null
-                              : MenuAnchor(
-                                  builder: (context, controller, child) {
-                                    return TextButton.icon(
-                                      icon: const Icon(
-                                        FluentIcons.filter_24_regular,
-                                      ),
-                                      onPressed: () => controller.open(),
-                                      label: Text(value!.searchQuery!.field),
-                                    );
-                                  },
-                                  menuChildren: [
-                                    for (var field in widget.controller.description.fields.keys)
-                                      MenuItemButton(
-                                        leadingIcon: const Icon(FeatherIcons.user),
-                                        trailingIcon: value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
-                                        onPressed: value.searchQuery!.field == field
-                                            ? null
-                                            : () {
-                                                widget.controller.setSearchQueryField(field);
-                                              },
-                                        child: Text(field.titleCase),
-                                      ),
-                                  ],
-                                ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: widget.gap),
-    
-              /// filters chips
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: widget.gap),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Wrap(
-                    spacing: 8,
-                    children: [
-                      SizedBox(
-                        height: 40,
-                        child: ActionChip(
-                          label: Icon(
-                            FluentIcons.add_24_regular,
-                            size: 20,
-                          ),
-                          onPressed: () async {
-                            var filter = await showFilterWizard(context, widget.controller.description);
-                            print(filter);
-                            if (filter != null) {
-                              widget.controller.value = widget.controller.value!.copyWith(filters: [
-                                ...widget.controller.value!.filters,
-                                filter
-                              ]);
-                            }
-                          },
-                        ),
-                      ),
-                      for (var filter in widget.controller.value!.filters)
+          var child = RefreshIndicator.adaptive(
+            triggerMode: RefreshIndicatorTriggerMode.anywhere,
+            onRefresh: widget.controller.load,
+            child: CustomScrollView(
+              slivers: [
+                // put the past widget here, but un sliver
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: widget.gap, left: widget.gap, right: widget.gap),
+                    child: Row(
+                      children: [
                         SizedBox(
-                          height: 40,
-                          child: Builder(
-                            builder: (context) {
-                              bool isActive = filter.active ?? false;
-                              bool isFixed = filter.fixed ?? false;
-                              return GestureDetector(
-                                onTap: () {
-                                  widget.controller.updateFilter(filter.copyWith(active: !filter.active));
-                                },
-                                child: Chip(
-                                  label: Text(filter.name),
-                                  backgroundColor: isActive == true ? Theme.of(context).colorScheme.primary : null,
-                                  side: isActive == true ? const BorderSide(color: Colors.transparent) : BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
-                                  labelStyle: TextStyle(color: isActive == true ? Theme.of(context).colorScheme.onPrimary : null),
-                                  deleteIcon: isFixed == true
-                                      ? null
-                                      : const Icon(
-                                          FluentIcons.dismiss_24_regular,
-                                          size: 15,
-                                        ),
-                                  deleteIconColor: isActive == true ? Theme.of(context).colorScheme.onPrimary : null,
-                                  onDeleted: isFixed == true
-                                      ? null
-                                      : () {
-                                          widget.controller.removeFilter(filter);
-                                        },
+                          child: FilledButton.icon(
+                            onPressed: widget.onAddPressed,
+                            label: const Text('Add'),
+                            icon: const Icon(FeatherIcons.plus),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: AppTextFormField.min(
+                            controller: searchController,
+                            // enabled: !loading.value,
+                            onSubmitted: (String value) {
+                              widget.controller.value = widget.controller.value!.copyWith(
+                                searchQuery: SearchQuery(
+                                  field: widget.controller.value!.searchQuery?.field ?? widget.controller.description.fields.firstOrNull?.name ?? "",
+                                  value: value,
                                 ),
                               );
+                              widget.controller.search();
                             },
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-    
-              if (widget.useFlexTable)
-                Padding(
-                padding: EdgeInsets.symmetric(horizontal: widget.gap+8),
-                  child: widget.flexTableHeader ??
-                      FlexTableItem(
-                        isHeader: true,
-                        selected: widget.controller.filtered?.length == widget.controller.value!.selectedModels.length
-                            ? true
-                            : widget.controller.value!.selectedModels.isEmpty == true
-                                ? false
-                                : null,
-                        onSelectChanged: (val) {
-                          if (val == true) {
-                            widget.controller.value = widget.controller.value!.copyWith(selectedModels: widget.controller.models!.toSet());
-                          } else {
-                            widget.controller.value = widget.controller.value!.copyWith(selectedModels: const {});
-                          }
-                        },
-                        children: [
-                          if (widget.flexTableItemBuilders == null) ...[
-                            const SizedBox(),
-                            const Text(
-                              'Title',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            const Text(
-                              'Subtitle',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            const Text(
-                              'Last Update',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ] else
-                            for (var item in widget.flexTableItemBuilders!) item.header,
-                          Icon(
-                            FluentIcons.chevron_down_24_regular,
-                            size: 20,
-                          )
-                        ],
-                      ),
-                ),
-              value?.loading == true ? const LinearProgressIndicator(minHeight: 2) : const Divider(height: 2),
-              Expanded(
-                child: RefreshIndicator.adaptive(
-                  triggerMode: RefreshIndicatorTriggerMode.anywhere,
-                  onRefresh: widget.controller.load,
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: SingleChildScrollView(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: widget.gap),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                if (widget.controller.filtered != null)
-                                  ListView.builder(
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemCount: widget.controller.filtered!.length,
-                                    itemBuilder: (context, index) {
-                                      var model = widget.controller.filtered![index];
-                                      var tile = widget.controller.description.tileBuilder(model);
-                                      return widget.itemBuilder?.call(model) ??
-                                          ModelTile(
-                                            selected: widget.controller.value!.selectedModels.contains(model),
-                                            onTap: () {
-                                              widget.onModelTap?.call(model);
-                                            },
-                                            child: FlexTableItem(
-                                              selected: widget.controller.value!.selectedModels.contains(model),
-                                              onSelectChanged: (val) {
-                                                if (val == true) {
-                                                  widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
-                                                    ...widget.controller.value!.selectedModels,
-                                                    model
-                                                  });
-                                                } else {
-                                                  widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
-                                                    ...widget.controller.value!.selectedModels..remove(model),
-                                                  });
-                                                }
-                                              },
-                                              children: [
-                                                if (widget.flexTableItemBuilders != null) ...[
-                                                  for (var item in widget.flexTableItemBuilders!) item.builder(model),
-                                                ] else ...[
-                                                  if (tile.leading != null) tile.leading! else const SizedBox(),
-                                                  Text(
-                                                    tile.title ?? "(No title)",
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                  Text(
-                                                    tile.subtitle ?? "(No subtitle)",
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                  // create at
-                                                  Text(
-                                                    timeago.format(model.updatedAt.toLocal()),
-                                                    style: const TextStyle(fontWeight: FontWeight.bold),
-                                                    overflow: TextOverflow.ellipsis,
-                                                    maxLines: 1,
-                                                  ),
-                                                ],
-                                                if (tile.trailing != null)
-                                                  tile.trailing!
-                                                else
-                                                  MenuAnchor(
-                                                    builder: (context, controller, child) {
-                                                      return IconButton(
-                                                        onPressed: () {
-                                                          if (controller.isOpen) {
-                                                            controller.close();
-                                                          } else {
-                                                            controller.open();
-                                                          }
-                                                        },
-                                                        icon: const Icon(Icons.more_vert),
-                                                      );
-                                                    },
-                                                    menuChildren: [
-                                                      const SizedBox(
-                                                        height: 8,
-                                                      ),
-                                                      if (widget.controller.description.groupedActions.keys.isNotEmpty) ...[
-                                                        for (var group in widget.controller.description.groupedActions.keys) ...[
-                                                          for (var action in widget.controller.description.groupedActions[group]!)
-                                                            MenuItemButton(
-                                                              onPressed: () => action.single?.call(model),
-                                                              leadingIcon: action.icon,
-                                                              child: Text(action.label),
-                                                            ),
-                                                          const Divider()
-                                                        ]
-                                                      ],
-                                                      const SizedBox(
-                                                        height: 8,
-                                                      ),
-                                                    ],
-                                                  )
-                                              ],
-                                            ),
-                                          );
-                                    },
-                                  ),
-                                Center(
-                                  child: SizedBox(
-                                    height: 80,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        if (widget.controller.needIndexError != null)
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                  vertical: 24.0,
-                                                  horizontal: 12,
-                                                ),
-                                                child: Text(widget.controller.needIndexError!.name),
-                                              ),
-                                              // refresh
-                                              OutlinedButton(
-                                                onPressed: () async {
-                                                  await launchUrl(Uri.parse(widget.controller.needIndexError!.url));
-                                                },
-                                                child: const Text("Create index"),
-                                              )
-                                            ],
-                                          )
-                                        else if (value?.loading != false)
-                                          Center(
-                                              child: Container(
-                                            margin: const EdgeInsets.all(24.0),
-                                            height: 15,
-                                            width: 15,
-                                            child: const CircularProgressIndicator.adaptive(strokeWidth: 2, strokeCap: StrokeCap.round),
-                                          ))
-                                        // if controller.filtered is empty but controller.value is not empty suggest to clear searchQuery
-                                        else if (widget.controller.value?.models != null && widget.controller.value!.models!.isEmpty && widget.controller.value!.searchQuery != null)
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              const Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                  vertical: 24.0,
-                                                  horizontal: 12,
-                                                ),
-                                                child: Text('No profiles found'),
-                                              ),
-                                              // refresh
-                                              if (searchController.text.isNotEmpty)
-                                                OutlinedButton(
-                                                  onPressed: () {
-                                                    searchController.clear();
-                                                    widget.controller.value = widget.controller.value!.copyWith(searchQuery: null);
-                                                    widget.controller.search();
+                            onChanged: (String value) async {
+                              widget.controller.setSearchQueryValue(value);
+                            },
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(FluentIcons.search_24_regular),
+                              label: const Text('Search'),
+                              alignLabelWithHint: true,
+                              // select search field
+                              suffixIcon: value?.searchQuery == null
+                                  ? null
+                                  : MenuAnchor(
+                                      builder: (context, controller, child) {
+                                        return TextButton.icon(
+                                          icon: const Icon(
+                                            FluentIcons.filter_24_regular,
+                                          ),
+                                          onPressed: () => controller.open(),
+                                          label: Text(value!.searchQuery!.field),
+                                        );
+                                      },
+                                      menuChildren: [
+                                        for (var field in widget.controller.description.fields)
+                                          MenuItemButton(
+                                            leadingIcon: const Icon(FeatherIcons.user),
+                                            trailingIcon: value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                                            onPressed: value.searchQuery!.field == field
+                                                ? null
+                                                : () {
+                                                    widget.controller.setSearchQueryField(field.name);
                                                   },
-                                                  child: const Text("Clear search"),
-                                                )
-                                            ],
-                                          )
-                                        else if (widget.controller.value!.models?.isEmpty == true)
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              const Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                  vertical: 24.0,
-                                                  horizontal: 12,
-                                                ),
-                                                child: Text('No profiles found'),
-                                              ),
-                                              // refresh
-                                              OutlinedButton(
-                                                onPressed: widget.controller.load,
-                                                child: const Text("Refresh"),
-                                              )
-                                            ],
-                                          )
-                                        else if (widget.controller.hasNext)
-                                          // VisibilityDetector(
-                                          //   key: Key(controller..toString()),
-                                          //   onVisibilityChanged: (info) {
-                                          //     if (info.visibleFraction > 0) {
-                                          //       search(startAfter: [
-                                          //         Timestamp.fromDate(nextStartAt!)
-                                          //       ]);
-                                          //     }
-                                          //   },
-                                          //   child:
-                                          OutlinedButton.icon(
-                                            onPressed: () async {
-                                              await widget.controller.more();
-                                            },
-                                            label: const Text("LOAD MORE"),
-                                            icon: const Icon(FluentIcons.chevron_down_24_regular),
-                                          )
-                                        // )
-                                        else
-                                        // you reached the end text
-                                        if (widget.controller.value?.models != null && widget.controller.value!.models!.isNotEmpty)
-                                          const Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 24.0,
-                                              horizontal: 12,
-                                            ),
-                                            child: Text('You reached the end.'),
-                                          )
+                                            child: Text(field.name.titleCase),
+                                          ),
                                       ],
                                     ),
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
                         ),
-                      ),
-                      if (widget.controller.value?.selectedModels.isNotEmpty == true)
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: Center(
-                            child: Container(
-                              // constraints: BoxConstraints(maxWidth: 600),
-                              margin: EdgeInsets.all(12),
-                              // height: 50,
-                              child: Material(
-                                // color: Theme.of(context).colorScheme.primary,
-                                borderRadius: BorderRadius.circular(50),
-    
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    children: [
-                                      IconButton(onPressed: () {}, icon: Icon(Icons.close)),
-                                      for (var action in widget.controller.description.actions.where((e) => e.multiple != null))
-                                        TextButton.icon(
-                                          onPressed: () {
-                                            // action.multiple?.call(controller.value!.selectedModels);
-                                          },
-                                          icon: action.icon ?? const SizedBox(),
-                                          label: Text(action.label),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+
+                // SizedBox(height: widget.gap),
+
+                // /// filters chips
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(widget.gap),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Wrap(
+                        spacing: 8,
+                        children: [
+                          SizedBox(
+                            height: 40,
+                            child: ActionChip(
+                              label: Icon(
+                                FluentIcons.add_24_regular,
+                                size: 20,
+                              ),
+                              onPressed: () async {
+                                var filter = await showFilterWizard(context, widget.controller.description);
+                                print(filter);
+                                if (filter != null) {
+                                  widget.controller.value = widget.controller.value!.copyWith(filters: [
+                                    ...widget.controller.value!.filters,
+                                    filter
+                                  ]);
+                                }
+                              },
+                            ),
+                          ),
+                          for (var filter in widget.controller.value!.filters)
+                            SizedBox(
+                              height: 40,
+                              child: Builder(
+                                builder: (context) {
+                                  bool isActive = filter.active ?? false;
+                                  bool isFixed = filter.fixed ?? false;
+                                  return GestureDetector(
+                                    onTap: () {
+                                      widget.controller.updateFilter(filter.copyWith(active: !filter.active));
+                                    },
+                                    child: Chip(
+                                      label: Text(filter.name),
+                                      backgroundColor: isActive == true ? Theme.of(context).colorScheme.primary : null,
+                                      side: isActive == true ? const BorderSide(color: Colors.transparent) : BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
+                                      labelStyle: TextStyle(color: isActive == true ? Theme.of(context).colorScheme.onPrimary : null),
+                                      deleteIcon: isFixed == true
+                                          ? null
+                                          : const Icon(
+                                              FluentIcons.dismiss_24_regular,
+                                              size: 15,
+                                            ),
+                                      deleteIconColor: isActive == true ? Theme.of(context).colorScheme.onPrimary : null,
+                                      onDeleted: isFixed == true
+                                          ? null
+                                          : () {
+                                              widget.controller.removeFilter(filter);
+                                            },
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                if (widget.useFlexTable)
+                  SliverToBoxAdapter(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: widget.gap + 8),
+                          child: widget.flexTableHeader ??
+                              FlexTableItem(
+                                isHeader: true,
+                                selected: widget.controller.filtered?.length == widget.controller.value!.selectedModels.length
+                                    ? true
+                                    : widget.controller.value!.selectedModels.isEmpty == true
+                                        ? false
+                                        : null,
+                                onSelectChanged: (val) {
+                                  if (val == true) {
+                                    widget.controller.value = widget.controller.value!.copyWith(selectedModels: widget.controller.models!.toSet());
+                                  } else {
+                                    widget.controller.value = widget.controller.value!.copyWith(selectedModels: const {});
+                                  }
+                                },
+                                children: [
+                                  if (widget.flexTableItemBuilders == null) ...[
+                                    const SizedBox(),
+                                    const Text(
+                                      'Title',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                    const Text(
+                                      'Subtitle',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                    const Text(
+                                      'Last Update',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ] else
+                                    for (var item in widget.flexTableItemBuilders!) item.header,
+                                  Icon(
+                                    FluentIcons.chevron_down_24_regular,
+                                    size: 20,
+                                  )
+                                ],
+                              ),
+                        ),
+                        value?.loading == true ? const LinearProgressIndicator(minHeight: 2) : const Divider(height: 2),
+                      ],
+                    ),
+                  ),
+
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      var model = widget.controller.filtered![index];
+                      var tile = widget.controller.description.tileBuilder(model);
+                      return Padding(
+                        padding: EdgeInsets.symmetric(horizontal: widget.gap),
+                        child: widget.itemBuilder?.call(model) ??
+                            ModelTile(
+                              selected: widget.controller.value!.selectedModels.contains(model),
+                              onTap: () {
+                                widget.onModelTap?.call(model);
+                              },
+                              child: FlexTableItem(
+                                selected: widget.controller.value!.selectedModels.contains(model),
+                                onSelectChanged: (val) {
+                                  if (val == true) {
+                                    widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
+                                      ...widget.controller.value!.selectedModels,
+                                      model
+                                    });
+                                  } else {
+                                    widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
+                                      ...widget.controller.value!.selectedModels..remove(model),
+                                    });
+                                  }
+                                },
+                                children: [
+                                  if (widget.flexTableItemBuilders != null) ...[
+                                    for (var item in widget.flexTableItemBuilders!) item.builder(model),
+                                  ] else ...[
+                                    if (tile.leading != null) tile.leading! else const SizedBox(),
+                                    Text(
+                                      tile.title ?? "(No title)",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      tile.subtitle ?? "(No subtitle)",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    // create at
+                                    Text(
+                                      timeago.format(model.updatedAt.toLocal()),
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ],
+                                  if (tile.trailing != null)
+                                    tile.trailing!
+                                  else
+                                    MenuAnchor(
+                                      builder: (context, controller, child) {
+                                        return IconButton(
+                                          onPressed: () {
+                                            if (controller.isOpen) {
+                                              controller.close();
+                                            } else {
+                                              controller.open();
+                                            }
+                                          },
+                                          icon: const Icon(Icons.more_vert),
+                                        );
+                                      },
+                                      menuChildren: [
+                                        const SizedBox(
+                                          height: 8,
+                                        ),
+                                        if (widget.controller.description.groupedActions.keys.isNotEmpty) ...[
+                                          for (var group in widget.controller.description.groupedActions.keys) ...[
+                                            for (var action in widget.controller.description.groupedActions[group]!)
+                                              MenuItemButton(
+                                                onPressed: () async {
+                                                  var updatedModel = await action.single?.call(context, model);
+                                                  if (updatedModel != null) {
+                                                    widget.controller.replaceModel(model, updatedModel);
+                                                  }
+                                                },
+                                                leadingIcon: action.icon,
+                                                child: Text(action.label),
+                                              ),
+                                            const Divider()
+                                          ]
+                                        ],
+                                        const SizedBox(
+                                          height: 8,
+                                        ),
+                                      ],
+                                    )
+                                ],
+                              ),
+                            ),
+                      );
+                    },
+                    childCount: widget.controller.filtered?.length ?? 0,
+                  ),
+                ),
+
+                SliverToBoxAdapter(
+                  child: Center(
+                    child: Container(
+                      constraints: const BoxConstraints(minHeight: 80),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (widget.controller.needIndexError != null)
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 12.0,
+                              runSpacing: 12.0,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 24.0,
+                                    horizontal: 12,
+                                  ),
+                                  child: Text(widget.controller.needIndexError!.name),
+                                ),
+                                // refresh
+                                OutlinedButton(
+                                  onPressed: () async {
+                                    await launchUrl(Uri.parse(widget.controller.needIndexError!.url));
+                                  },
+                                  child: const Text("Create index"),
+                                ),
+                                // clear search
+                                if (widget.controller.value!.searchQuery != null)
+                                  TextButton(
+                                    onPressed: () async {
+                                      searchController.clear();
+                                      await widget.controller.clearSearch();
+                                    },
+                                    child: const Text("Clear search"),
+                                  ),
+                                // un select filters
+                                if (widget.controller.value!.filters.isNotEmpty)
+                                  TextButton(
+                                    onPressed: () {
+                                      widget.controller.clearFilters();
+                                    },
+                                    child: const Text("Clear filters"),
+                                  ),
+                              ],
+                            )
+                          else if (value?.loading != false)
+                            Center(
+                                child: Container(
+                              margin: const EdgeInsets.all(24.0),
+                              height: 15,
+                              width: 15,
+                              child: const CircularProgressIndicator.adaptive(strokeWidth: 2, strokeCap: StrokeCap.round),
+                            ))
+                          // if controller.filtered is empty but controller.value is not empty suggest to clear searchQuery
+                          else if (widget.controller.value?.models != null && widget.controller.value!.models!.isEmpty && widget.controller.value!.searchQuery != null)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 24.0,
+                                    horizontal: 12,
+                                  ),
+                                  child: Text('Nothing to show'),
+                                ),
+                                // refresh
+                                if (searchController.text.isNotEmpty)
+                                  OutlinedButton(
+                                    onPressed: () async {
+                                      searchController.clear();
+                                      await widget.controller.clearSearch();
+                                    },
+                                    child: const Text("Clear search"),
+                                  )
+                              ],
+                            )
+                          else if (widget.controller.value!.models?.isEmpty == true)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 24.0,
+                                    horizontal: 12,
+                                  ),
+                                  child: Text('Nothing to show'),
+                                ),
+                                // refresh
+                                OutlinedButton(
+                                  onPressed: widget.controller.load,
+                                  child: const Text("Refresh"),
+                                )
+                              ],
+                            )
+                          else if (widget.controller.hasNext)
+                            // VisibilityDetector(
+                            //   key: Key(controller..toString()),
+                            //   onVisibilityChanged: (info) {
+                            //     if (info.visibleFraction > 0) {
+                            //       search(startAfter: [
+                            //         Timestamp.fromDate(nextStartAt!)
+                            //       ]);
+                            //     }
+                            //   },
+                            //   child:
+                            OutlinedButton.icon(
+                              onPressed: () async {
+                                await widget.controller.more();
+                              },
+                              label: const Text("LOAD MORE"),
+                              icon: const Icon(FluentIcons.chevron_down_24_regular),
+                            )
+                          // )
+                          else
+                          // you reached the end text
+                          if (widget.controller.value?.models != null && widget.controller.value!.models!.isNotEmpty)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                vertical: 24.0,
+                                horizontal: 12,
+                              ),
+                              child: Text('You reached the end.'),
+                            )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                // Expanded(
+                //   child: RefreshIndicator.adaptive(
+                //     triggerMode: RefreshIndicatorTriggerMode.anywhere,
+                //     onRefresh: widget.controller.load,
+                //     child: Stack(
+                //       children: [
+                //         Positioned.fill(
+                //           child: Padding(
+                //             padding: EdgeInsets.symmetric(horizontal: widget.gap),
+                //             child: Column(
+                //               mainAxisSize: MainAxisSize.min,
+                //               mainAxisAlignment: MainAxisAlignment.center,
+                //               children: [
+                //                 if (widget.controller.filtered != null)
+                //                   Expanded(
+                //                     child: ListView.builder(
+                //                       // physics: const NeverScrollableScrollPhysics(),
+                //                       // shrinkWrap: true,
+                //                       itemCount: widget.controller.filtered!.length,
+                //                       itemBuilder: (context, index) {
+                //                         var model = widget.controller.filtered![index];
+                //                         var tile = widget.controller.description.tileBuilder(model);
+                //                         return widget.itemBuilder?.call(model) ??
+                //                             ModelTile(
+                //                               selected: widget.controller.value!.selectedModels.contains(model),
+                //                               onTap: () {
+                //                                 widget.onModelTap?.call(model);
+                //                               },
+                //                               child: FlexTableItem(
+                //                                 selected: widget.controller.value!.selectedModels.contains(model),
+                //                                 onSelectChanged: (val) {
+                //                                   if (val == true) {
+                //                                     widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
+                //                                       ...widget.controller.value!.selectedModels,
+                //                                       model
+                //                                     });
+                //                                   } else {
+                //                                     widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
+                //                                       ...widget.controller.value!.selectedModels..remove(model),
+                //                                     });
+                //                                   }
+                //                                 },
+                //                                 children: [
+                //                                   if (widget.flexTableItemBuilders != null) ...[
+                //                                     for (var item in widget.flexTableItemBuilders!) item.builder(model),
+                //                                   ] else ...[
+                //                                     if (tile.leading != null) tile.leading! else const SizedBox(),
+                //                                     Text(
+                //                                       tile.title ?? "(No title)",
+                //                                       maxLines: 1,
+                //                                       overflow: TextOverflow.ellipsis,
+                //                                     ),
+                //                                     Text(
+                //                                       tile.subtitle ?? "(No subtitle)",
+                //                                       maxLines: 1,
+                //                                       overflow: TextOverflow.ellipsis,
+                //                                     ),
+                //                                     // create at
+                //                                     Text(
+                //                                       timeago.format(model.updatedAt.toLocal()),
+                //                                       style: const TextStyle(fontWeight: FontWeight.bold),
+                //                                       overflow: TextOverflow.ellipsis,
+                //                                       maxLines: 1,
+                //                                     ),
+                //                                   ],
+                //                                   if (tile.trailing != null)
+                //                                     tile.trailing!
+                //                                   else
+                //                                     MenuAnchor(
+                //                                       builder: (context, controller, child) {
+                //                                         return IconButton(
+                //                                           onPressed: () {
+                //                                             if (controller.isOpen) {
+                //                                               controller.close();
+                //                                             } else {
+                //                                               controller.open();
+                //                                             }
+                //                                           },
+                //                                           icon: const Icon(Icons.more_vert),
+                //                                         );
+                //                                       },
+                //                                       menuChildren: [
+                //                                         const SizedBox(
+                //                                           height: 8,
+                //                                         ),
+                //                                         if (widget.controller.description.groupedActions.keys.isNotEmpty) ...[
+                //                                           for (var group in widget.controller.description.groupedActions.keys) ...[
+                //                                             for (var action in widget.controller.description.groupedActions[group]!)
+                //                                               MenuItemButton(
+                //                                                 onPressed: () => action.single?.call(model),
+                //                                                 leadingIcon: action.icon,
+                //                                                 child: Text(action.label),
+                //                                               ),
+                //                                             const Divider()
+                //                                           ]
+                //                                         ],
+                //                                         const SizedBox(
+                //                                           height: 8,
+                //                                         ),
+                //                                       ],
+                //                                     )
+                //                                 ],
+                //                               ),
+                //                             );
+                //                       },
+                //                     ),
+                //                   ),
+                //               ],
+                //             ),
+                //           ),
+                //         ),
+                //         if (widget.controller.value?.selectedModels.isNotEmpty == true)
+                //           Positioned(
+                //             left: 0,
+                //             right: 0,
+                //             bottom: 0,
+                //             child: Center(
+                //               child: Container(
+                //                 // constraints: BoxConstraints(maxWidth: 600),
+                //                 margin: EdgeInsets.all(12),
+                //                 // height: 50,
+                //                 child: Material(
+                //                   // color: Theme.of(context).colorScheme.primary,
+                //                   borderRadius: BorderRadius.circular(50),
+                //                   child: Padding(
+                //                     padding: const EdgeInsets.all(8.0),
+                //                     child: Row(
+                //                       children: [
+                //                         IconButton(onPressed: () {}, icon: Icon(Icons.close)),
+                //                         for (var action in widget.controller.description.actions.where((e) => e.multiple != null))
+                //                           TextButton.icon(
+                //                             onPressed: () {
+                //                               // action.multiple?.call(controller.value!.selectedModels);
+                //                             },
+                //                             icon: action.icon ?? const SizedBox(),
+                //                             label: Text(action.label),
+                //                           ),
+                //                       ],
+                //                     ),
+                //                   ),
+                //                 ),
+                //               ),
+                //             ),
+                //           ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
+              ],
+            ),
           );
           if (!widget.useFlexTable) return child;
           return FlexTable(
@@ -1376,6 +1518,7 @@ typedef ModelIndexType<M extends Model> = (
 /// [ModelListViewValue] is a class to hold the state of the view
 class ModelListViewValue<M extends Model> {
   final bool loading;
+  final bool forceFilter;
   final List<M>? models;
   final SearchQuery? searchQuery;
   final List<IndexViewFilter<M>> filters;
@@ -1385,6 +1528,7 @@ class ModelListViewValue<M extends Model> {
   final String? error;
 
   const ModelListViewValue({
+    this.forceFilter = false,
     this.loading = false,
     this.models,
     this.searchQuery,
@@ -1397,6 +1541,7 @@ class ModelListViewValue<M extends Model> {
 
   ModelListViewValue<M> copyWith({
     bool? loading,
+    bool? forceFilter,
     List<M>? models,
     SearchQuery? searchQuery,
     List<IndexViewFilter<M>>? filters,
@@ -1407,6 +1552,7 @@ class ModelListViewValue<M extends Model> {
   }) {
     return ModelListViewValue<M>(
       loading: loading ?? this.loading,
+      forceFilter: forceFilter ?? this.forceFilter,
       models: models ?? this.models,
       searchQuery: searchQuery ?? this.searchQuery,
       filters: filters ?? this.filters,
@@ -1425,7 +1571,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       : super(value?.copyWith(
           searchQuery: value.searchQuery ??
               SearchQuery(
-                field: description.fields.keys.firstOrNull ?? "",
+                field: description.fields.firstOrNull?.name ?? "",
                 value: "",
               ),
         ));
@@ -1437,7 +1583,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   })? needIndexError;
 
   /// [search] is a function to search for models
-  Future<void> search({Iterable<Timestamp>? startAfter, bool concat = false}) async {
+  Future<void> search({Iterable<Timestamp>? startAfter, bool concat = false,int limit = 50}) async {
     needIndexError = null;
     value = (value ?? ModelListViewValue<M>()).copyWith(loading: true);
     try {
@@ -1463,7 +1609,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
           if (value?.searchQuery?.value?.isNotEmpty == true) {
             query = query.where(value!.searchQuery!.field, isGreaterThanOrEqualTo: value!.searchQuery!.value).where(value!.searchQuery!.field, isLessThanOrEqualTo: value!.searchQuery!.value! + "\uf8ff").orderBy(value!.searchQuery!.field, descending: false);
           } else {
-            if (!strict) {
+            if (value?.searchQuery?.value?.isEmpty == true || !strict && query.parameters["orderBy"]?.isNotEmpty != true) {
               query = query.orderBy("updatedAt", descending: true);
             }
           }
@@ -1473,7 +1619,12 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
           }
           return query;
         },
+        limit: limit,
       );
+      if (_models.length < limit) {
+        _hasMore = false;
+      }
+
       if (concat) {
         // check if the first item equal to the last item in the current models
         if (value?.models?.lastOrNull != null && value!.models!.lastOrNull!.ref.path == _models.firstOrNull?.ref.path) {
@@ -1578,6 +1729,12 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     // check filter if extst, take the index and activat it
     var index = value!.filters.indexWhere((f) => f.name == filter.name);
     if (index >= 0) {
+      if (value?.forceFilter == true) {
+        var currentActive = value!.filters.where((e) => e.active).firstOrNull;
+        if (currentActive != null && currentActive.name == filter.name && filter.active == false) {
+          return;
+        }
+      }
       value!.filters[index] = filter;
     } else {
       value!.filters.add(filter);
@@ -1591,26 +1748,62 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// remove filter
   Future<void> removeFilter(IndexViewFilter<M> filter) async {
+    if (value?.forceFilter == true) {
+      // if no active filters prevent from removing
+      if (value!.filters.where((e) => e.active).length <= 1) {
+        return;
+      }
+    }
     value = value?.copyWith(
       filters: value!.filters.where((e) => e.name != filter.name).toList(),
     );
     await search();
   }
 
+  /// replaceModel
+  void replaceModel(M oldModel, M newModel) {
+    value = value?.copyWith(
+      models: value!.models?.map((e) => e.ref.path == oldModel.ref.path ? newModel : e).toList(),
+    );
+  }
+
+  /// [addModel]
+  void addModel(M model) {
+    value = value?.copyWith(
+      models: [
+        model,
+        ...(value?.models ?? [])
+      ],
+    );
+  }
+
+
   /// [clearFilters]
-  Future<void> clearFilters() async {
+  Future<void> clearFilters({bool refresh = true}) async {
     value = value?.copyWith(
       filters: value!.filters.map((e) => e.copyWith(active: false)).toList(),
+    );
+    if (refresh) await search();
+  }
+
+  /// [clearSearch]
+  Future<void> clearSearch({bool refresh = true}) async {
+    value = value?.copyWith(
+      searchQuery: SearchQuery(
+        field: value!.searchQuery?.field ?? "ref",
+        value: "",
+      ),
     );
     await search();
   }
 
   /// [history]
   Map<M, bool> history = {};
-
+  bool _hasMore = true;
   /// [hasNext] is a function to check if there is more models to load
   bool get hasNext {
-    return value?.models?.lastOrNull?.ref.path != history.keys.lastOrNull?.ref.path;
+    return _hasMore;
+    // return value?.models?.lastOrNull?.ref.path != history.keys.lastOrNull?.ref.path;
   }
 
   /// to make sure that the controller is mounted on the view
@@ -1633,7 +1826,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   void setSearchQueryValue(String _value) {
     value = value?.copyWith(
         searchQuery: SearchQuery(
-      field: value?.searchQuery?.field ?? description.fields.keys.firstOrNull ?? "",
+      field: value?.searchQuery?.field ?? description.fields.firstOrNull?.name ?? "",
       value: _value,
     ));
   }
@@ -1641,10 +1834,111 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   /// [mounted] is a function to mount the controller on the view and bind it to the view
 }
 
+enum FieldGroup {
+  primary,
+  secondary,
+  metadata,
+  hidden,
+}
+
+enum FieldType {
+  number,
+  text,
+  date,
+  time,
+  datetime,
+  email,
+  phone,
+  url,
+  image,
+  file,
+  color,
+  boolean,
+  reference,
+  listNumber,
+  listText,
+  listDate,
+  listTime,
+  listDatetime,
+  listEmail,
+  listPhone,
+  listUrl,
+  listImage,
+  listFile,
+  listColor,
+  listBoolean,
+  listReference,
+}
+
+/// FieldDescription
+class FieldDescription<M> {
+  final String name;
+  final bool nullable;
+  final String? details;
+  final FieldGroup group;
+  // type
+  final FieldType type;
+  // mapping
+  final Object? Function(M model) map;
+  final Widget Function(M model)? builder;
+  final Widget Function(M model)? header;
+
+  const FieldDescription({
+    required this.name,
+    this.nullable = false,
+    required this.map,
+    required this.type,
+    this.details,
+    this.group = FieldGroup.primary,
+    this.builder,
+    this.header,
+  });
+
+  /// copyWith
+  FieldDescription<M> copyWith({
+    String? name,
+    bool? nullable,
+    String? details,
+    FieldType? type,
+    FieldGroup? group,
+    Object? Function(M model)? map,
+    Widget Function(M model)? builder,
+    Widget Function(M model)? header,
+  }) {
+    return FieldDescription<M>(
+      name: name ?? this.name,
+      nullable: nullable ?? this.nullable,
+      details: details ?? this.details,
+      type: type ?? this.type,
+      group: group ?? this.group,
+      map: map ?? this.map,
+      builder: builder ?? this.builder,
+      header: header ?? this.header,
+    );
+  }
+
+  @override
+  String toString() {
+    return name;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is FieldDescription<M> && other.name == name;
+  }
+
+  @override
+  int get hashCode {
+    return name.hashCode;
+  }
+}
+
 /// [ModelDescription] is a class to describe a model
 class ModelDescription<T extends Model> {
   // fields to search in
-  final Map<String, Type> fields;
+  final Set<FieldDescription<T>> fields;
   // name of the collection
   final String name;
   // path to collection
@@ -1656,7 +1950,7 @@ class ModelDescription<T extends Model> {
 
   /// actions
   final List<ModelAction<T>> actions;
-  ModelDescription({
+  const ModelDescription({
     required this.fields,
     required this.name,
     required this.path,
@@ -1680,6 +1974,25 @@ class ModelDescription<T extends Model> {
     }
     return map;
   }
+
+  // copyWith
+  ModelDescription<T> copyWith({
+    Set<FieldDescription<T>>? fields,
+    String? name,
+    String? path,
+    T Function(Map<String, dynamic> data)? fromJson,
+    ModelGeneralData Function(T model)? tileBuilder,
+    List<ModelAction<T>>? actions,
+  }) {
+    return ModelDescription<T>(
+      fields: fields ?? this.fields,
+      name: name ?? this.name,
+      path: path ?? this.path,
+      fromJson: fromJson ?? this.fromJson,
+      tileBuilder: tileBuilder ?? this.tileBuilder,
+      actions: actions ?? this.actions,
+    );
+  }
 }
 
 class ModelGeneralData {
@@ -1701,7 +2014,7 @@ class ModelGeneralData {
 /// the operation dropdown will change based on the field selected
 /// the value field will change based on the operator selected
 Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext context, ModelDescription<M> description) async {
-  var _field = description.fields.keys.firstOrNull;
+  var _field = description.fields.firstOrNull;
   var _operator = QueryOperations.equal;
   dynamic value;
   return await showDialog<IndexViewFilter<M>?>(
@@ -1718,11 +2031,11 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                   return TextButton.icon(
                     icon: const Icon(FluentIcons.filter_24_regular),
                     onPressed: () => controller.open(),
-                    label: Text(_field?.titleCase ?? "Select field"),
+                    label: Text(_field?.name.titleCase ?? "Select field"),
                   );
                 },
                 menuChildren: [
-                  for (var field in description.fields.keys)
+                  for (var field in description.fields)
                     MenuItemButton(
                       leadingIcon: const Icon(FluentIcons.filter_24_regular),
                       trailingIcon: _field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
@@ -1733,7 +2046,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                                 _field = field;
                               });
                             },
-                      child: Text(field.titleCase),
+                      child: Text(field.name.titleCase),
                     ),
                 ],
               ),
@@ -1765,7 +2078,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                 height: 8,
               ),
               // value
-              if (description.fields[_field] == String || description.fields[_field] == int || description.fields[_field] == double || description.fields[_field] == List)
+              if (_field?.type != FieldType.boolean)
                 AppTextFormField(
                   onChanged: (String v) async {
                     value = v;
@@ -1776,10 +2089,10 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                     alignLabelWithHint: true,
                     hintText:
                         // on list separate by |
-                        description.fields[_field] is List ? "value1|value2|value3" : null,
+                        _field!.type.name.startsWith("list") ? "value1|value2|value3" : null,
                   ),
                 )
-              else if (description.fields[_field] == bool)
+              else
                 MenuAnchor(
                   builder: (context, controller, child) {
                     return TextButton.icon(
@@ -1833,12 +2146,12 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                       var filter = IndexViewFilter<M>(
                         name: "${_field}${_operator.symbol}${value}",
                         remote: (query) {
-                          if (description.fields[_field] is num) value = num.tryParse(value) ?? value;
-                          return _operator.remote(query: query, field: _field!, value: value);
+                          if (_field!.type == FieldType.number) value = num.tryParse(value) ?? value;
+                          return _operator.remote(query: query, field: _field!.name, value: value);
                         },
                         local: (model) {
                           return _operator.local(
-                            field: _field!,
+                            field: _field!.name,
                             value: value,
                             model: model,
                           );

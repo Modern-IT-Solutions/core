@@ -47,7 +47,7 @@ class AuthService extends Service {
   ProfileModel? _currentProfile;
 
   /// currentProfileStream
-  StreamSubscription<ProfileModel?>? _currentProfileStreamSubscription;
+  StreamSubscription<FutureOr<ProfileModel?>>? _currentProfileStreamSubscription;
 
   /// listen to current profile
   Future<void> _listenToCurrentProfile() async {
@@ -56,8 +56,8 @@ class AuthService extends Service {
     _currentProfile = null;
     notifyListeners();
 
-    _currentProfileStreamSubscription = FirebaseFirestore.instance.collection('profiles').doc(fb.FirebaseAuth.instance.currentUser!.uid).snapshots().map((doc) {
-      if (!doc.exists && fb.FirebaseAuth.instance.currentUser != null && (Platforms.isAndroid || Platforms.isIOS)) {
+    _currentProfileStreamSubscription = FirebaseFirestore.instance.collection('profiles').doc(fb.FirebaseAuth.instance.currentUser!.uid).snapshots().map((doc) async {
+      if (!doc.exists && fb.FirebaseAuth.instance.currentUser != null && (Platforms.isAndroid || Platforms.isIOS || Platforms.isMacOS)) {
         // create a new profile using the current user
         final profile = ProfileModel(
           ref: ModelRef("profiles/${fb.FirebaseAuth.instance.currentUser!.uid}"),
@@ -78,15 +78,15 @@ class AuthService extends Service {
           deletedAt: null,
           lastSignInAt: null,
         );
-        FirebaseFirestore.instance.collection('profiles').doc(fb.FirebaseAuth.instance.currentUser!.uid).set({
+        await FirebaseFirestore.instance.collection('profiles').doc(fb.FirebaseAuth.instance.currentUser!.uid).set({
           ...profile.toJson(),
           "_fromLocal": true,
         });
         return null;
       }
       return ProfileModel.fromJson(doc.data()!);
-    }).listen((profile) {
-      _currentProfile = profile;
+    }).listen((profile) async {
+      _currentProfile = await profile;
       notifyListeners();
     });
   }
