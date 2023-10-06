@@ -25,7 +25,10 @@ dependencies:
   feather_icons:
   form_builder_validators:
   lib:
-    path: /Users/mohamad/Desktop/projects/zed-academy/flutter/pachages/lib
+    git:
+     url: https://github.com/Modern-IT-Solutions/lib.git
+     ref: main
+    # path: /Users/mohamad/Desktop/projects/zed-academy/flutter/pachages/lib
   cached_network_image:
   form_builder_phone_field:
   file_picker:
