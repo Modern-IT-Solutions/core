@@ -65,10 +65,14 @@ class AppTextFormField extends StatefulWidget {
   /// [fileUploadTriger] is the fileUploadTriger of the text field, its not required
   final ValueNotifier<Function?>? fileUploadTriger;
 
+  /// [initialValue]
+  final String? initialValue;
+
   final List<TextInputFormatter>? inputFormatters;
   const AppTextFormField({
     super.key,
     this.onChanged,
+    this.initialValue,
     this.onTap,
     this.onSubmitted,
     this.label,
@@ -87,6 +91,7 @@ class AppTextFormField extends StatefulWidget {
   /// min constracter
   const AppTextFormField.min({
     super.key,
+    this.initialValue,
     this.onChanged,
     this.onTap,
     this.onSubmitted,
@@ -108,6 +113,7 @@ class AppTextFormField extends StatefulWidget {
     super.key,
     this.onChanged,
     this.onTap,
+    this.initialValue,
     this.onSubmitted,
     this.label,
     this.helper,
@@ -161,6 +167,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
           margin: widget.margin,
           height: widget.height,
           child: TextFormField(
+            initialValue: widget.initialValue,
             onTap: () async {
               widget.onTap?.call(_controller.text);
               if (widget.mode == AppTextFormFieldMode.date) {

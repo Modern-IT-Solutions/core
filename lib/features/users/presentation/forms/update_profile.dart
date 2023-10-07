@@ -177,7 +177,7 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                       ),
                       const SizedBox(height: 20),
                       AppTextFormField.upload(
-                        controller: TextEditingController(text: request.photoUrl),
+                        initialValue: ( request.photoUrl),
                         margin: const EdgeInsets.symmetric(horizontal: 24),
                         onChanged: (v) async {
                           setState(() {
@@ -198,7 +198,7 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                       const SizedBox(height: 10),
 
                       AppTextFormField(
-                        controller: TextEditingController(text: request.displayName),
+                        initialValue: ( request.displayName),
                         margin: const EdgeInsets.symmetric(horizontal: 24),
                         onChanged: (v) async {
                           setState(() {
@@ -220,7 +220,7 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
 
                       /// email
                       AppTextFormField(
-                        controller: TextEditingController(text: request.email),
+                        initialValue: ( request.email),
                         margin: const EdgeInsets.symmetric(horizontal: 24),
                         onChanged: (v) async {
                           setState(() {
@@ -243,7 +243,7 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                       const SizedBox(height: 10),
                       // / phone number
                       AppTextFormField(
-                        controller: TextEditingController(text: request.phoneNumber),
+                        initialValue: ( request.phoneNumber),
                         margin: const EdgeInsets.symmetric(horizontal: 24),
                         onChanged: (v) async {
                           setState(() {
@@ -292,13 +292,19 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                           children: [
                             Expanded(
                               child: AppTextFormField(
-                                controller: TextEditingController(text: request.address?.state),
+                                      key:  Key((request.address?.state).toString()),
+                                initialValue: ( request.address?.state),
                                 onTap: (v) async {
                                   var state = await showStatePicker(context);
+                                  if (state != v) {
+                                    setState(() {
+                                      request.address = request.address?.copyWith(city: null);
+                                    });
+                                  }
                                   print(state);
                                   if (state != null) {
                                     setState(() {
-                                      request.address = request.address?.copyWith(state: state);
+                                      request.address = request.address?.copyWith(state: state.toLowerCase());
                                     });
                                   }
                                 },
@@ -317,13 +323,14 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: AppTextFormField(
-                                controller: TextEditingController(text: request.address?.city),
+                                      key:  Key((request.address?.city).toString()),
+                                initialValue: ( request.address?.city),
                                 onTap: (value) async {
                                   var city = await showCityPicker(context, state: request.address?.state);
                                   if (city != null) {
                                     setState(() {
                                       request.address = request.address?.copyWith(
-                                        city: city["commune_name"],
+                                        city: city["commune_name_ascii"].toString().toLowerCase(),
                                       );
                                     });
                                   }
@@ -342,6 +349,24 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                               ),
                             ),
                           ],
+                        ),
+                      ),
+                      // raw
+                      AppTextFormField(
+                        initialValue: request.address?.raw,
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
+                        onChanged: (v) async {
+                          request.address = request.address?.copyWith(raw: v);
+                        },
+                        validator: FormBuilderValidators.compose([
+                          FormBuilderValidators.required(),
+                        ]),
+                        decoration: InputDecoration(
+                          errorText: _errors['raw'],
+                          prefixIcon: const Icon(FluentIcons.location_24_regular),
+                          label: const Text('Raw'),
+                          alignLabelWithHint: true,
+                          helperText: 'The raw address, required *',
                         ),
                       ),
 
@@ -413,7 +438,7 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
 
                       /// Custom uid
                       AppTextFormField(
-                        controller: TextEditingController(text: request.uid),
+                        initialValue: ( request.uid),
                         enabled: false,
                         margin: const EdgeInsets.symmetric(horizontal: 24),
                         onChanged: (v) async {
@@ -647,7 +672,7 @@ class _CityPickerDialogState extends State<CityPickerDialog> {
     if (_controller.text.isEmpty) {
       return value;
     }
-    return value.where((element) => element['wilaya_name'].toString().contains(_controller.text) || element['commune_name'].toString().contains(_controller.text) || element['daira_name'].toString().contains(_controller.text)).toList();
+    return value.where((element) => element.toString().toLowerCase().contains(_controller.text.toLowerCase())).toList();
   }
 
   @override
@@ -655,7 +680,7 @@ class _CityPickerDialogState extends State<CityPickerDialog> {
     return Dialog(
       // title: Text('Select state'),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 400, maxHeight: 800),
+        constraints: const BoxConstraints(maxWidth: 400, maxHeight: 600),
         child: Column(
           children: [
             // search field
@@ -683,8 +708,8 @@ class _CityPickerDialogState extends State<CityPickerDialog> {
                       onTap: () {
                         Navigator.pop<Map<String, dynamic>>(context, city);
                       },
-                      title: Text(city['commune_name'].toString()),
-                      subtitle: Text(city['daira_name'].toString()),
+                      title: Text(city['commune_name_ascii'].toString()),
+                      subtitle: Text(city['daira_name_ascii'].toString()),
                     ),
                   );
                 },
