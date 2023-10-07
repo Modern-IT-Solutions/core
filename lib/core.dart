@@ -43,5 +43,8 @@ export './models/stadium_rental_model.dart';
 /// nullIfEmpty extension to String
 extension NullIfEmpty on String {
   String? get nullIfEmpty => isEmpty ? null : this;
+  // firstCharOrNull
+  String get firstCharOrNull => nullIfEmpty == null ? "?" : this[0];
+
 }
 

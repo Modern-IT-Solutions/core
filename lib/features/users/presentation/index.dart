@@ -1610,7 +1610,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
             query = query.where(value!.searchQuery!.field, isGreaterThanOrEqualTo: value!.searchQuery!.value).where(value!.searchQuery!.field, isLessThanOrEqualTo: value!.searchQuery!.value! + "\uf8ff").orderBy(value!.searchQuery!.field, descending: false);
           } else {
             if (value?.searchQuery?.value?.isEmpty == true || !strict && query.parameters["orderBy"]?.isNotEmpty != true) {
-              query = query.orderBy("updatedAt", descending: true);
+              // query = query.orderBy("updatedAt", descending: true);
             }
           }
 

@@ -22,20 +22,24 @@ class GeoFirePointConverter implements JsonConverter<GeoFirePoint?, Map<String, 
 }
 
 /// timestamp coverter for [Timestamp]
-class TimestampDateTimeSerializer implements JsonConverter<DateTime, dynamic> {
+class TimestampDateTimeSerializer implements JsonConverter<DateTime?, Timestamp?> {
   const TimestampDateTimeSerializer();
 
   @override
-  DateTime fromJson(dynamic timestamp) {
-    if (timestamp == null) return DateTime.now();
+  DateTime? fromJson(dynamic timestamp) {
+    if (timestamp == null) return null;
     if (timestamp is DateTime) return timestamp;
     if (timestamp is String) return DateTime.parse(timestamp);
     if (timestamp is Timestamp) return timestamp.toDate();
-    throw Exception('Invalid timestamp format');
+    if (timestamp is int) return DateTime.fromMillisecondsSinceEpoch(timestamp);
+    return null;
   }
 
   @override
-  Timestamp toJson(DateTime date) => Timestamp.fromDate(date);
+  Timestamp? toJson(DateTime? date) {
+    if (date == null) return null;
+    return Timestamp.fromDate(date);
+  }
 }
 
 /// ModelRefSerializer
