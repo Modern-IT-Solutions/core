@@ -1590,6 +1590,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       var _models = await getModelCollection(
         path: description.path,
         fromJson: description.fromJson,
+        behavior: true? FetchBehavior.serverOnly: FetchBehavior.serverFirst,
         builder: (query) {
           var strict = false;
           if (value?.filters.isEmpty == false) {

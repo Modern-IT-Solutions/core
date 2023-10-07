@@ -35,7 +35,7 @@ class StadiumRentalModel with _$StadiumRentalModel implements Model {
     required DateTime createdAt,
     @TimestampDateTimeSerializer()
     required DateTime updatedAt,
-    @TimestampDateTimeSerializer()
+    @NullableTimestampDateTimeSerializer()
     DateTime? deletedAt,
   }) = _StadiumRentalModel;
 

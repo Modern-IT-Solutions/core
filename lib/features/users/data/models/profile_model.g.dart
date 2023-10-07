@@ -27,14 +27,14 @@ _$ProfileModelImpl _$$ProfileModelImplFromJson(Map<String, dynamic> json) =>
       emailVerified: json['emailVerified'] as bool,
       metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
       customClaims: json['customClaims'] as Map<String, dynamic>? ?? const {},
-      createdAt: const TimestampDateTimeSerializer()
-          .fromJson(json['createdAt'] as Timestamp),
-      updatedAt: const TimestampDateTimeSerializer()
-          .fromJson(json['updatedAt'] as Timestamp),
-      deletedAt: _$JsonConverterFromJson<Timestamp, DateTime>(
-          json['deletedAt'], const TimestampDateTimeSerializer().fromJson),
-      lastSignInAt: _$JsonConverterFromJson<Timestamp, DateTime>(
-          json['lastSignInAt'], const TimestampDateTimeSerializer().fromJson),
+      createdAt:
+          const TimestampDateTimeSerializer().fromJson(json['createdAt']),
+      updatedAt:
+          const TimestampDateTimeSerializer().fromJson(json['updatedAt']),
+      deletedAt: const NullableTimestampDateTimeSerializer()
+          .fromJson(json['deletedAt'] as Timestamp?),
+      lastSignInAt:
+          const TimestampDateTimeSerializer().fromJson(json['lastSignInAt']),
     );
 
 Map<String, dynamic> _$$ProfileModelImplToJson(_$ProfileModelImpl instance) =>
@@ -56,17 +56,11 @@ Map<String, dynamic> _$$ProfileModelImplToJson(_$ProfileModelImpl instance) =>
           const TimestampDateTimeSerializer().toJson(instance.createdAt),
       'updatedAt':
           const TimestampDateTimeSerializer().toJson(instance.updatedAt),
-      'deletedAt': _$JsonConverterToJson<Timestamp, DateTime>(
-          instance.deletedAt, const TimestampDateTimeSerializer().toJson),
-      'lastSignInAt': _$JsonConverterToJson<Timestamp, DateTime>(
+      'deletedAt': const NullableTimestampDateTimeSerializer()
+          .toJson(instance.deletedAt),
+      'lastSignInAt': _$JsonConverterToJson<dynamic, DateTime>(
           instance.lastSignInAt, const TimestampDateTimeSerializer().toJson),
     };
-
-Value? _$JsonConverterFromJson<Json, Value>(
-  Object? json,
-  Value? Function(Json json) fromJson,
-) =>
-    json == null ? null : fromJson(json as Json);
 
 Json? _$JsonConverterToJson<Json, Value>(
   Value? value,

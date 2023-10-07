@@ -18,7 +18,7 @@ class StadiumModel with _$StadiumModel implements Model {
     required DateTime createdAt,
     @TimestampDateTimeSerializer()
     required DateTime updatedAt,
-    @TimestampDateTimeSerializer()
+    @NullableTimestampDateTimeSerializer()
     DateTime? deletedAt,
   }) = _StadiumModel;
 

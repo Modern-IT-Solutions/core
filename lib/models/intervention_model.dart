@@ -13,14 +13,11 @@ part 'intervention_model.g.dart';
 /// description is [String], [Items] is list of [Item], type is [InterventionType], [Intervener] is [Profile],
 
 @freezed
-class InterventionModel extends Model with _$InterventionModel {
+class InterventionModel with _$InterventionModel implements Model {
 
   factory InterventionModel({
     @ModelRefSerializer()
     required ModelRef ref,
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    DateTime? deletedAt,
     required InterventionStatus status,
     required DateTime date,
     required String description,
@@ -28,6 +25,13 @@ class InterventionModel extends Model with _$InterventionModel {
     required List<dynamic> attachments,
     required InterventionType type,
     required ProfileModel intervener,
+
+    @TimestampDateTimeSerializer()
+    required DateTime createdAt,
+    @TimestampDateTimeSerializer()
+    required DateTime updatedAt,
+    @NullableTimestampDateTimeSerializer()
+    DateTime? deletedAt,
 
   }) = _InterventionModel;
 

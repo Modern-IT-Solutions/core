@@ -22,8 +22,11 @@ InterventionModel _$InterventionModelFromJson(Map<String, dynamic> json) {
 mixin _$InterventionModel {
   @ModelRefSerializer()
   ModelRef get ref => throw _privateConstructorUsedError;
+  @TimestampDateTimeSerializer()
   DateTime get createdAt => throw _privateConstructorUsedError;
+  @TimestampDateTimeSerializer()
   DateTime get updatedAt => throw _privateConstructorUsedError;
+  @NullableTimestampDateTimeSerializer()
   DateTime? get deletedAt => throw _privateConstructorUsedError;
   InterventionStatus get status => throw _privateConstructorUsedError;
   DateTime get date => throw _privateConstructorUsedError;
@@ -47,9 +50,9 @@ abstract class $InterventionModelCopyWith<$Res> {
   @useResult
   $Res call(
       {@ModelRefSerializer() ModelRef ref,
-      DateTime createdAt,
-      DateTime updatedAt,
-      DateTime? deletedAt,
+      @TimestampDateTimeSerializer() DateTime createdAt,
+      @TimestampDateTimeSerializer() DateTime updatedAt,
+      @NullableTimestampDateTimeSerializer() DateTime? deletedAt,
       InterventionStatus status,
       DateTime date,
       String description,
@@ -147,9 +150,9 @@ abstract class _$$InterventionModelImplCopyWith<$Res>
   @useResult
   $Res call(
       {@ModelRefSerializer() ModelRef ref,
-      DateTime createdAt,
-      DateTime updatedAt,
-      DateTime? deletedAt,
+      @TimestampDateTimeSerializer() DateTime createdAt,
+      @TimestampDateTimeSerializer() DateTime updatedAt,
+      @NullableTimestampDateTimeSerializer() DateTime? deletedAt,
       InterventionStatus status,
       DateTime date,
       String description,
@@ -233,9 +236,9 @@ class __$$InterventionModelImplCopyWithImpl<$Res>
 class _$InterventionModelImpl implements _InterventionModel {
   _$InterventionModelImpl(
       {@ModelRefSerializer() required this.ref,
-      required this.createdAt,
-      required this.updatedAt,
-      this.deletedAt,
+      @TimestampDateTimeSerializer() required this.createdAt,
+      @TimestampDateTimeSerializer() required this.updatedAt,
+      @NullableTimestampDateTimeSerializer() this.deletedAt,
       required this.status,
       required this.date,
       required this.description,
@@ -251,10 +254,13 @@ class _$InterventionModelImpl implements _InterventionModel {
   @ModelRefSerializer()
   final ModelRef ref;
   @override
+  @TimestampDateTimeSerializer()
   final DateTime createdAt;
   @override
+  @TimestampDateTimeSerializer()
   final DateTime updatedAt;
   @override
+  @NullableTimestampDateTimeSerializer()
   final DateTime? deletedAt;
   @override
   final InterventionStatus status;
@@ -338,9 +344,9 @@ class _$InterventionModelImpl implements _InterventionModel {
 abstract class _InterventionModel implements InterventionModel {
   factory _InterventionModel(
       {@ModelRefSerializer() required final ModelRef ref,
-      required final DateTime createdAt,
-      required final DateTime updatedAt,
-      final DateTime? deletedAt,
+      @TimestampDateTimeSerializer() required final DateTime createdAt,
+      @TimestampDateTimeSerializer() required final DateTime updatedAt,
+      @NullableTimestampDateTimeSerializer() final DateTime? deletedAt,
       required final InterventionStatus status,
       required final DateTime date,
       required final String description,
@@ -355,10 +361,13 @@ abstract class _InterventionModel implements InterventionModel {
   @ModelRefSerializer()
   ModelRef get ref;
   @override
+  @TimestampDateTimeSerializer()
   DateTime get createdAt;
   @override
+  @TimestampDateTimeSerializer()
   DateTime get updatedAt;
   @override
+  @NullableTimestampDateTimeSerializer()
   DateTime? get deletedAt;
   @override
   InterventionStatus get status;

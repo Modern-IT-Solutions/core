@@ -20,12 +20,12 @@ _$StadiumRentalModelImpl _$$StadiumRentalModelImplFromJson(
             DateTime.parse(k), const DurationSerializer().fromJson(e as int)),
       ),
       metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
-      createdAt: const TimestampDateTimeSerializer()
-          .fromJson(json['createdAt'] as Timestamp),
-      updatedAt: const TimestampDateTimeSerializer()
-          .fromJson(json['updatedAt'] as Timestamp),
-      deletedAt: _$JsonConverterFromJson<Timestamp, DateTime>(
-          json['deletedAt'], const TimestampDateTimeSerializer().fromJson),
+      createdAt:
+          const TimestampDateTimeSerializer().fromJson(json['createdAt']),
+      updatedAt:
+          const TimestampDateTimeSerializer().fromJson(json['updatedAt']),
+      deletedAt: const NullableTimestampDateTimeSerializer()
+          .fromJson(json['deletedAt'] as Timestamp?),
     );
 
 Map<String, dynamic> _$$StadiumRentalModelImplToJson(
@@ -43,8 +43,8 @@ Map<String, dynamic> _$$StadiumRentalModelImplToJson(
           const TimestampDateTimeSerializer().toJson(instance.createdAt),
       'updatedAt':
           const TimestampDateTimeSerializer().toJson(instance.updatedAt),
-      'deletedAt': _$JsonConverterToJson<Timestamp, DateTime>(
-          instance.deletedAt, const TimestampDateTimeSerializer().toJson),
+      'deletedAt': const NullableTimestampDateTimeSerializer()
+          .toJson(instance.deletedAt),
     };
 
 const _$StadiumRentalStatusEnumMap = {
@@ -54,15 +54,3 @@ const _$StadiumRentalStatusEnumMap = {
   StadiumRentalStatus.canceled: 'canceled',
   StadiumRentalStatus.expired: 'expired',
 };
-
-Value? _$JsonConverterFromJson<Json, Value>(
-  Object? json,
-  Value? Function(Json json) fromJson,
-) =>
-    json == null ? null : fromJson(json as Json);
-
-Json? _$JsonConverterToJson<Json, Value>(
-  Value? value,
-  Json? Function(Value value) toJson,
-) =>
-    value == null ? null : toJson(value);

@@ -13,12 +13,12 @@ _$StadiumModelImpl _$$StadiumModelImplFromJson(Map<String, dynamic> json) =>
       photoUrl: json['photoUrl'] as String? ?? "",
       disabled: json['disabled'] as bool,
       metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
-      createdAt: const TimestampDateTimeSerializer()
-          .fromJson(json['createdAt'] as Timestamp),
-      updatedAt: const TimestampDateTimeSerializer()
-          .fromJson(json['updatedAt'] as Timestamp),
-      deletedAt: _$JsonConverterFromJson<Timestamp, DateTime>(
-          json['deletedAt'], const TimestampDateTimeSerializer().fromJson),
+      createdAt:
+          const TimestampDateTimeSerializer().fromJson(json['createdAt']),
+      updatedAt:
+          const TimestampDateTimeSerializer().fromJson(json['updatedAt']),
+      deletedAt: const NullableTimestampDateTimeSerializer()
+          .fromJson(json['deletedAt'] as Timestamp?),
     );
 
 Map<String, dynamic> _$$StadiumModelImplToJson(_$StadiumModelImpl instance) =>
@@ -32,18 +32,6 @@ Map<String, dynamic> _$$StadiumModelImplToJson(_$StadiumModelImpl instance) =>
           const TimestampDateTimeSerializer().toJson(instance.createdAt),
       'updatedAt':
           const TimestampDateTimeSerializer().toJson(instance.updatedAt),
-      'deletedAt': _$JsonConverterToJson<Timestamp, DateTime>(
-          instance.deletedAt, const TimestampDateTimeSerializer().toJson),
+      'deletedAt': const NullableTimestampDateTimeSerializer()
+          .toJson(instance.deletedAt),
     };
-
-Value? _$JsonConverterFromJson<Json, Value>(
-  Object? json,
-  Value? Function(Json json) fromJson,
-) =>
-    json == null ? null : fromJson(json as Json);
-
-Json? _$JsonConverterToJson<Json, Value>(
-  Value? value,
-  Json? Function(Value value) toJson,
-) =>
-    value == null ? null : toJson(value);

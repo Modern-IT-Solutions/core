@@ -30,7 +30,7 @@ mixin _$StadiumModel {
   DateTime get createdAt => throw _privateConstructorUsedError;
   @TimestampDateTimeSerializer()
   DateTime get updatedAt => throw _privateConstructorUsedError;
-  @TimestampDateTimeSerializer()
+  @NullableTimestampDateTimeSerializer()
   DateTime? get deletedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -53,7 +53,7 @@ abstract class $StadiumModelCopyWith<$Res> {
       Map<String, dynamic> metadata,
       @TimestampDateTimeSerializer() DateTime createdAt,
       @TimestampDateTimeSerializer() DateTime updatedAt,
-      @TimestampDateTimeSerializer() DateTime? deletedAt});
+      @NullableTimestampDateTimeSerializer() DateTime? deletedAt});
 }
 
 /// @nodoc
@@ -131,7 +131,7 @@ abstract class _$$StadiumModelImplCopyWith<$Res>
       Map<String, dynamic> metadata,
       @TimestampDateTimeSerializer() DateTime createdAt,
       @TimestampDateTimeSerializer() DateTime updatedAt,
-      @TimestampDateTimeSerializer() DateTime? deletedAt});
+      @NullableTimestampDateTimeSerializer() DateTime? deletedAt});
 }
 
 /// @nodoc
@@ -202,7 +202,7 @@ class _$StadiumModelImpl implements _StadiumModel {
       final Map<String, dynamic> metadata = const {},
       @TimestampDateTimeSerializer() required this.createdAt,
       @TimestampDateTimeSerializer() required this.updatedAt,
-      @TimestampDateTimeSerializer() this.deletedAt})
+      @NullableTimestampDateTimeSerializer() this.deletedAt})
       : _metadata = metadata;
 
   factory _$StadiumModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -234,7 +234,7 @@ class _$StadiumModelImpl implements _StadiumModel {
   @TimestampDateTimeSerializer()
   final DateTime updatedAt;
   @override
-  @TimestampDateTimeSerializer()
+  @NullableTimestampDateTimeSerializer()
   final DateTime? deletedAt;
 
   @override
@@ -298,7 +298,7 @@ abstract class _StadiumModel implements StadiumModel {
           final Map<String, dynamic> metadata,
           @TimestampDateTimeSerializer() required final DateTime createdAt,
           @TimestampDateTimeSerializer() required final DateTime updatedAt,
-          @TimestampDateTimeSerializer() final DateTime? deletedAt}) =
+          @NullableTimestampDateTimeSerializer() final DateTime? deletedAt}) =
       _$StadiumModelImpl;
 
   factory _StadiumModel.fromJson(Map<String, dynamic> json) =
@@ -322,7 +322,7 @@ abstract class _StadiumModel implements StadiumModel {
   @TimestampDateTimeSerializer()
   DateTime get updatedAt;
   @override
-  @TimestampDateTimeSerializer()
+  @NullableTimestampDateTimeSerializer()
   DateTime? get deletedAt;
   @override
   @JsonKey(ignore: true)

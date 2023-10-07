@@ -8,8 +8,7 @@ part of 'rent_time_model.dart';
 
 _$RentTimeImpl _$$RentTimeImplFromJson(Map<String, dynamic> json) =>
     _$RentTimeImpl(
-      start: const TimestampDateTimeSerializer()
-          .fromJson(json['start'] as Timestamp),
+      start: const TimestampDateTimeSerializer().fromJson(json['start']),
       duration: const DurationSerializer().fromJson(json['duration'] as int),
     );
 

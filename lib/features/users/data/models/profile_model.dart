@@ -18,6 +18,7 @@ class ProfileModel with _$ProfileModel implements Model {
     required String displayName,
     required String email,
     String? phoneNumber,
+    @NullableTimestampDateTimeSerializer()
     DateTime? birthday,
     @Default("") String photoUrl,
     required AddressModel? address,
@@ -28,13 +29,15 @@ class ProfileModel with _$ProfileModel implements Model {
     required bool emailVerified,
     @Default({}) Map<String,dynamic> metadata,
     @Default({}) Map<String,dynamic> customClaims,
+
+
     @TimestampDateTimeSerializer()
     required DateTime createdAt,
     @TimestampDateTimeSerializer()
     required DateTime updatedAt,
-    @TimestampDateTimeSerializer()
+    @NullableTimestampDateTimeSerializer()
     DateTime? deletedAt,
-    @TimestampDateTimeSerializer()
+    @NullableTimestampDateTimeSerializer()
     DateTime? lastSignInAt,
   }) = _ProfileModel;
 

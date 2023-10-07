@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:core/features/users/data/models/role.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:core/core.dart';
@@ -21,22 +22,37 @@ class GeoFirePointConverter implements JsonConverter<GeoFirePoint?, Map<String, 
 }
 
 /// timestamp coverter for [Timestamp]
-class TimestampDateTimeSerializer implements JsonConverter<DateTime, Timestamp> {
+class TimestampDateTimeSerializer implements JsonConverter<DateTime, dynamic> {
   const TimestampDateTimeSerializer();
 
   @override
   DateTime fromJson(dynamic timestamp) {
+    if (timestamp == null) return DateTime.fromMicrosecondsSinceEpoch(0);
     if (timestamp is DateTime) return timestamp;
     if (timestamp is String) return DateTime.parse(timestamp);
     if (timestamp is Timestamp) return timestamp.toDate();
-    if (timestamp is int) return DateTime.fromMillisecondsSinceEpoch(timestamp);
-    throw Exception('${timestamp.runtimeType} is not a valid timestamp that can be parsed - only int|DateTime|String|Timestamp are supported');
+    throw Exception('Invalid timestamp format');
   }
 
   @override
-  Timestamp toJson(DateTime date) {
-    return Timestamp.fromDate(date);
+  Timestamp toJson(DateTime date) => Timestamp.fromDate(date);
+}
+
+/// timestamp coverter for [Timestamp]
+class NullableTimestampDateTimeSerializer implements JsonConverter<DateTime?, Timestamp?> {
+  const NullableTimestampDateTimeSerializer();
+
+  @override
+  DateTime? fromJson(dynamic timestamp) {
+    if (timestamp == null) return null;
+    if (timestamp is DateTime) return timestamp;
+    if (timestamp is String) return DateTime.parse(timestamp);
+    if (timestamp is Timestamp) return timestamp.toDate();
+    throw Exception('Invalid timestamp format');
   }
+
+  @override
+  Timestamp? toJson(DateTime? date) => date == null? null : Timestamp.fromDate(date);
 }
 
 /// ModelRefSerializer

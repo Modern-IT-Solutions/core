@@ -26,7 +26,7 @@ mixin _$AttachmentModel {
   DateTime get createdAt => throw _privateConstructorUsedError;
   @TimestampDateTimeSerializer()
   DateTime get updatedAt => throw _privateConstructorUsedError;
-  @TimestampDateTimeSerializer()
+  @NullableTimestampDateTimeSerializer()
   DateTime? get deletedAt => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get type => throw _privateConstructorUsedError;
@@ -48,7 +48,7 @@ abstract class $AttachmentModelCopyWith<$Res> {
       {@ModelRefSerializer() ModelRef ref,
       @TimestampDateTimeSerializer() DateTime createdAt,
       @TimestampDateTimeSerializer() DateTime updatedAt,
-      @TimestampDateTimeSerializer() DateTime? deletedAt,
+      @NullableTimestampDateTimeSerializer() DateTime? deletedAt,
       String name,
       String type,
       String url});
@@ -120,7 +120,7 @@ abstract class _$$AttachmentModelImplCopyWith<$Res>
       {@ModelRefSerializer() ModelRef ref,
       @TimestampDateTimeSerializer() DateTime createdAt,
       @TimestampDateTimeSerializer() DateTime updatedAt,
-      @TimestampDateTimeSerializer() DateTime? deletedAt,
+      @NullableTimestampDateTimeSerializer() DateTime? deletedAt,
       String name,
       String type,
       String url});
@@ -185,7 +185,7 @@ class _$AttachmentModelImpl implements _AttachmentModel {
       {@ModelRefSerializer() required this.ref,
       @TimestampDateTimeSerializer() required this.createdAt,
       @TimestampDateTimeSerializer() required this.updatedAt,
-      @TimestampDateTimeSerializer() this.deletedAt,
+      @NullableTimestampDateTimeSerializer() this.deletedAt,
       required this.name,
       required this.type,
       required this.url});
@@ -203,7 +203,7 @@ class _$AttachmentModelImpl implements _AttachmentModel {
   @TimestampDateTimeSerializer()
   final DateTime updatedAt;
   @override
-  @TimestampDateTimeSerializer()
+  @NullableTimestampDateTimeSerializer()
   final DateTime? deletedAt;
   @override
   final String name;
@@ -259,7 +259,7 @@ abstract class _AttachmentModel implements AttachmentModel {
       {@ModelRefSerializer() required final ModelRef ref,
       @TimestampDateTimeSerializer() required final DateTime createdAt,
       @TimestampDateTimeSerializer() required final DateTime updatedAt,
-      @TimestampDateTimeSerializer() final DateTime? deletedAt,
+      @NullableTimestampDateTimeSerializer() final DateTime? deletedAt,
       required final String name,
       required final String type,
       required final String url}) = _$AttachmentModelImpl;
@@ -277,7 +277,7 @@ abstract class _AttachmentModel implements AttachmentModel {
   @TimestampDateTimeSerializer()
   DateTime get updatedAt;
   @override
-  @TimestampDateTimeSerializer()
+  @NullableTimestampDateTimeSerializer()
   DateTime? get deletedAt;
   @override
   String get name;

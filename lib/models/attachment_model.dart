@@ -20,7 +20,7 @@ class AttachmentModel extends Model with _$AttachmentModel {
     required DateTime createdAt,
     @TimestampDateTimeSerializer()
     required DateTime updatedAt,
-    @TimestampDateTimeSerializer()
+    @NullableTimestampDateTimeSerializer()
     DateTime? deletedAt,
     required String name,
     required String type,
