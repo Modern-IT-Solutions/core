@@ -1,6 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
-
+import 'package:core/core.dart';
 import 'package:core/core/data/requests.dart';
 
 import '../../data/models/role.dart';
@@ -8,6 +8,7 @@ import '../../users.dart';
 
 class ProfileCreateRequest<T extends ProfileModel> extends CreateRequest<T> {
   String? ref;
+
   /// The name of the user.
   final String? displayName;
 
@@ -42,11 +43,11 @@ class ProfileCreateRequest<T extends ProfileModel> extends CreateRequest<T> {
     required this.roles,
     required this.emailVerified,
   });
-  
+
   @override
   Map<String, dynamic> toMap() {
     return {
-      'uid':uid,
+      'uid': uid,
       'ref': ref,
       "emailVerified": emailVerified,
       'displayName': displayName,
@@ -58,31 +59,32 @@ class ProfileCreateRequest<T extends ProfileModel> extends CreateRequest<T> {
     };
   }
 }
-class ProfileUpdateRequest<T extends ProfileModel> extends UpdateRequest<T> {
 
+class ProfileUpdateRequest<T extends ProfileModel> extends UpdateRequest<T> {
   /// The name of the user.
-  final String? displayName;
+  String? displayName;
 
   /// The email of the user.
-  final String? email;
+  String? email;
 
   /// The phone number of the user.
-  final String? phoneNumber;
+  String? phoneNumber;
 
   /// The photo url of the user.
-  final String? photoUrl;
+  String? photoUrl;
 
   /// The id of the user.
-  final String? uid;
+  String? uid;
 
   /// The disabled status of the user.
-  final bool? disabled;
+  bool? disabled;
 
   /// The role of the user.
-  final List<Role>? roles;
+  List<Role>? roles;
 
   /// The email verified status of the user.
-  final bool? emailVerified;
+  bool? emailVerified;
+  AddressModel? address;
 
   ProfileUpdateRequest({
     required super.id,
@@ -92,14 +94,16 @@ class ProfileUpdateRequest<T extends ProfileModel> extends UpdateRequest<T> {
     this.phoneNumber,
     this.photoUrl,
     this.uid,
-     this.disabled,
-     this.roles,
+    this.disabled,
+    this.roles,
+    // address
+    this.address,
   });
-  
+
   @override
   Map<String, dynamic> toMap() {
     return {
-      'uid':uid,
+      'uid': uid,
       'ref': id,
       "emailVerified": emailVerified,
       'displayName': displayName,
@@ -107,8 +111,8 @@ class ProfileUpdateRequest<T extends ProfileModel> extends UpdateRequest<T> {
       'phoneNumber': phoneNumber,
       'photoUrl': photoUrl,
       'disabled': disabled,
+      'address': address?.toJson(),
       'roles': roles?.map((x) => x.name).toList(),
     };
   }
-  }
-
+}

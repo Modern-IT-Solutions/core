@@ -54,7 +54,10 @@ class AppTextFormField extends StatefulWidget {
   final EdgeInsetsGeometry? margin;
 
   /// [onChanged] is the onChanged of the text field, its not required
-  final Future<void> Function(String value)? onChanged;
+  final void Function(String value)? onChanged;
+
+  /// [onTap] is the onTap of the text field, its not required
+  final void Function(String? value)? onTap;
 
   /// [onSubmitted] is the onSubmitted of the text field, its not required
   final void Function(String value)? onSubmitted;
@@ -66,6 +69,7 @@ class AppTextFormField extends StatefulWidget {
   const AppTextFormField({
     super.key,
     this.onChanged,
+    this.onTap,
     this.onSubmitted,
     this.label,
     this.helper,
@@ -84,6 +88,7 @@ class AppTextFormField extends StatefulWidget {
   const AppTextFormField.min({
     super.key,
     this.onChanged,
+    this.onTap,
     this.onSubmitted,
     this.label,
     this.helper,
@@ -102,6 +107,7 @@ class AppTextFormField extends StatefulWidget {
   const AppTextFormField.upload({
     super.key,
     this.onChanged,
+    this.onTap,
     this.onSubmitted,
     this.label,
     this.helper,
@@ -156,6 +162,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
           height: widget.height,
           child: TextFormField(
             onTap: () async {
+              widget.onTap?.call(_controller.text);
               if (widget.mode == AppTextFormFieldMode.date) {
                 var date = await showDatePicker(
                   context: context,

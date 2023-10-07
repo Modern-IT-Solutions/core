@@ -623,26 +623,28 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
   Future<void> showUpdateModelDailog(BuildContext context, ProfileModel model) async {
     var child = Container(
       constraints: const BoxConstraints(maxWidth: 500),
-      child: UpdateProfileForm(
-        model: model,
-        onUpdated: (model) {
-          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-            SnackBar(
-              behavior: SnackBarBehavior.floating,
-              width: 400.0,
-              content: Text('Profile ${model.displayName} updated'),
-              action: SnackBarAction(
-                label: 'Show',
-                onPressed: () {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  showUpdateModelDailog(context, model as M);
-                },
+      child: Center(
+        child: UpdateProfileForm(
+          model: model,
+          onUpdated: (model) {
+            ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+              SnackBar(
+                behavior: SnackBarBehavior.floating,
+                width: 400.0,
+                content: Text('Profile ${model.displayName} updated'),
+                action: SnackBarAction(
+                  label: 'Show',
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    showUpdateModelDailog(context, model as M);
+                  },
+                ),
               ),
-            ),
-          );
-          Navigator.of(context).pop();
-          // load();
-        },
+            );
+            Navigator.of(context).pop();
+            // load();
+          },
+        ),
       ),
     );
     await showDialog(

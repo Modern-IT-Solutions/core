@@ -24,6 +24,9 @@ dependencies:
   visibility_detector:
   feather_icons:
   form_builder_validators:
+  algeria:
+    # path: /Users/mohamad/Desktop/projects/packages/algeria
+  flutter_map: ^6.0.0-dev.3
   lib:
     git:
      url: https://github.com/Modern-IT-Solutions/lib.git
