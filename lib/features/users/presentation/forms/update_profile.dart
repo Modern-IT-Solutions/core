@@ -356,7 +356,7 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                                   children: [
                                     const SizedBox(width: 24),
                                     // selectable chips for roles
-                                    for (var role in [Role('admin'),Role('user')])
+                                    for (var role in DynamicConfigs.roles)
                                       ...[InputChip(
                                         onSelected: (selected) {
                                           if (selected) {

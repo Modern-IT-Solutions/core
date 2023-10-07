@@ -25,6 +25,7 @@ mixin _$ProfileModel {
   String get displayName => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
   String? get phoneNumber => throw _privateConstructorUsedError;
+  @NullableTimestampDateTimeSerializer()
   DateTime? get birthday => throw _privateConstructorUsedError;
   String get photoUrl => throw _privateConstructorUsedError;
   AddressModel? get address => throw _privateConstructorUsedError;
@@ -41,7 +42,7 @@ mixin _$ProfileModel {
   DateTime get updatedAt => throw _privateConstructorUsedError;
   @NullableTimestampDateTimeSerializer()
   DateTime? get deletedAt => throw _privateConstructorUsedError;
-  @TimestampDateTimeSerializer()
+  @NullableTimestampDateTimeSerializer()
   DateTime? get lastSignInAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -61,7 +62,7 @@ abstract class $ProfileModelCopyWith<$Res> {
       String displayName,
       String email,
       String? phoneNumber,
-      DateTime? birthday,
+      @NullableTimestampDateTimeSerializer() DateTime? birthday,
       String photoUrl,
       AddressModel? address,
       String uid,
@@ -73,7 +74,7 @@ abstract class $ProfileModelCopyWith<$Res> {
       @TimestampDateTimeSerializer() DateTime createdAt,
       @TimestampDateTimeSerializer() DateTime updatedAt,
       @NullableTimestampDateTimeSerializer() DateTime? deletedAt,
-      @TimestampDateTimeSerializer() DateTime? lastSignInAt});
+      @NullableTimestampDateTimeSerializer() DateTime? lastSignInAt});
 
   $AddressModelCopyWith<$Res>? get address;
 }
@@ -207,7 +208,7 @@ abstract class _$$ProfileModelImplCopyWith<$Res>
       String displayName,
       String email,
       String? phoneNumber,
-      DateTime? birthday,
+      @NullableTimestampDateTimeSerializer() DateTime? birthday,
       String photoUrl,
       AddressModel? address,
       String uid,
@@ -219,7 +220,7 @@ abstract class _$$ProfileModelImplCopyWith<$Res>
       @TimestampDateTimeSerializer() DateTime createdAt,
       @TimestampDateTimeSerializer() DateTime updatedAt,
       @NullableTimestampDateTimeSerializer() DateTime? deletedAt,
-      @TimestampDateTimeSerializer() DateTime? lastSignInAt});
+      @NullableTimestampDateTimeSerializer() DateTime? lastSignInAt});
 
   @override
   $AddressModelCopyWith<$Res>? get address;
@@ -335,7 +336,7 @@ class _$ProfileModelImpl implements _ProfileModel {
       required this.displayName,
       required this.email,
       this.phoneNumber,
-      this.birthday,
+      @NullableTimestampDateTimeSerializer() this.birthday,
       this.photoUrl = "",
       required this.address,
       required this.uid,
@@ -347,7 +348,7 @@ class _$ProfileModelImpl implements _ProfileModel {
       @TimestampDateTimeSerializer() required this.createdAt,
       @TimestampDateTimeSerializer() required this.updatedAt,
       @NullableTimestampDateTimeSerializer() this.deletedAt,
-      @TimestampDateTimeSerializer() this.lastSignInAt})
+      @NullableTimestampDateTimeSerializer() this.lastSignInAt})
       : _roles = roles,
         _metadata = metadata,
         _customClaims = customClaims;
@@ -365,6 +366,7 @@ class _$ProfileModelImpl implements _ProfileModel {
   @override
   final String? phoneNumber;
   @override
+  @NullableTimestampDateTimeSerializer()
   final DateTime? birthday;
   @override
   @JsonKey()
@@ -414,7 +416,7 @@ class _$ProfileModelImpl implements _ProfileModel {
   @NullableTimestampDateTimeSerializer()
   final DateTime? deletedAt;
   @override
-  @TimestampDateTimeSerializer()
+  @NullableTimestampDateTimeSerializer()
   final DateTime? lastSignInAt;
 
   @override
@@ -495,24 +497,24 @@ class _$ProfileModelImpl implements _ProfileModel {
 
 abstract class _ProfileModel implements ProfileModel {
   factory _ProfileModel(
-          {@ModelRefSerializer() required final ModelRef ref,
-          required final String displayName,
-          required final String email,
-          final String? phoneNumber,
-          final DateTime? birthday,
-          final String photoUrl,
-          required final AddressModel? address,
-          required final String uid,
-          required final bool disabled,
-          @RoleSerializer() required final List<Role> roles,
-          required final bool emailVerified,
-          final Map<String, dynamic> metadata,
-          final Map<String, dynamic> customClaims,
-          @TimestampDateTimeSerializer() required final DateTime createdAt,
-          @TimestampDateTimeSerializer() required final DateTime updatedAt,
-          @NullableTimestampDateTimeSerializer() final DateTime? deletedAt,
-          @TimestampDateTimeSerializer() final DateTime? lastSignInAt}) =
-      _$ProfileModelImpl;
+      {@ModelRefSerializer() required final ModelRef ref,
+      required final String displayName,
+      required final String email,
+      final String? phoneNumber,
+      @NullableTimestampDateTimeSerializer() final DateTime? birthday,
+      final String photoUrl,
+      required final AddressModel? address,
+      required final String uid,
+      required final bool disabled,
+      @RoleSerializer() required final List<Role> roles,
+      required final bool emailVerified,
+      final Map<String, dynamic> metadata,
+      final Map<String, dynamic> customClaims,
+      @TimestampDateTimeSerializer() required final DateTime createdAt,
+      @TimestampDateTimeSerializer() required final DateTime updatedAt,
+      @NullableTimestampDateTimeSerializer() final DateTime? deletedAt,
+      @NullableTimestampDateTimeSerializer()
+      final DateTime? lastSignInAt}) = _$ProfileModelImpl;
 
   factory _ProfileModel.fromJson(Map<String, dynamic> json) =
       _$ProfileModelImpl.fromJson;
@@ -527,6 +529,7 @@ abstract class _ProfileModel implements ProfileModel {
   @override
   String? get phoneNumber;
   @override
+  @NullableTimestampDateTimeSerializer()
   DateTime? get birthday;
   @override
   String get photoUrl;
@@ -555,7 +558,7 @@ abstract class _ProfileModel implements ProfileModel {
   @NullableTimestampDateTimeSerializer()
   DateTime? get deletedAt;
   @override
-  @TimestampDateTimeSerializer()
+  @NullableTimestampDateTimeSerializer()
   DateTime? get lastSignInAt;
   @override
   @JsonKey(ignore: true)

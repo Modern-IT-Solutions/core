@@ -12,9 +12,8 @@ _$ProfileModelImpl _$$ProfileModelImplFromJson(Map<String, dynamic> json) =>
       displayName: json['displayName'] as String,
       email: json['email'] as String,
       phoneNumber: json['phoneNumber'] as String?,
-      birthday: json['birthday'] == null
-          ? null
-          : DateTime.parse(json['birthday'] as String),
+      birthday: const NullableTimestampDateTimeSerializer()
+          .fromJson(json['birthday'] as Timestamp?),
       photoUrl: json['photoUrl'] as String? ?? "",
       address: json['address'] == null
           ? null
@@ -33,8 +32,8 @@ _$ProfileModelImpl _$$ProfileModelImplFromJson(Map<String, dynamic> json) =>
           const TimestampDateTimeSerializer().fromJson(json['updatedAt']),
       deletedAt: const NullableTimestampDateTimeSerializer()
           .fromJson(json['deletedAt'] as Timestamp?),
-      lastSignInAt:
-          const TimestampDateTimeSerializer().fromJson(json['lastSignInAt']),
+      lastSignInAt: const NullableTimestampDateTimeSerializer()
+          .fromJson(json['lastSignInAt'] as Timestamp?),
     );
 
 Map<String, dynamic> _$$ProfileModelImplToJson(_$ProfileModelImpl instance) =>
@@ -43,7 +42,8 @@ Map<String, dynamic> _$$ProfileModelImplToJson(_$ProfileModelImpl instance) =>
       'displayName': instance.displayName,
       'email': instance.email,
       'phoneNumber': instance.phoneNumber,
-      'birthday': instance.birthday?.toIso8601String(),
+      'birthday':
+          const NullableTimestampDateTimeSerializer().toJson(instance.birthday),
       'photoUrl': instance.photoUrl,
       'address': instance.address?.toJson(),
       'uid': instance.uid,
@@ -58,12 +58,6 @@ Map<String, dynamic> _$$ProfileModelImplToJson(_$ProfileModelImpl instance) =>
           const TimestampDateTimeSerializer().toJson(instance.updatedAt),
       'deletedAt': const NullableTimestampDateTimeSerializer()
           .toJson(instance.deletedAt),
-      'lastSignInAt': _$JsonConverterToJson<dynamic, DateTime>(
-          instance.lastSignInAt, const TimestampDateTimeSerializer().toJson),
+      'lastSignInAt': const NullableTimestampDateTimeSerializer()
+          .toJson(instance.lastSignInAt),
     };
-
-Json? _$JsonConverterToJson<Json, Value>(
-  Value? value,
-  Json? Function(Value value) toJson,
-) =>
-    value == null ? null : toJson(value);

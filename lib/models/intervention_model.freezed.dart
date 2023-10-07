@@ -22,12 +22,6 @@ InterventionModel _$InterventionModelFromJson(Map<String, dynamic> json) {
 mixin _$InterventionModel {
   @ModelRefSerializer()
   ModelRef get ref => throw _privateConstructorUsedError;
-  @TimestampDateTimeSerializer()
-  DateTime get createdAt => throw _privateConstructorUsedError;
-  @TimestampDateTimeSerializer()
-  DateTime get updatedAt => throw _privateConstructorUsedError;
-  @NullableTimestampDateTimeSerializer()
-  DateTime? get deletedAt => throw _privateConstructorUsedError;
   InterventionStatus get status => throw _privateConstructorUsedError;
   DateTime get date => throw _privateConstructorUsedError;
   String get description =>
@@ -35,6 +29,12 @@ mixin _$InterventionModel {
   List<dynamic> get attachments => throw _privateConstructorUsedError;
   InterventionType get type => throw _privateConstructorUsedError;
   ProfileModel get intervener => throw _privateConstructorUsedError;
+  @TimestampDateTimeSerializer()
+  DateTime get createdAt => throw _privateConstructorUsedError;
+  @TimestampDateTimeSerializer()
+  DateTime get updatedAt => throw _privateConstructorUsedError;
+  @NullableTimestampDateTimeSerializer()
+  DateTime? get deletedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -50,15 +50,15 @@ abstract class $InterventionModelCopyWith<$Res> {
   @useResult
   $Res call(
       {@ModelRefSerializer() ModelRef ref,
-      @TimestampDateTimeSerializer() DateTime createdAt,
-      @TimestampDateTimeSerializer() DateTime updatedAt,
-      @NullableTimestampDateTimeSerializer() DateTime? deletedAt,
       InterventionStatus status,
       DateTime date,
       String description,
       List<dynamic> attachments,
       InterventionType type,
-      ProfileModel intervener});
+      ProfileModel intervener,
+      @TimestampDateTimeSerializer() DateTime createdAt,
+      @TimestampDateTimeSerializer() DateTime updatedAt,
+      @NullableTimestampDateTimeSerializer() DateTime? deletedAt});
 
   $ProfileModelCopyWith<$Res> get intervener;
 }
@@ -77,33 +77,21 @@ class _$InterventionModelCopyWithImpl<$Res, $Val extends InterventionModel>
   @override
   $Res call({
     Object? ref = null,
-    Object? createdAt = null,
-    Object? updatedAt = null,
-    Object? deletedAt = freezed,
     Object? status = null,
     Object? date = null,
     Object? description = null,
     Object? attachments = null,
     Object? type = null,
     Object? intervener = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
+    Object? deletedAt = freezed,
   }) {
     return _then(_value.copyWith(
       ref: null == ref
           ? _value.ref
           : ref // ignore: cast_nullable_to_non_nullable
               as ModelRef,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      updatedAt: null == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      deletedAt: freezed == deletedAt
-          ? _value.deletedAt
-          : deletedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
       status: null == status
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
@@ -128,6 +116,18 @@ class _$InterventionModelCopyWithImpl<$Res, $Val extends InterventionModel>
           ? _value.intervener
           : intervener // ignore: cast_nullable_to_non_nullable
               as ProfileModel,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      deletedAt: freezed == deletedAt
+          ? _value.deletedAt
+          : deletedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ) as $Val);
   }
 
@@ -150,15 +150,15 @@ abstract class _$$InterventionModelImplCopyWith<$Res>
   @useResult
   $Res call(
       {@ModelRefSerializer() ModelRef ref,
-      @TimestampDateTimeSerializer() DateTime createdAt,
-      @TimestampDateTimeSerializer() DateTime updatedAt,
-      @NullableTimestampDateTimeSerializer() DateTime? deletedAt,
       InterventionStatus status,
       DateTime date,
       String description,
       List<dynamic> attachments,
       InterventionType type,
-      ProfileModel intervener});
+      ProfileModel intervener,
+      @TimestampDateTimeSerializer() DateTime createdAt,
+      @TimestampDateTimeSerializer() DateTime updatedAt,
+      @NullableTimestampDateTimeSerializer() DateTime? deletedAt});
 
   @override
   $ProfileModelCopyWith<$Res> get intervener;
@@ -176,33 +176,21 @@ class __$$InterventionModelImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? ref = null,
-    Object? createdAt = null,
-    Object? updatedAt = null,
-    Object? deletedAt = freezed,
     Object? status = null,
     Object? date = null,
     Object? description = null,
     Object? attachments = null,
     Object? type = null,
     Object? intervener = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
+    Object? deletedAt = freezed,
   }) {
     return _then(_$InterventionModelImpl(
       ref: null == ref
           ? _value.ref
           : ref // ignore: cast_nullable_to_non_nullable
               as ModelRef,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      updatedAt: null == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      deletedAt: freezed == deletedAt
-          ? _value.deletedAt
-          : deletedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
       status: null == status
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
@@ -227,6 +215,18 @@ class __$$InterventionModelImplCopyWithImpl<$Res>
           ? _value.intervener
           : intervener // ignore: cast_nullable_to_non_nullable
               as ProfileModel,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      deletedAt: freezed == deletedAt
+          ? _value.deletedAt
+          : deletedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -236,15 +236,15 @@ class __$$InterventionModelImplCopyWithImpl<$Res>
 class _$InterventionModelImpl implements _InterventionModel {
   _$InterventionModelImpl(
       {@ModelRefSerializer() required this.ref,
-      @TimestampDateTimeSerializer() required this.createdAt,
-      @TimestampDateTimeSerializer() required this.updatedAt,
-      @NullableTimestampDateTimeSerializer() this.deletedAt,
       required this.status,
       required this.date,
       required this.description,
       required final List<dynamic> attachments,
       required this.type,
-      required this.intervener})
+      required this.intervener,
+      @TimestampDateTimeSerializer() required this.createdAt,
+      @TimestampDateTimeSerializer() required this.updatedAt,
+      @NullableTimestampDateTimeSerializer() this.deletedAt})
       : _attachments = attachments;
 
   factory _$InterventionModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -253,15 +253,6 @@ class _$InterventionModelImpl implements _InterventionModel {
   @override
   @ModelRefSerializer()
   final ModelRef ref;
-  @override
-  @TimestampDateTimeSerializer()
-  final DateTime createdAt;
-  @override
-  @TimestampDateTimeSerializer()
-  final DateTime updatedAt;
-  @override
-  @NullableTimestampDateTimeSerializer()
-  final DateTime? deletedAt;
   @override
   final InterventionStatus status;
   @override
@@ -282,10 +273,19 @@ class _$InterventionModelImpl implements _InterventionModel {
   final InterventionType type;
   @override
   final ProfileModel intervener;
+  @override
+  @TimestampDateTimeSerializer()
+  final DateTime createdAt;
+  @override
+  @TimestampDateTimeSerializer()
+  final DateTime updatedAt;
+  @override
+  @NullableTimestampDateTimeSerializer()
+  final DateTime? deletedAt;
 
   @override
   String toString() {
-    return 'InterventionModel(ref: $ref, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, status: $status, date: $date, description: $description, attachments: $attachments, type: $type, intervener: $intervener)';
+    return 'InterventionModel(ref: $ref, status: $status, date: $date, description: $description, attachments: $attachments, type: $type, intervener: $intervener, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -294,12 +294,6 @@ class _$InterventionModelImpl implements _InterventionModel {
         (other.runtimeType == runtimeType &&
             other is _$InterventionModelImpl &&
             (identical(other.ref, ref) || other.ref == ref) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt) &&
-            (identical(other.deletedAt, deletedAt) ||
-                other.deletedAt == deletedAt) &&
             (identical(other.status, status) || other.status == status) &&
             (identical(other.date, date) || other.date == date) &&
             (identical(other.description, description) ||
@@ -308,7 +302,13 @@ class _$InterventionModelImpl implements _InterventionModel {
                 .equals(other._attachments, _attachments) &&
             (identical(other.type, type) || other.type == type) &&
             (identical(other.intervener, intervener) ||
-                other.intervener == intervener));
+                other.intervener == intervener) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt) &&
+            (identical(other.deletedAt, deletedAt) ||
+                other.deletedAt == deletedAt));
   }
 
   @JsonKey(ignore: true)
@@ -316,15 +316,15 @@ class _$InterventionModelImpl implements _InterventionModel {
   int get hashCode => Object.hash(
       runtimeType,
       ref,
-      createdAt,
-      updatedAt,
-      deletedAt,
       status,
       date,
       description,
       const DeepCollectionEquality().hash(_attachments),
       type,
-      intervener);
+      intervener,
+      createdAt,
+      updatedAt,
+      deletedAt);
 
   @JsonKey(ignore: true)
   @override
@@ -343,16 +343,17 @@ class _$InterventionModelImpl implements _InterventionModel {
 
 abstract class _InterventionModel implements InterventionModel {
   factory _InterventionModel(
-      {@ModelRefSerializer() required final ModelRef ref,
-      @TimestampDateTimeSerializer() required final DateTime createdAt,
-      @TimestampDateTimeSerializer() required final DateTime updatedAt,
-      @NullableTimestampDateTimeSerializer() final DateTime? deletedAt,
-      required final InterventionStatus status,
-      required final DateTime date,
-      required final String description,
-      required final List<dynamic> attachments,
-      required final InterventionType type,
-      required final ProfileModel intervener}) = _$InterventionModelImpl;
+          {@ModelRefSerializer() required final ModelRef ref,
+          required final InterventionStatus status,
+          required final DateTime date,
+          required final String description,
+          required final List<dynamic> attachments,
+          required final InterventionType type,
+          required final ProfileModel intervener,
+          @TimestampDateTimeSerializer() required final DateTime createdAt,
+          @TimestampDateTimeSerializer() required final DateTime updatedAt,
+          @NullableTimestampDateTimeSerializer() final DateTime? deletedAt}) =
+      _$InterventionModelImpl;
 
   factory _InterventionModel.fromJson(Map<String, dynamic> json) =
       _$InterventionModelImpl.fromJson;
@@ -360,15 +361,6 @@ abstract class _InterventionModel implements InterventionModel {
   @override
   @ModelRefSerializer()
   ModelRef get ref;
-  @override
-  @TimestampDateTimeSerializer()
-  DateTime get createdAt;
-  @override
-  @TimestampDateTimeSerializer()
-  DateTime get updatedAt;
-  @override
-  @NullableTimestampDateTimeSerializer()
-  DateTime? get deletedAt;
   @override
   InterventionStatus get status;
   @override
@@ -381,6 +373,15 @@ abstract class _InterventionModel implements InterventionModel {
   InterventionType get type;
   @override
   ProfileModel get intervener;
+  @override
+  @TimestampDateTimeSerializer()
+  DateTime get createdAt;
+  @override
+  @TimestampDateTimeSerializer()
+  DateTime get updatedAt;
+  @override
+  @NullableTimestampDateTimeSerializer()
+  DateTime? get deletedAt;
   @override
   @JsonKey(ignore: true)
   _$$InterventionModelImplCopyWith<_$InterventionModelImpl> get copyWith =>

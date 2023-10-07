@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:core/core.dart';
+import 'package:core/features/users/presentation/dailogs.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:lib/lib.dart';
 import 'package:muskey/muskey.dart';
 import 'package:recase/recase.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import '../../data/models/role.dart';
 import '../../domain/request/profile_requests.dart';
@@ -15,8 +17,7 @@ import '../../domain/request/profile_requests.dart';
 class CreateProfileForm extends StatefulWidget {
   final VoidCallback? onCancel;
   final Null Function(ProfileModel user)? onCreated;
-  const CreateProfileForm({Key? key, this.onCreated, this.onCancel})
-      : super(key: key);
+  const CreateProfileForm({Key? key, this.onCreated, this.onCancel}) : super(key: key);
 
   @override
   State<CreateProfileForm> createState() => _CreateProfileFormState();
@@ -49,8 +50,7 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
     _emailController = TextEditingController();
     _photoUrlController = TextEditingController();
     _phoneController = TextEditingController();
-    _uidController = TextEditingController(
-        text: FirebaseFirestore.instance.collection('profiles').doc().id);
+    _uidController = TextEditingController(text: FirebaseFirestore.instance.collection('profiles').doc().id);
 
     _roles = ValueNotifier<List<Role>>([]);
 
@@ -85,20 +85,15 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
       on FirebaseFunctionsException catch (e) {
         setState(() {
           _error = e.message;
-          if (e.details != null &&
-              e.details['code'].toString().contains('phone')) {
+          if (e.details != null && e.details['code'].toString().contains('phone')) {
             _errors['phone'] = e.details['message'];
-          } else if (e.details != null &&
-              e.details['code'].toString().contains('email')) {
+          } else if (e.details != null && e.details['code'].toString().contains('email')) {
             _errors['email'] = e.details['message'];
-          } else if (e.details != null &&
-              e.details['code'].toString().contains('password')) {
+          } else if (e.details != null && e.details['code'].toString().contains('password')) {
             _errors['password'] = e.details['message'];
-          } else if (e.details != null &&
-              e.details['code'].toString().toLowerCase().contains('name')) {
+          } else if (e.details != null && e.details['code'].toString().toLowerCase().contains('name')) {
             _errors['name'] = e.details['message'];
-          } else if (e.details != null &&
-              e.details['code'].toString().toLowerCase().contains('photo')) {
+          } else if (e.details != null && e.details['code'].toString().toLowerCase().contains('photo')) {
             _errors['photo'] = e.details['message'];
           } else {
             _error = e.message;
@@ -123,30 +118,30 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
       loading: _loading,
       child: Container(
         width: 400,
-        padding: EdgeInsets.only(bottom: 24),
+        padding: const EdgeInsets.only(bottom: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // show error if not null, in box with red background rounded corners and icon and dismiss button
             if (_error != null)
               Container(
-                padding: EdgeInsets.all(12),
-                margin: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.red[100],
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       FluentIcons.people_error_24_regular,
                       color: Colors.red,
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         _error!,
-                        style: TextStyle(color: Colors.red),
+                        style: const TextStyle(color: Colors.red),
                       ),
                     ),
                     IconButton(
@@ -155,7 +150,7 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
                           _error = null;
                         });
                       },
-                      icon: Icon(
+                      icon: const Icon(
                         FluentIcons.dismiss_24_regular,
                         color: Colors.red,
                       ),
@@ -171,13 +166,13 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      ListTile(
+                      const ListTile(
                         contentPadding: EdgeInsets.symmetric(horizontal: 24),
                         visualDensity: VisualDensity(vertical: -3),
                         title: Text('Profile Information'),
                         enabled: false,
                       ),
-            
+
                       const SizedBox(height: 10),
                       // preview image
                       Center(
@@ -186,11 +181,9 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
                           builder: (context, _) {
                             return CircleAvatar(
                               radius: 40,
-                              backgroundImage:
-                                  NetworkImage(_photoUrlController.text),
-                              child: Center(
-                                child:
-                                    Icon(FluentIcons.image_28_regular, size: 30),
+                              backgroundImage: NetworkImage(_photoUrlController.text),
+                              child: const Center(
+                                child: Icon(FluentIcons.image_28_regular, size: 30),
                               ),
                             );
                           },
@@ -198,40 +191,40 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
                       ),
                       const SizedBox(height: 20),
                       AppTextFormField.upload(
-                        margin: EdgeInsets.symmetric(horizontal: 24),
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
                         controller: _photoUrlController,
-                        validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.url()]),
+                        validator: FormBuilderValidators.compose([
+                          FormBuilderValidators.url()
+                        ]),
                         decoration: InputDecoration(
                           errorText: _errors['photoUrl'],
                           prefixIcon: const Icon(FluentIcons.image_28_regular),
-                          label: Text('Photo url'),
+                          label: const Text('Photo url'),
                           alignLabelWithHint: true,
                           helperText: 'direct link to the photo',
                         ),
                       ),
                       const SizedBox(height: 10),
-            
+
                       AppTextFormField(
-                        margin: EdgeInsets.symmetric(horizontal: 24),
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
                         controller: _nameController,
                         validator: FormBuilderValidators.compose([
                           FormBuilderValidators.required(),
                         ]),
                         decoration: InputDecoration(
                           errorText: _errors['name'],
-                          prefixIcon: SizedBox(
-                              child: const Icon(FluentIcons.person_24_regular)),
-                          label: Text('Name'),
+                          prefixIcon: const SizedBox(child: Icon(FluentIcons.person_24_regular)),
+                          label: const Text('Name'),
                           alignLabelWithHint: true,
                           helperText: 'The name of the user, required *',
                         ),
                       ),
                       const SizedBox(height: 10),
-            
+
                       /// email
                       AppTextFormField(
-                        margin: EdgeInsets.symmetric(horizontal: 24),
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
                         controller: _emailController,
                         validator: FormBuilderValidators.compose([
                           // FormBuilderValidators.required(),
@@ -240,21 +233,22 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
                         decoration: InputDecoration(
                           errorText: _errors['email'],
                           prefixIcon: const Icon(FluentIcons.mail_24_regular),
-                          label: Text('Email'),
+                          label: const Text('Email'),
                           alignLabelWithHint: true,
-                          helperText:
-                              'can be null, but must be valid if provided',
+                          helperText: 'can be null, but must be valid if provided',
                         ),
                       ),
-            
+
                       const SizedBox(height: 10),
                       // / phone number
                       AppTextFormField(
-                        margin: EdgeInsets.symmetric(horizontal: 24),
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
                         controller: _phoneController,
                         inputFormatters: [
                           MuskeyFormatter(
-                            masks: ['#########'],
+                            masks: [
+                              '#########'
+                            ],
                             overflow: OverflowBehavior.forbidden(),
                           )
                         ],
@@ -272,22 +266,22 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
                           errorText: _errors['phone'],
                           prefixIcon: const Icon(FluentIcons.phone_24_regular),
                           prefixText: "+213",
-                          label: Text('Phone Number'),
+                          label: const Text('Phone Number'),
                           alignLabelWithHint: true,
                           helperText: 'must be 9 digits, without 0',
                         ),
                       ),
-                      Divider(),
-                      ListTile(
+                      const Divider(),
+                      const ListTile(
                         contentPadding: EdgeInsets.symmetric(horizontal: 24),
                         visualDensity: VisualDensity(vertical: -3),
                         title: Text("Other information"),
                         enabled: false,
                       ),
-            
+
                       /// Custom uid
                       AppTextFormField(
-                        margin: EdgeInsets.symmetric(horizontal: 24),
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
                         controller: _uidController,
                         validator: FormBuilderValidators.compose([
                           FormBuilderValidators.required(),
@@ -295,7 +289,7 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
                         decoration: InputDecoration(
                           errorText: _errors['uid'],
                           prefixIcon: const Icon(FluentIcons.person_24_regular),
-                          label: Text('Custom uid'),
+                          label: const Text('Custom uid'),
                           alignLabelWithHint: true,
                           helperText: 'The uid of the user, required *',
                         ),
@@ -303,11 +297,10 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: SwitchListTile(
-                          secondary:
-                              const Icon(FluentIcons.presence_blocked_24_regular),
-                          contentPadding: EdgeInsets.only(left: 12),
-                          visualDensity: VisualDensity(vertical: -3),
-                          title: Text('Blocked'),
+                          secondary: const Icon(FluentIcons.presence_blocked_24_regular),
+                          contentPadding: const EdgeInsets.only(left: 12),
+                          visualDensity: const VisualDensity(vertical: -3),
+                          title: const Text('Blocked'),
                           value: _disabled,
                           onChanged: (e) => setState(() {
                             _disabled = e;
@@ -317,69 +310,67 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: SwitchListTile(
-                          contentPadding: EdgeInsets.only(left: 12),
-                          visualDensity: VisualDensity(vertical: -3),
-                          title: Text('Email Verified'),
+                          contentPadding: const EdgeInsets.only(left: 12),
+                          visualDensity: const VisualDensity(vertical: -3),
+                          title: const Text('Email Verified'),
                           value: _emailVerified,
                           onChanged: (e) => setState(() {
                             _emailVerified = e;
                           }),
                         ),
                       ),
-                      Divider(),
-                      ListTile(
-                        leading: const Icon(FluentIcons.person_24_regular),
+                      const Divider(),
+                      const ListTile(
+                        leading: Icon(FluentIcons.person_24_regular),
                         contentPadding: EdgeInsets.symmetric(horizontal: 24),
                         visualDensity: VisualDensity(vertical: -3),
                         title: Text("Roles"),
                         enabled: false,
                       ),
-            
+
                       /// List of chips for roles
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 0),
                         child: ListenableBuilder(
-                          listenable: _roles,
-                          builder: (context,_) {
-                            return SizedBox(
-                              height: 60,
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                children: [
-                                  const SizedBox(width: 24),
-                                  // selectable chips for roles
-                                  for (var role in [Role('admin'),Role('user')])
-                                    ...[InputChip(
-                                      onSelected: (selected) {
+                            listenable: _roles,
+                            builder: (context, _) {
+                              return SizedBox(
+                                height: 60,
+                                child: ListView(
+                                  scrollDirection: Axis.horizontal,
+                                  children: [
+                                    const SizedBox(width: 24),
+                                    // selectable chips for roles
+                                    for (var role in DynamicConfigs.roles) ...[
+                                      InputChip(
+                                        onSelected: (selected) {
                                           if (selected) {
-                                            if (true)
-                                              _roles.value = [];
+                                            if (true) _roles.value = [];
                                             _roles.value.add(role);
                                           } else {
                                             _roles.value.remove(role);
                                             setState(() {});
                                           }
                                         },
-                                      selected: _roles.value.contains(role),
-                                      label: Text(role.name.titleCase),
-                                      // onDeleted: () {
-                                      //     _roles.value.remove(role);
-                                      //       setState(() {
-                                              
-                                      //       });
-                                      // },
-                                    ),
-                                    const SizedBox(width: 10)
+                                        selected: _roles.value.contains(role),
+                                        label: Text(role.name.titleCase),
+                                        // onDeleted: () {
+                                        //     _roles.value.remove(role);
+                                        //       setState(() {
+
+                                        //       });
+                                        // },
+                                      ),
+                                      const SizedBox(width: 10)
                                     ],
 
-                                  const SizedBox(width: 24),
-                                ],
-                              ),
-                            );
-                          }
-                        ),
+                                    const SizedBox(width: 24),
+                                  ],
+                                ),
+                              );
+                            }),
                       ),
-            
+
                       /// show dialog to select roles
                       // Padding(
                       //   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -413,13 +404,13 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
               ),
             ),
 
-            Divider(
+            const Divider(
               height: 1,
             ),
             const SizedBox(height: 12),
             // row for 2 buttons
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -451,21 +442,172 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
   }
 }
 
+/// showProfilesPickerDialog
+Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool Function(ProfileModel)? onModelTap, List<IndexViewFilter<ProfileModel>> filters = const []}) async {
+  late var controller = ModelListViewController<ProfileModel>(
+    value: ModelListViewValue(
+      filters: [
+        ...filters,
+        if (filters.isEmpty)
+        for (var role in DynamicConfigs.roles)
+          IndexViewFilter(
+            name: role.name.titleCase,
+            active: false,
+            local: (model) => model.roles.contains(role),
+            remote: (query) => query.where("roles", arrayContains: role.name),
+            strict: false,
+            fixed: true,
+          ),
+      ],
+    ),
+    description: ProfileModel.description.copyWith(
+      actions: [
+        ModelAction(
+          group: "CRUD",
+          label: "show details",
+          icon: const Icon(FluentIcons.open_24_filled),
+          single: (context, model) async {
+            if (model != null) {
+              await showDetailsProfileModelDailog(context, model);
+            }
+            return null;
+          },
+        ),
+        ModelAction(
+            group: "CRUD",
+            label: "edit",
+            icon: const Icon(FluentIcons.edit_16_regular),
+            single: (context, model) async {
+              if (model != null) {
+                await showUpdateProfileModelDailog(context, model);
+              }
+            }),
+        ModelAction(
+            group: "CRUD",
+            label: "delete",
+            icon: const Icon(FluentIcons.delete_16_regular),
+            single: (context, model) async {
+              if (model != null) {
+                await showDeleteProfileModelDailog(context, model);
+              }
+            }),
+      ],
+    ),
+  );
+  // ignore: use_build_context_synchronously
+  return await showDialog(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        clipBehavior: Clip.antiAlias,
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: LayoutBuilder(builder: (context, constraints) {
+            return Scaffold(
+          appBar: AppBar(
+            title: const Text('Select Profiles'),
+            actions: [
+              ValueListenableBuilder(
+                valueListenable: controller,
+                builder: (context, _, __) {
+                  return TextButton.icon(
+                    onPressed: controller.value?.selectedModels.isNotEmpty == true? () async {
+                      Navigator.pop(context, controller.value?.selectedModels.toList());
+                    }:null,
+                    icon: const Icon(FluentIcons.select_object_24_regular),
+                    label: const Text('Select'),
+                  );
+                }
+              ),
+            ],
+          ),
+              body: ModelListView<ProfileModel>(
+                onAddPressed: () async {
+                  var model = await showCreateProfileModelDailog(context);
+                  if (model != null) {
+                    controller.addModel(model);
+                  }
+                },
+                onModelTap: (model) async {
+                  if (onModelTap?.call(model) ?? true) {
+                    await showDetailsProfileModelDailog(context, model);
+                  }
+                },
+                flexTableItemBuilders: [
+                  (
+                    header: const SizedBox(),
+                    config: const FlexTableItemConfig.square(40),
+                    builder: (model) {
+                      var firstLetters = (model.displayName.nullIfEmpty ?? "?")[0].toUpperCase();
+                      return CircleAvatar(
+                        backgroundColor: Theme.of(context).colorScheme.background,
+                        backgroundImage: model.photoUrl.nullIfEmpty == null ? null : NetworkImage(model.photoUrl),
+                        child: model.photoUrl.nullIfEmpty != null ? null : Text(firstLetters),
+                      );
+                    }
+                  ),
+                  (
+                    header: const Text("Name"),
+                    config: const FlexTableItemConfig.flex(2),
+                    builder: (model) {
+                      return Text(model.displayName.nullIfEmpty ?? "(No Name)");
+                    }
+                  ),
+                  if (constraints.maxWidth > 600) ...[
+                    (
+                      header: const Text("Phone"),
+                      config: const FlexTableItemConfig.flex(2),
+                      builder: (model) {
+                        return Text(model.phoneNumber?.nullIfEmpty ?? "(No Phone)");
+                      }
+                    ),
+                  ],
+                  if (constraints.maxWidth > 800) ...[
+                    (
+                      header: const Text("Email"),
+                      config: const FlexTableItemConfig.flex(2),
+                      builder: (model) {
+                        return Text(model.email.nullIfEmpty ?? "(No Email)");
+                      }
+                    ),
+                  ],
+                  if (constraints.maxWidth > 400) ...[
+                    (
+                      header: const Text("Last Update"),
+                      config: const FlexTableItemConfig.flex(2, minWidth: 200),
+                      builder: (model) {
+                        return Text(
+                          timeago.format(model.updatedAt),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        );
+                      }
+                    ),
+                  ],
+                ],
+                controller: controller,
+              ),
+            );
+          }),
+        ),
+      );
+    },
+  );
+}
+
 /// [SelectTechniciansDialog] is a dialog that have search bar and list of technicians [CheckboxListTile]
 class SelectTechniciansDialog extends StatefulWidget {
   /// list of selected technicians [Profile.uid]
-  final List<ProfileModel> selected;
+  final Map<String, ProfileModel> selected;
 
-  const SelectTechniciansDialog({super.key, this.selected = const []});
+  const SelectTechniciansDialog({super.key, this.selected = const {}});
 
   @override
-  _SelectTechniciansDialogState createState() =>
-      _SelectTechniciansDialogState();
+  _SelectTechniciansDialogState createState() => _SelectTechniciansDialogState();
 }
 
 class _SelectTechniciansDialogState extends State<SelectTechniciansDialog> {
   final _searchController = TextEditingController();
-  final _selected = <ProfileModel>[];
+  final _selected = <String, ProfileModel>{};
   ListResult<ProfileModel>? technicians;
   var loading = false;
 
@@ -488,14 +630,13 @@ class _SelectTechniciansDialogState extends State<SelectTechniciansDialog> {
         value: _searchController.text,
       );
     }
-    technicians =
-        await ProfileRepository.instance.list(
-          ListRequest(
-            searchQuery: query,
-            // TODO: add pagination
-            // startAfter: next,
-          ),
-        );
+    technicians = await ProfileRepository.instance.list(
+      ListRequest(
+        searchQuery: query,
+        // TODO: add pagination
+        // startAfter: next,
+      ),
+    );
     setState(() {
       loading = false;
     });
@@ -504,53 +645,49 @@ class _SelectTechniciansDialogState extends State<SelectTechniciansDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Select Technicians'),
+      title: const Text('Select Technicians'),
       content: Container(
         width: 600,
-        constraints: BoxConstraints(maxHeight: 600),
+        constraints: const BoxConstraints(maxHeight: 600),
         child: Column(
           mainAxisSize: MainAxisSize.max,
           children: [
             AppTextFormField(
               controller: _searchController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 prefixIcon: Icon(FluentIcons.search_24_regular),
                 hintText: 'Search',
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Expanded(
               child: technicians == null
-                  ? Center(
+                  ? const Center(
                       child: CircularProgressIndicator(),
                     )
                   : ListView.builder(
                       itemCount: technicians!.items.length,
                       itemBuilder: (context, index) {
                         var technician = technicians!.items[index];
-                        var selected = _selected
-                            .map((e) => e.uid)
-                            .contains(technician.uid);
+                        var selected = _selected.values.map((e) => e.uid).contains(technician.uid);
                         return CheckboxListTile(
                           value: selected,
                           onChanged: (e) {
                             setState(() {
                               if (e == true) {
-                                _selected.add(technician);
+                                _selected.addEntries([
+                                  MapEntry(technician.uid, technician)
+                                ]);
                               } else {
-                                _selected.remove(technician);
+                                _selected.removeWhere((key, value) => key == technician.uid);
                               }
                             });
                           },
                           title: Text(technician.displayName ?? 'No name'),
                           subtitle: Text(technician.email ?? 'No email'),
                           secondary: CircleAvatar(
-                            backgroundImage: technician.photoUrl == null
-                                ? null
-                                : NetworkImage(technician.photoUrl!),
-                            child: technician.photoUrl == null
-                                ? Icon(FluentIcons.person_24_regular)
-                                : null,
+                            backgroundImage: technician.photoUrl == null ? null : NetworkImage(technician.photoUrl!),
+                            child: technician.photoUrl == null ? const Icon(FluentIcons.person_24_regular) : null,
                           ),
                         );
                       },
@@ -564,14 +701,14 @@ class _SelectTechniciansDialogState extends State<SelectTechniciansDialog> {
           onPressed: () {
             Navigator.pop(context);
           },
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
         FilledButton.icon(
-          icon: Icon(FluentIcons.add_24_regular),
+          icon: const Icon(FluentIcons.add_24_regular),
           onPressed: () {
             Navigator.pop(context, _selected);
           },
-          label: Text('Save'),
+          label: const Text('Save'),
         ),
       ],
     );
@@ -585,8 +722,7 @@ class SelectRolesDialog extends StatefulWidget {
 
   /// return false to prevent select role
   final bool? Function(List<Role> roles)? onSelected;
-  const SelectRolesDialog(
-      {super.key, this.selectedRoles = const [], this.onSelected});
+  const SelectRolesDialog({super.key, this.selectedRoles = const [], this.onSelected});
 
   @override
   State<SelectRolesDialog> createState() => _SelectRolesDialogState();
@@ -596,14 +732,14 @@ class _SelectRolesDialogState extends State<SelectRolesDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Select Roles'),
+      title: const Text('Select Roles'),
       content: Container(
         width: 600,
-        constraints: BoxConstraints(maxHeight: 600),
+        constraints: const BoxConstraints(maxHeight: 600),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            for (var role in [Role('admin'),Role('user')])
+            for (var role in DynamicConfigs.roles)
               SwitchListTile(
                 value: widget.selectedRoles.contains(role),
                 onChanged: (e) {
@@ -614,8 +750,7 @@ class _SelectRolesDialogState extends State<SelectRolesDialog> {
                   }
                   setState(() {
                     if (e == true) {
-                      if (true)
-                      widget.selectedRoles.clear();
+                      if (true) widget.selectedRoles.clear();
                       widget.selectedRoles.add(role);
                     } else {
                       widget.selectedRoles.remove(role);
@@ -632,14 +767,14 @@ class _SelectRolesDialogState extends State<SelectRolesDialog> {
           onPressed: () {
             Navigator.pop(context);
           },
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
         FilledButton.icon(
-          icon: Icon(FluentIcons.add_24_regular),
+          icon: const Icon(FluentIcons.add_24_regular),
           onPressed: () {
             Navigator.pop<List<Role>>(context, widget.selectedRoles);
           },
-          label: Text('Save'),
+          label: const Text('Save'),
         ),
       ],
     );

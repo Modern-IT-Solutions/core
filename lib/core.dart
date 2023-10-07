@@ -1,5 +1,7 @@
 library core;
 
+import 'package:core/features/users/data/models/role.dart';
+
 export 'core/data/datasource.dart';
 export 'core/data/model.dart';
 export 'core/data/requests.dart';
@@ -46,5 +48,16 @@ extension NullIfEmpty on String {
   // firstCharOrNull
   String get firstCharOrNull => nullIfEmpty == null ? "?" : this[0];
 
+}
+
+
+class DynamicConfigs {
+  static Set<Role> _roles = {Role("admin"),Role("user")};
+  // set roles
+  static void setRoles(Set<Role> roles) {
+    _roles = roles;
+  }
+  // get roles
+  static Set<Role> get roles => _roles;
 }
 
