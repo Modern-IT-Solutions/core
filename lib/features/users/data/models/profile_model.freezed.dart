@@ -27,7 +27,7 @@ mixin _$ProfileModel {
   String? get phoneNumber => throw _privateConstructorUsedError;
   DateTime? get birthday => throw _privateConstructorUsedError;
   String get photoUrl => throw _privateConstructorUsedError;
-  Address? get address => throw _privateConstructorUsedError;
+  AddressModel? get address => throw _privateConstructorUsedError;
   String get uid => throw _privateConstructorUsedError;
   bool get disabled => throw _privateConstructorUsedError;
   @RoleSerializer()
@@ -63,7 +63,7 @@ abstract class $ProfileModelCopyWith<$Res> {
       String? phoneNumber,
       DateTime? birthday,
       String photoUrl,
-      Address? address,
+      AddressModel? address,
       String uid,
       bool disabled,
       @RoleSerializer() List<Role> roles,
@@ -75,7 +75,7 @@ abstract class $ProfileModelCopyWith<$Res> {
       @TimestampDateTimeSerializer() DateTime? deletedAt,
       @TimestampDateTimeSerializer() DateTime? lastSignInAt});
 
-  $AddressCopyWith<$Res>? get address;
+  $AddressModelCopyWith<$Res>? get address;
 }
 
 /// @nodoc
@@ -137,7 +137,7 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
       address: freezed == address
           ? _value.address
           : address // ignore: cast_nullable_to_non_nullable
-              as Address?,
+              as AddressModel?,
       uid: null == uid
           ? _value.uid
           : uid // ignore: cast_nullable_to_non_nullable
@@ -183,12 +183,12 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
 
   @override
   @pragma('vm:prefer-inline')
-  $AddressCopyWith<$Res>? get address {
+  $AddressModelCopyWith<$Res>? get address {
     if (_value.address == null) {
       return null;
     }
 
-    return $AddressCopyWith<$Res>(_value.address!, (value) {
+    return $AddressModelCopyWith<$Res>(_value.address!, (value) {
       return _then(_value.copyWith(address: value) as $Val);
     });
   }
@@ -209,7 +209,7 @@ abstract class _$$ProfileModelImplCopyWith<$Res>
       String? phoneNumber,
       DateTime? birthday,
       String photoUrl,
-      Address? address,
+      AddressModel? address,
       String uid,
       bool disabled,
       @RoleSerializer() List<Role> roles,
@@ -222,7 +222,7 @@ abstract class _$$ProfileModelImplCopyWith<$Res>
       @TimestampDateTimeSerializer() DateTime? lastSignInAt});
 
   @override
-  $AddressCopyWith<$Res>? get address;
+  $AddressModelCopyWith<$Res>? get address;
 }
 
 /// @nodoc
@@ -282,7 +282,7 @@ class __$$ProfileModelImplCopyWithImpl<$Res>
       address: freezed == address
           ? _value.address
           : address // ignore: cast_nullable_to_non_nullable
-              as Address?,
+              as AddressModel?,
       uid: null == uid
           ? _value.uid
           : uid // ignore: cast_nullable_to_non_nullable
@@ -370,7 +370,7 @@ class _$ProfileModelImpl implements _ProfileModel {
   @JsonKey()
   final String photoUrl;
   @override
-  final Address? address;
+  final AddressModel? address;
   @override
   final String uid;
   @override
@@ -501,7 +501,7 @@ abstract class _ProfileModel implements ProfileModel {
           final String? phoneNumber,
           final DateTime? birthday,
           final String photoUrl,
-          required final Address? address,
+          required final AddressModel? address,
           required final String uid,
           required final bool disabled,
           @RoleSerializer() required final List<Role> roles,
@@ -531,7 +531,7 @@ abstract class _ProfileModel implements ProfileModel {
   @override
   String get photoUrl;
   @override
-  Address? get address;
+  AddressModel? get address;
   @override
   String get uid;
   @override

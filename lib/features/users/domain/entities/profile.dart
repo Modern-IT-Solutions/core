@@ -1,5 +1,5 @@
 import 'package:core/core.dart';
-import 'package:core/models/address.dart';
+import 'package:core/models/address_model.dart';
 import 'package:core/temp.dart';
 
 import '../../data/models/role.dart';
@@ -11,7 +11,7 @@ abstract class Profile {
   String? get phoneNumber;
   DateTime? get birthday;
   String get photoUrl;
-  Address? get address;
+  AddressModel? get address;
   String get uid;
   bool get disabled;
   List<Role> get roles;

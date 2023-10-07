@@ -18,7 +18,7 @@ _$ProfileModelImpl _$$ProfileModelImplFromJson(Map<String, dynamic> json) =>
       photoUrl: json['photoUrl'] as String? ?? "",
       address: json['address'] == null
           ? null
-          : Address.fromJson(json['address'] as Map<String, dynamic>),
+          : AddressModel.fromJson(json['address'] as Map<String, dynamic>),
       uid: json['uid'] as String,
       disabled: json['disabled'] as bool,
       roles: (json['roles'] as List<dynamic>)
@@ -27,14 +27,14 @@ _$ProfileModelImpl _$$ProfileModelImplFromJson(Map<String, dynamic> json) =>
       emailVerified: json['emailVerified'] as bool,
       metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
       customClaims: json['customClaims'] as Map<String, dynamic>? ?? const {},
-      createdAt:
-          const TimestampDateTimeSerializer().fromJson(json['createdAt']),
-      updatedAt:
-          const TimestampDateTimeSerializer().fromJson(json['updatedAt']),
-      deletedAt:
-          const TimestampDateTimeSerializer().fromJson(json['deletedAt']),
-      lastSignInAt:
-          const TimestampDateTimeSerializer().fromJson(json['lastSignInAt']),
+      createdAt: const TimestampDateTimeSerializer()
+          .fromJson(json['createdAt'] as Timestamp),
+      updatedAt: const TimestampDateTimeSerializer()
+          .fromJson(json['updatedAt'] as Timestamp),
+      deletedAt: _$JsonConverterFromJson<Timestamp, DateTime>(
+          json['deletedAt'], const TimestampDateTimeSerializer().fromJson),
+      lastSignInAt: _$JsonConverterFromJson<Timestamp, DateTime>(
+          json['lastSignInAt'], const TimestampDateTimeSerializer().fromJson),
     );
 
 Map<String, dynamic> _$$ProfileModelImplToJson(_$ProfileModelImpl instance) =>
@@ -56,11 +56,17 @@ Map<String, dynamic> _$$ProfileModelImplToJson(_$ProfileModelImpl instance) =>
           const TimestampDateTimeSerializer().toJson(instance.createdAt),
       'updatedAt':
           const TimestampDateTimeSerializer().toJson(instance.updatedAt),
-      'deletedAt': _$JsonConverterToJson<dynamic, DateTime>(
+      'deletedAt': _$JsonConverterToJson<Timestamp, DateTime>(
           instance.deletedAt, const TimestampDateTimeSerializer().toJson),
-      'lastSignInAt': _$JsonConverterToJson<dynamic, DateTime>(
+      'lastSignInAt': _$JsonConverterToJson<Timestamp, DateTime>(
           instance.lastSignInAt, const TimestampDateTimeSerializer().toJson),
     };
+
+Value? _$JsonConverterFromJson<Json, Value>(
+  Object? json,
+  Value? Function(Json json) fromJson,
+) =>
+    json == null ? null : fromJson(json as Json);
 
 Json? _$JsonConverterToJson<Json, Value>(
   Value? value,

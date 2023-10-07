@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:core/features/users/data/models/role.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:core/core.dart';
@@ -22,22 +21,20 @@ class GeoFirePointConverter implements JsonConverter<GeoFirePoint?, Map<String, 
 }
 
 /// timestamp coverter for [Timestamp]
-class TimestampDateTimeSerializer implements JsonConverter<DateTime?, Timestamp?> {
+class TimestampDateTimeSerializer implements JsonConverter<DateTime, Timestamp> {
   const TimestampDateTimeSerializer();
 
   @override
-  DateTime? fromJson(dynamic timestamp) {
-    if (timestamp == null) return null;
+  DateTime fromJson(dynamic timestamp) {
     if (timestamp is DateTime) return timestamp;
     if (timestamp is String) return DateTime.parse(timestamp);
     if (timestamp is Timestamp) return timestamp.toDate();
     if (timestamp is int) return DateTime.fromMillisecondsSinceEpoch(timestamp);
-    return null;
+    throw Exception('${timestamp.runtimeType} is not a valid timestamp that can be parsed - only int|DateTime|String|Timestamp are supported');
   }
 
   @override
-  Timestamp? toJson(DateTime? date) {
-    if (date == null) return null;
+  Timestamp toJson(DateTime date) {
     return Timestamp.fromDate(date);
   }
 }

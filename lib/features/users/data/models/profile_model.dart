@@ -1,5 +1,6 @@
 
 import 'package:core/core.dart';
+import 'package:core/models/address_model.dart';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -19,7 +20,7 @@ class ProfileModel with _$ProfileModel implements Model {
     String? phoneNumber,
     DateTime? birthday,
     @Default("") String photoUrl,
-    required Address? address,
+    required AddressModel? address,
     required String uid,
     required bool disabled,
     @RoleSerializer() 

@@ -18,7 +18,7 @@ export './widgets/form_field.dart';
 
 export './imports/firebase.dart';
 export './converters.dart';
-export './models/address.dart';
+export './models/address_model.dart';
 export './features/users/data/models/role.dart';
 export './models/base.dart';
 

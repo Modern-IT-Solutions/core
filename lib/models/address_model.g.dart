@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'address.dart';
+part of 'address_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$AddressImpl _$$AddressImplFromJson(Map<String, dynamic> json) =>
-    _$AddressImpl(
+_$AddressModelImpl _$$AddressModelImplFromJson(Map<String, dynamic> json) =>
+    _$AddressModelImpl(
       raw: json['raw'] as String,
       state: json['state'] as String?,
       city: json['city'] as String?,
@@ -16,7 +16,7 @@ _$AddressImpl _$$AddressImplFromJson(Map<String, dynamic> json) =>
           .fromJson(json['location'] as Map<String, dynamic>?),
     );
 
-Map<String, dynamic> _$$AddressImplToJson(_$AddressImpl instance) =>
+Map<String, dynamic> _$$AddressModelImplToJson(_$AddressModelImpl instance) =>
     <String, dynamic>{
       'raw': instance.raw,
       'state': instance.state,
