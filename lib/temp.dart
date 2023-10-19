@@ -1,3 +1,9 @@
+import 'dart:math';
+
+import 'package:core/services/defaults/helpers.dart';
+import 'package:flutter/material.dart';
+
+import 'models/base.dart';
 
 /// ModelRefMixin
 class ModelRef {
@@ -52,4 +58,88 @@ class ModelRef {
 
   @override
   int get hashCode => path.hashCode;
+}
+
+
+
+////
+
+//////
+
+// delete assistance, a simple dialog with a text and two buttons
+Future<void> showDeleteModelDailog(BuildContext context, Model model) async {
+  bool _loading = false;
+  bool skipRecycleBin = false;
+  await showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Confirm delete'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('this action cannot be undone, are you sure you want to continue?'),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: StatefulBuilder(builder: (context, setState) {
+              return SwitchListTile(
+                contentPadding: const EdgeInsets.only(left: 12),
+                visualDensity: const VisualDensity(vertical: -3),
+                title: const Text('Skip recycle bin'),
+                value: skipRecycleBin,
+                onChanged: (e) => setState(() {
+                  skipRecycleBin = e;
+                }),
+              );
+            }),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Cancel'),
+        ),
+        StatefulBuilder(builder: (context, setState) {
+          return TextButton(
+            onPressed: _loading
+                ? null
+                : () async {
+                    setState(() {
+                      _loading = true;
+                    });
+                    try {
+                      await deleteDocument(path: model.ref.path, softDelete: !skipRecycleBin);
+                      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                        SnackBar(
+                            behavior: SnackBarBehavior.floating,
+                            width: 400.0,
+                            content: Text('${model.ref.id} deleted'),
+                            action: SnackBarAction(
+                              label: 'Close',
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                              },
+                            )),
+                      );
+                      Navigator.of(context).pop();
+                    } catch (e) {}
+                    setState(() {
+                      _loading = false;
+                    });
+                  },
+            child: _loading ? CircularProgressIndicator.adaptive() : const Text('Delete'),
+          );
+        }),
+      ],
+    ),
+  );
+}
+
+
+const _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+String generateDocumentId([int length=11]) {
+  var r = Random();
+  return String.fromCharCodes(List.generate(length, (index) => r.nextInt(33) + 89));
 }

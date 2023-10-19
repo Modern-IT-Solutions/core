@@ -147,6 +147,8 @@ Future<bool?> showDeleteProfileModelDailog(BuildContext context, ProfileModel mo
   );
 }
 
+
+
 @override
 Future<void> showDetailsProfileModelDailog(BuildContext context, ProfileModel model) async {
   var child = Container(

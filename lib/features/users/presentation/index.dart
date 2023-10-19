@@ -480,7 +480,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                                 color: Theme.of(context).colorScheme.error,
                                               ),
                                               child: Text(
-                                                'Remove',
+                                                'Remove?',
                                                 style: TextStyle(color: Theme.of(context).colorScheme.error),
                                               ),
                                             ),
@@ -664,57 +664,57 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
     );
   }
 
-  // delete station, a simple dialog with a text and two buttons
-  Future<void> showDeleteModelDailog(BuildContext context, ProfileModel model) async {
-    bool _loading = false;
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm delete'),
-        content: const Text('this action cannot be undone, are you sure you want to continue?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('Cancel'),
-          ),
-          StatefulBuilder(builder: (context, setState) {
-            return TextButton(
-              onPressed: _loading
-                  ? null
-                  : () async {
-                      setState(() {
-                        _loading = true;
-                      });
-                      try {
-                        await widget.repository.delete(DeleteRequest(model.ref.id));
-                        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                          SnackBar(
-                              behavior: SnackBarBehavior.floating,
-                              width: 400.0,
-                              content: Text('${model.ref.id} deleted'),
-                              action: SnackBarAction(
-                                label: 'Close',
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                },
-                              )),
-                        );
-                        Navigator.of(context).pop();
-                        load();
-                      } catch (e) {}
-                      setState(() {
-                        _loading = false;
-                      });
-                    },
-              child: _loading ? const CircularProgressIndicator.adaptive() : const Text('Delete'),
-            );
-          }),
-        ],
-      ),
-    );
-  }
+  // // delete station, a simple dialog with a text and two buttons
+  // Future<void> showDeleteModelDailog(BuildContext context, ProfileModel model) async {
+  //   bool _loading = false;
+  //   await showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Confirm delete'),
+  //       content: const Text('this action cannot be undone, are you sure you want to continue?'),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () {
+  //             Navigator.of(context).pop();
+  //           },
+  //           child: const Text('Cancel'),
+  //         ),
+  //         StatefulBuilder(builder: (context, setState) {
+  //           return TextButton(
+  //             onPressed: _loading
+  //                 ? null
+  //                 : () async {
+  //                     setState(() {
+  //                       _loading = true;
+  //                     });
+  //                     try {
+  //                       await widget.repository.delete(DeleteRequest(model.ref.id));
+  //                       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+  //                         SnackBar(
+  //                             behavior: SnackBarBehavior.floating,
+  //                             width: 400.0,
+  //                             content: Text('${model.ref.id} deleted'),
+  //                             action: SnackBarAction(
+  //                               label: 'Close',
+  //                               onPressed: () {
+  //                                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  //                               },
+  //                             )),
+  //                       );
+  //                       Navigator.of(context).pop();
+  //                       load();
+  //                     } catch (e) {}
+  //                     setState(() {
+  //                       _loading = false;
+  //                     });
+  //                   },
+  //             child: _loading ? const CircularProgressIndicator.adaptive() : const Text('Delete'),
+  //           );
+  //         }),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   @override
   Future<void> showDetailsModelDailog(BuildContext context, ProfileModel model) async {

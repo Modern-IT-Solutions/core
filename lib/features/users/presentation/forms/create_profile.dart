@@ -443,21 +443,21 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
 }
 
 /// showProfilesPickerDialog
-Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool Function(ProfileModel)? onModelTap, List<IndexViewFilter<ProfileModel>> filters = const []}) async {
+Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool Function(ProfileModel)? onModelTap, List<IndexViewFilter<ProfileModel>> filters = const [], int? length}) async {
   late var controller = ModelListViewController<ProfileModel>(
     value: ModelListViewValue(
       filters: [
         ...filters,
         if (filters.isEmpty)
-        for (var role in DynamicConfigs.roles)
-          IndexViewFilter(
-            name: role.name.titleCase,
-            active: false,
-            local: (model) => model.roles.contains(role),
-            remote: (query) => query.where("roles", arrayContains: role.name),
-            strict: false,
-            fixed: true,
-          ),
+          for (var role in DynamicConfigs.roles)
+            IndexViewFilter(
+              name: role.name.titleCase,
+              active: false,
+              local: (model) => model.roles.contains(role),
+              remote: (query) => query.where("roles", arrayContains: role.name),
+              strict: false,
+              fixed: true,
+            ),
       ],
     ),
     description: ProfileModel.description.copyWith(
@@ -504,23 +504,35 @@ Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool
           constraints: const BoxConstraints(maxWidth: 600),
           child: LayoutBuilder(builder: (context, constraints) {
             return Scaffold(
-          appBar: AppBar(
-            title: const Text('Select Profiles'),
-            actions: [
-              ValueListenableBuilder(
-                valueListenable: controller,
-                builder: (context, _, __) {
-                  return TextButton.icon(
-                    onPressed: controller.value?.selectedModels.isNotEmpty == true? () async {
-                      Navigator.pop(context, controller.value?.selectedModels.toList());
-                    }:null,
-                    icon: const Icon(FluentIcons.select_object_24_regular),
-                    label: const Text('Select'),
-                  );
-                }
+              appBar: AppBar(
+                title: const Text('Select Profiles'),
+                actions: [
+                  ValueListenableBuilder(
+                      valueListenable: controller,
+                      builder: (context, _, __) {
+                        bool enable = controller.value?.selectedModels.isNotEmpty == true;
+                        if (length != null) {
+                          if (controller.value!.selectedModels.length > length) {
+                            var temp = controller.value!.selectedModels.toList();
+                            enable= false;
+                            WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+                              controller.value = controller.value!.copyWith(selectedModels: temp.sublist(temp.length - length).toSet());
+                            });
+                          }
+                          enable = enable && controller.value!.selectedModels.length == length;
+                        }
+                        return TextButton.icon(
+                          onPressed: enable
+                              ? () async {
+                                  Navigator.pop(context, controller.value?.selectedModels.toList());
+                                }
+                              : null,
+                          icon: const Icon(FluentIcons.select_object_24_regular),
+                          label: const Text('Select'),
+                        );
+                      }),
+                ],
               ),
-            ],
-          ),
               body: ModelListView<ProfileModel>(
                 onAddPressed: () async {
                   var model = await showCreateProfileModelDailog(context);

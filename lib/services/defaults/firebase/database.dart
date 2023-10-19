@@ -228,6 +228,23 @@ class DatabaseService extends Service {
     await _saveCache();
     return cachedDocument;
   }
+  /// create a new document
+  Future<CachedDocument> setDocument({
+    required String path,
+    required Map<String, dynamic> data,
+  }) async {
+    var doc = FirebaseFirestore.instance.doc(path);
+    final document = await doc.set(data);
+    final cachedDocument = CachedDocument(
+      ref: doc.path,
+      data: data,
+      cachedAt: DateTime.now(),
+    );
+    _cachedDocuments.removeWhere((e) => e.ref == path);
+    _cachedDocuments.add(cachedDocument);
+    await _saveCache();
+    return cachedDocument;
+  }
 
   /// update a document
   Future<CachedDocument> updateDocument({
@@ -252,8 +269,15 @@ class DatabaseService extends Service {
   /// delete a document
   Future<void> deleteDocument({
     required String path,
+    bool softDelete = true,
   }) async {
-    await FirebaseFirestore.instance.doc(path).delete();
+    if (softDelete) {
+      await FirebaseFirestore.instance.doc(path).update({
+        'deletedAt': FieldValue.serverTimestamp(),
+      });
+    } else {
+      await FirebaseFirestore.instance.doc(path).delete();
+    }
     _cachedDocuments.removeWhere((e) => e.ref == path);
     await _saveCache();
   }
@@ -369,6 +393,7 @@ class DatabaseService extends Service {
     if (builder != null) {
       query = builder(query);
     }
+    print("GET: $path");
     print(query.parameters);
 
 

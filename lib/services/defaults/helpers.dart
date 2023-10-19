@@ -5,7 +5,6 @@ import '../../models/cached_document.dart';
 import 'firebase/database.dart';
 import 'theme.dart';
 
-
 /// database helper
 
 ProfileModel? getCurrentProfile() {
@@ -94,6 +93,16 @@ Future<CachedDocument> createDocument({
         data: data,
       );
 }
+/// createDocument
+Future<CachedDocument> setDocument({
+  required String path,
+  required Map<String, dynamic> data,
+}) async {
+  return await Services.instance.get<DatabaseService>()!.setDocument(
+        path: path,
+        data: data,
+      );
+}
 
 /// updateDocument
 Future<CachedDocument> updateDocument({
@@ -109,9 +118,11 @@ Future<CachedDocument> updateDocument({
 /// deleteDocument
 Future<void> deleteDocument({
   required String path,
+  bool softDelete = false,
 }) async {
   return await Services.instance.get<DatabaseService>()!.deleteDocument(
         path: path,
+        softDelete: softDelete,
       );
 }
 
@@ -135,15 +146,16 @@ Future<T?> getModelDocument<T>({
   });
 }
 
-/// 
-
+///
 
 AuthService getAuth() {
   return Services.instance.get<AuthService>()!;
 }
+
 DatabaseService getDB() {
   return Services.instance.get<DatabaseService>()!;
 }
+
 ThemeService getTheme() {
   return Services.instance.get<ThemeService>()!;
 }

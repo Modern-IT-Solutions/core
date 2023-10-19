@@ -42,7 +42,10 @@ class ProfileCreateRequest<T extends ProfileModel> extends CreateRequest<T> {
     required this.disabled,
     required this.roles,
     required this.emailVerified,
-  });
+  }):super(id: uid);
+
+  /// data
+  Map<String, dynamic> get data => toMap();
 
   @override
   Map<String, dynamic> toMap() {

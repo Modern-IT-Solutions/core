@@ -76,7 +76,7 @@ mixin ModelMnanagerViewMixin<M extends Model> {
   Future<void> showUpdateModelDailog(BuildContext context, M model);
 
   // delete station, a simple dialog with a text and two buttons
-  Future<void> showDeleteModelDailog(BuildContext context, M model);
+  // Future<void> showDeleteModelDailog(BuildContext context, M model) async {}
 
   // show details, a simple dialog with a text and two buttons
   Future<void> showDetailsModelDailog(BuildContext context, M model);
