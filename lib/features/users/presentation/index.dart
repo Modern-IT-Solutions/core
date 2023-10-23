@@ -1569,7 +1569,9 @@ class ModelListViewValue<M extends Model> {
 /// [ModelListViewController] just like other controllers in flutter
 class ModelListViewController<M extends Model> extends ValueNotifier<ModelListViewValue<M>?> {
   final ModelDescription<M> description;
-  ModelListViewController({ModelListViewValue<M>? value, required this.description})
+  // where 
+  final bool Function(M model)? where;
+  ModelListViewController({ModelListViewValue<M>? value, required this.description, this.where})
       : super(value?.copyWith(
           searchQuery: value.searchQuery ??
               SearchQuery(
@@ -1695,11 +1697,12 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// [filtered] is a function to get the filtered models
   List<M>? get filtered {
+    print(where);
     if (models == null) {
       return null;
     }
     bool _filters(M model) {
-      for (var filter in value?.filters ?? []) {
+      for (var filter in value?.filters ?? <IndexViewFilter<M>>[]) {
         if (!filter.active) continue;
         if (filter.local != null) {
           if (filter.local!(model) == false) {
@@ -1707,7 +1710,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
           }
         }
       }
-      return true;
+      return where?.call(model) ?? true;
     }
 
     if (value?.searchQuery?.value?.isEmpty == true) {
