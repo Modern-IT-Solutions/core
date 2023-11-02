@@ -772,10 +772,12 @@ class ModelListView<M extends Model> extends StatefulWidget {
   final Widget? flexTableHeader;
   final void Function(M model)? onModelTap;
   final void Function()? onAddPressed;
+  // final List<({Icon icon, String label, Future<Null> Function() onTap})>? addOptions;
   const ModelListView({
     super.key,
     required this.controller,
     this.header,
+    // this.addOptions,
     this.gap = 14,
     this.itemBuilder,
     this.useFlexTable = true,

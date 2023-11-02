@@ -208,6 +208,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
                       time.hour,
                       time.minute,
                     ).toString();
+                    widget.onChanged?.call(_controller.text);
                   }
                 }
               }

@@ -39,7 +39,7 @@ class TimestampDateTimeSerializer implements JsonConverter<DateTime, dynamic> {
 }
 
 /// timestamp coverter for [Timestamp]
-class NullableTimestampDateTimeSerializer implements JsonConverter<DateTime?, Timestamp?> {
+class NullableTimestampDateTimeSerializer implements JsonConverter<DateTime?, dynamic> {
   const NullableTimestampDateTimeSerializer();
 
   @override
@@ -52,7 +52,7 @@ class NullableTimestampDateTimeSerializer implements JsonConverter<DateTime?, Ti
   }
 
   @override
-  Timestamp? toJson(DateTime? date) => date == null? null : Timestamp.fromDate(date);
+  toJson(DateTime? date) => date == null? null : Timestamp.fromDate(date);
 }
 
 /// ModelRefSerializer

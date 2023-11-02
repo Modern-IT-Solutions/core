@@ -7,6 +7,12 @@ import 'models/base.dart';
 
 /// ModelRefMixin
 class ModelRef {
+  /// random() is a static method that returns a random string of length [length]
+  static ModelRef random(String col,[int length = 11]) {
+    var r = Random();
+    return ModelRef(col+"/"+generateDocumentId(length));
+  }
+
   final String path;
   ModelRef(
     this.path,
@@ -138,8 +144,13 @@ Future<void> showDeleteModelDailog(BuildContext context, Model model) async {
 }
 
 
-const _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+// [A-Z][0-9]
+const _chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 String generateDocumentId([int length=11]) {
   var r = Random();
-  return String.fromCharCodes(List.generate(length, (index) => r.nextInt(33) + 89));
+  var result = "";
+  for (var i = 0; i < length; i++) {
+    result += _chars[r.nextInt(_chars.length)];
+  }
+  return result;
 }
