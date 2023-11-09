@@ -15,6 +15,9 @@ dependencies:
   #   path: ../dashboard/
   fluentui_system_icons:
   cloud_functions: 
+  enhanced_cloud_firestore:
+  file_saver:
+  path_provider:
   muskey:
   function_tree: 
   date_format:

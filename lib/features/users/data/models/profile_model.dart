@@ -47,36 +47,42 @@ class ProfileModel with _$ProfileModel implements Model {
       fields: {
         FieldDescription(
           name: "uid",
+          path: "uid",
           map: (m)=>m.uid,
           type: FieldType.text,
           group: FieldGroup.metadata,
         ),
         FieldDescription(
           name: "displayName",
+          path: "displayName",
           map: (m)=>m.displayName,
           type: FieldType.text,
           group: FieldGroup.primary,
         ),
         FieldDescription(
           name: "email",
+          path: "email",
           map: (m)=>m.email,
           type: FieldType.email,
           group: FieldGroup.primary,
         ),
         FieldDescription(
           name: "phoneNumber",
+          path: "phoneNumber",
           map: (m)=>m.phoneNumber,
           type: FieldType.phone,
           group: FieldGroup.primary,
         ),
         FieldDescription(
           name: "updatedAt",
+          path: "updatedAt",
           map: (m)=>m.updatedAt,
           type: FieldType.datetime,
           group: FieldGroup.metadata,
         ),
         FieldDescription(
           name: "createdAt",
+          path: "createdAt",
           map: (m)=>m.createdAt,
           type: FieldType.datetime,
           group: FieldGroup.metadata,

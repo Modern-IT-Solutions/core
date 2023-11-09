@@ -1,5 +1,10 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:convert';
+
 import 'package:feather_icons/feather_icons.dart';
+import 'package:file_saver/file_saver.dart';
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -821,6 +826,37 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
             onRefresh: widget.controller.load,
             child: CustomScrollView(
               slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: widget.gap, left: widget.gap, right: widget.gap),
+                    child: Row(children: [
+                      Text(
+                        widget.controller.description.name,
+                        style: Theme.of(context).textTheme.headlineMedium!.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const Spacer(),
+                      if (widget.onAddPressed != null)
+                        SizedBox(
+                          child: FilledButton.icon(
+                            onPressed: widget.onAddPressed,
+                            label: const Text('Add'),
+                            icon: const Icon(FeatherIcons.plus),
+                          ),
+                        ),
+                      // export/import
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          showModelExportDialog(context, widget.controller);
+                        },
+                        label: const Text('Export'),
+                        icon: const Icon(FluentIcons.save_arrow_right_20_regular),
+                      ),
+                    ]),
+                  ),
+                ),
                 // put the past widget here, but un sliver
                 SliverToBoxAdapter(
                   child: Padding(
@@ -904,7 +940,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                           SizedBox(
                             height: 40,
                             child: ActionChip(
-                              label: Icon(
+                              label: const Icon(
                                 FluentIcons.add_24_regular,
                                 size: 20,
                               ),
@@ -1004,7 +1040,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                     ),
                                   ] else
                                     for (var item in widget.flexTableItemBuilders!) item.header,
-                                  Icon(
+                                  const Icon(
                                     FluentIcons.chevron_down_24_regular,
                                     size: 20,
                                   )
@@ -1133,7 +1169,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                               runSpacing: 12.0,
                               children: [
                                 Padding(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                     vertical: 24.0,
                                     horizontal: 12,
                                   ),
@@ -1571,7 +1607,7 @@ class ModelListViewValue<M extends Model> {
 /// [ModelListViewController] just like other controllers in flutter
 class ModelListViewController<M extends Model> extends ValueNotifier<ModelListViewValue<M>?> {
   final ModelDescription<M> description;
-  // where 
+  // where
   final bool Function(M model)? where;
   ModelListViewController({ModelListViewValue<M>? value, required this.description, this.where})
       : super(value?.copyWith(
@@ -1589,14 +1625,14 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   })? needIndexError;
 
   /// [search] is a function to search for models
-  Future<void> search({Iterable<Timestamp>? startAfter, bool concat = false,int limit = 50}) async {
+  Future<void> search({Iterable<Timestamp>? startAfter, bool concat = false, int limit = 50}) async {
     needIndexError = null;
     value = (value ?? ModelListViewValue<M>()).copyWith(loading: true);
     try {
       var _models = await getModelCollection(
         path: description.path,
         fromJson: description.fromJson,
-        behavior: true? FetchBehavior.serverOnly: FetchBehavior.serverFirst,
+        behavior: true ? FetchBehavior.serverOnly : FetchBehavior.serverFirst,
         builder: (query) {
           var strict = false;
           if (value?.filters.isEmpty == false) {
@@ -1614,7 +1650,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
           // search query, if searchQuery is not null
           if (value?.searchQuery?.value?.isNotEmpty == true) {
-            query = query.where(value!.searchQuery!.field, isGreaterThanOrEqualTo: value!.searchQuery!.value).where(value!.searchQuery!.field, isLessThanOrEqualTo: value!.searchQuery!.value! + "\uf8ff").orderBy(value!.searchQuery!.field, descending: false);
+            query = query.where(value!.searchQuery!.field, isGreaterThanOrEqualTo: value!.searchQuery!.value).where(value!.searchQuery!.field, isLessThanOrEqualTo: "${value!.searchQuery!.value!}\uf8ff").orderBy(value!.searchQuery!.field, descending: false);
           } else {
             if (value?.searchQuery?.value?.isEmpty == true || !strict && query.parameters["orderBy"]?.isNotEmpty != true) {
               // query = query.orderBy("updatedAt", descending: true);
@@ -1657,7 +1693,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       if (e.code == "failed-precondition") {
         var data = e.message!.split("https");
         var message = data[0];
-        var url = "https" + data[1];
+        var url = "https${data[1]}";
         needIndexError = (
           name: message,
           url: url,
@@ -1785,7 +1821,6 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     );
   }
 
-
   /// [clearFilters]
   Future<void> clearFilters({bool refresh = true}) async {
     value = value?.copyWith(
@@ -1808,6 +1843,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   /// [history]
   Map<M, bool> history = {};
   bool _hasMore = true;
+
   /// [hasNext] is a function to check if there is more models to load
   bool get hasNext {
     return _hasMore;
@@ -1881,6 +1917,7 @@ enum FieldType {
 /// FieldDescription
 class FieldDescription<M> {
   final String name;
+  final String path;
   final bool nullable;
   final String? details;
   final FieldGroup group;
@@ -1893,6 +1930,7 @@ class FieldDescription<M> {
 
   const FieldDescription({
     required this.name,
+    required this.path,
     this.nullable = false,
     required this.map,
     required this.type,
@@ -1905,6 +1943,7 @@ class FieldDescription<M> {
   /// copyWith
   FieldDescription<M> copyWith({
     String? name,
+    String? path,
     bool? nullable,
     String? details,
     FieldType? type,
@@ -1915,6 +1954,7 @@ class FieldDescription<M> {
   }) {
     return FieldDescription<M>(
       name: name ?? this.name,
+      path: path ?? this.path,
       nullable: nullable ?? this.nullable,
       details: details ?? this.details,
       type: type ?? this.type,
@@ -2022,82 +2062,106 @@ class ModelGeneralData {
 /// the operation dropdown will change based on the field selected
 /// the value field will change based on the operator selected
 Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext context, ModelDescription<M> description) async {
-  var _field = description.fields.firstOrNull;
-  var _operator = QueryOperations.equal;
+  // var _operator = QueryOperations.equal;
   dynamic value;
+
+  TextEditingController fieldController = TextEditingController();
+  TextEditingController operatorController = TextEditingController();
+  TextEditingController valueController = TextEditingController();
+
+  FieldType? _fieldType() => description.fields.where((e) => e.name == fieldController.text).firstOrNull?.type;
+  FieldDescription? _field() => description.fields.where((e) => e.name == fieldController.text).firstOrNull;
+
+  QueryOperations? _operator() => QueryOperations.values.where((e) => e.symbol == operatorController.text).firstOrNull;
+
+  String? _value() => valueController.text;
+
   return await showDialog<IndexViewFilter<M>?>(
     context: context,
     builder: (context) {
       return StatefulBuilder(builder: (context, setState) {
         return AlertDialog(
           title: const Text('Add filter'),
-          content: Wrap(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               // field
               MenuAnchor(
                 builder: (context, controller, child) {
-                  return TextButton.icon(
-                    icon: const Icon(FluentIcons.filter_24_regular),
-                    onPressed: () => controller.open(),
-                    label: Text(_field?.name.titleCase ?? "Select field"),
+                  return AppTextFormField(
+                    key: Key((_field()?.path).toString()),
+                    controller: fieldController,
+                    onTap: (v) => controller.open(),
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(FluentIcons.filter_24_regular),
+                      label: Text('Field path${_field()?.path.nullIfEmpty == null ? "" : "{${_field()!.path}}"}'),
+                      alignLabelWithHint: true,
+                    ),
                   );
+                  // return TextButton.icon(
+                  //   icon: const Icon(FluentIcons.filter_24_regular),
+                  //   onPressed: () => controller.open(),
+                  //   label: Text(_field?.name.titleCase ?? "Select field"),
+                  // );
                 },
                 menuChildren: [
                   for (var field in description.fields)
                     MenuItemButton(
                       leadingIcon: const Icon(FluentIcons.filter_24_regular),
-                      trailingIcon: _field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
-                      onPressed: _field == field
+                      trailingIcon: fieldController.text == field.name ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                      onPressed: fieldController.text == field.name
                           ? null
                           : () {
                               setState(() {
-                                _field = field;
+                                fieldController.text = field.path;
                               });
                             },
                       child: Text(field.name.titleCase),
                     ),
                 ],
               ),
+              const SizedBox(height: 8),
+
               // operator
               MenuAnchor(
                 builder: (context, controller, child) {
-                  return TextButton(
-                    onPressed: () => controller.open(),
-                    child: Text(_operator.symbol),
+                  return AppTextFormField(
+                    controller: operatorController,
+                    onTap: (v) => controller.open(),
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(FluentIcons.calculator_24_regular),
+                      label: Text('Operator'),
+                      alignLabelWithHint: true,
+                    ),
                   );
                 },
                 menuChildren: [
                   for (var operator in QueryOperations.values)
                     MenuItemButton(
                       leadingIcon: const Icon(FluentIcons.calculator_24_regular),
-                      trailingIcon: _operator == operator ? Text(_operator.symbol) : null,
-                      onPressed: _operator == operator
+                      trailingIcon: operatorController.text == operator.symbol ? Text(operatorController.text) : null,
+                      onPressed: operatorController.text == operator.symbol
                           ? null
                           : () {
                               setState(() {
-                                _operator = operator;
+                                operatorController.text = operator.symbol;
                               });
                             },
                       child: Text(operator.name.titleCase),
                     ),
                 ],
               ),
-              const SizedBox(
-                height: 8,
-              ),
+              const SizedBox(height: 8),
               // value
-              if (_field?.type != FieldType.boolean)
+              if (_fieldType() != FieldType.boolean)
                 AppTextFormField(
                   onChanged: (String v) async {
                     value = v;
                   },
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(FluentIcons.search_24_regular),
-                    label: const Text('Value'),
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(FluentIcons.search_24_regular),
+                    label: Text('Value'),
                     alignLabelWithHint: true,
-                    hintText:
-                        // on list separate by |
-                        _field!.type.name.startsWith("list") ? "value1|value2|value3" : null,
                   ),
                 )
               else
@@ -2121,7 +2185,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                                 value = true;
                               });
                             },
-                      child: Text("True"),
+                      child: const Text("True"),
                     ),
                     // false
                     MenuItemButton(
@@ -2134,7 +2198,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                                 value = false;
                               });
                             },
-                      child: Text("False"),
+                      child: const Text("False"),
                     ),
                   ],
                 ),
@@ -2148,18 +2212,18 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: _field == null
+              onPressed: (fieldController.text.nullIfEmpty ?? operatorController.text.nullIfEmpty ?? valueController.text.nullIfEmpty) == null
                   ? null
                   : () {
                       var filter = IndexViewFilter<M>(
-                        name: "${_field}${_operator.symbol}${value}",
+                        name: "${fieldController.text}${operatorController.text}${value}",
                         remote: (query) {
-                          if (_field!.type == FieldType.number) value = num.tryParse(value) ?? value;
-                          return _operator.remote(query: query, field: _field!.name, value: value);
+                          if (_fieldType() == FieldType.number) value = num.tryParse(value) ?? value;
+                          return _operator()!.remote(query: query, field: _field()!.name, value: value);
                         },
                         local: (model) {
-                          return _operator.local(
-                            field: _field!.name,
+                          return _operator()!.local(
+                            field: _field()!.name,
                             value: value,
                             model: model,
                           );
@@ -2169,6 +2233,156 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                       Navigator.of(context).pop<IndexViewFilter<M>>(filter);
                     },
               child: const Text('Add'),
+            ),
+          ],
+        );
+      });
+    },
+  );
+}
+
+class SearchFilter {
+  final List<dynamic> query;
+  const SearchFilter({required this.query});
+}
+
+/// [showModelExportDialog]
+/// [showModelExportDialog] is a function to show a model export dialog
+/// it takes a [context] and a [controller]
+/// it will show a dialog with a list of fields to export
+/// it will export the data as a csv file
+Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelListViewController<M> controller) async {
+  var fields = controller.description.fields.toList();
+  var selectedFields = fields.where((e) => e.group != FieldGroup.hidden).toList();
+  var selectedFieldsController = TextEditingController(text: selectedFields.map((e) => e.path).join(","));
+  getGelectedFields() {
+    return selectedFieldsController.text.replaceAll("،", ",").split(",");
+  }
+
+  var limit = 100;
+  await showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: const Text('Export'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // fields
+              MenuAnchor(
+                builder: (context, controller, child) {
+                  return AppTextFormField(
+                    controller: TextEditingController(text: selectedFields.map((e) => e.path).join(",")),
+                    onTap: (v) => controller.open(),
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(FluentIcons.filter_24_regular),
+                      label: Text('Fields (paths)'),
+                      alignLabelWithHint: true,
+                    ),
+                    onChanged: (v) {
+                      selectedFieldsController.text = v;
+                      selectedFields = fields.where((e) => getGelectedFields().contains(e.path)).toList();
+                    },
+                  );
+                },
+                menuChildren: [
+                  for (var field in fields)
+                    MenuItemButton(
+                      leadingIcon: const Icon(FluentIcons.filter_24_regular),
+                      trailingIcon: selectedFields.contains(field) ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                      onPressed: () {
+                        setState(() {
+                          if (selectedFields.contains(field)) {
+                            selectedFields.remove(field);
+                          } else {
+                            selectedFields.add(field);
+                          }
+                        });
+                      },
+                      child: Text(field.name.titleCase),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // limit
+              AppTextFormField(
+                controller: TextEditingController(text: limit.toString()),
+                onChanged: (v) {
+                  limit = int.tryParse(v) ?? 100;
+                },
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(FluentIcons.filter_24_regular),
+                  label: Text('Limit'),
+                  alignLabelWithHint: true,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await controller.search(limit: limit);
+                // download directly
+                // var dir = await getExternalStorageDirectory();
+                var rawFields = selectedFieldsController.text.replaceAll("،", ",").split(",");
+                var raw = "${rawFields.join(";")}\n${controller.value!.models!.map((e) {
+                  var data = <String>[];
+                  for (var field in rawFields) {
+                    // field coud be "name" or "name.first"
+                    // use while loop to get the value and add it to the data
+                    Map? map = e.toJson();
+                    while (field.contains(".")) {
+                      var key = field.split(".").first;
+                      field = field.split(".").sublist(1).join(".");
+                      if (map == null) {
+                        break;
+                      }
+                      map = map[key];
+                    }
+                    data.add(map?[field]?.toString() ?? "");
+                  }
+                  return data.join(";");
+                }).join("\n")}";
+                var rawAsBytes = const Utf8Codec(allowMalformed: true).encode(raw);
+                var dir = await FileSaver.instance.saveAs(
+                  bytes: rawAsBytes,
+                  mimeType: MimeType.microsoftExcel,
+                  name: "export_${controller.description.name}_${DateFormat("yyyy-MM-dd").format(DateTime.now())}",
+                  ext: 'csv',
+                );
+                // show dailog with path
+                // ignore: use_build_context_synchronously
+                await showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Export'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("Exported to $dir"),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Cancel'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: const Text('Export'),
             ),
           ],
         );

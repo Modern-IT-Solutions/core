@@ -47,6 +47,7 @@ class StadiumRentalModel with _$StadiumRentalModel implements Model {
         fields: {
           FieldDescription(
             name: "status",
+            path: "status",
             nullable: true,
             type: FieldType.text,
             map: (m) => m.status.name,
