@@ -2351,12 +2351,23 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
                   return data.join(";");
                 }).join("\n")}";
                 var rawAsBytes = const Utf8Codec(allowMalformed: true).encode(raw);
-                var dir = await FileSaver.instance.saveAs(
-                  bytes: rawAsBytes,
-                  mimeType: MimeType.microsoftExcel,
-                  name: "export_${controller.description.name}_${DateFormat("yyyy-MM-dd").format(DateTime.now())}",
-                  ext: 'csv',
-                );
+                String? dir;
+                
+                if (Platforms.isWeb) {
+                  dir = await FileSaver.instance.saveFile(
+                    bytes: rawAsBytes,
+                    mimeType: MimeType.microsoftExcel,
+                    name: "export_${controller.description.name}_${DateFormat("yyyy-MM-dd").format(DateTime.now())}",
+                    ext: 'csv',
+                  );
+                } else {
+                  dir= await FileSaver.instance.saveAs(
+                    bytes: rawAsBytes,
+                    mimeType: MimeType.microsoftExcel,
+                    name: "export_${controller.description.name}_${DateFormat("yyyy-MM-dd").format(DateTime.now())}",
+                    ext: 'csv',
+                  );
+                }
                 // show dailog with path
                 // ignore: use_build_context_synchronously
                 await showDialog(
@@ -2381,6 +2392,7 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
                     );
                   },
                 );
+                Navigator.of(context).pop();
               },
               child: const Text('Export'),
             ),
