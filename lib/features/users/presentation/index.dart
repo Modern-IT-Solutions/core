@@ -1625,7 +1625,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   })? needIndexError;
 
   /// [search] is a function to search for models
-  Future<void> search({Iterable<Timestamp>? startAfter, bool concat = false, int limit = 50}) async {
+  Future<void> search({Iterable<Timestamp>? startAfter, bool concat = false, int limit = 100}) async {
     needIndexError = null;
     value = (value ?? ModelListViewValue<M>()).copyWith(loading: true);
     try {
@@ -1653,7 +1653,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
             query = query.where(value!.searchQuery!.field, isGreaterThanOrEqualTo: value!.searchQuery!.value).where(value!.searchQuery!.field, isLessThanOrEqualTo: "${value!.searchQuery!.value!}\uf8ff").orderBy(value!.searchQuery!.field, descending: false);
           } else {
             if (value?.searchQuery?.value?.isEmpty == true || !strict && query.parameters["orderBy"]?.isNotEmpty != true) {
-              // query = query.orderBy("updatedAt", descending: true);
+              query = query.orderBy("updatedAt", descending: true);
             }
           }
 
@@ -1664,7 +1664,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         },
         limit: limit,
       );
-      if (_models.length < limit) {
+      if (_models.length <= 1) {
         _hasMore = false;
       }
 
