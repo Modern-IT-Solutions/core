@@ -534,6 +534,7 @@ Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool
                 ],
               ),
               body: ModelListView<ProfileModel>(
+                enableSelectOnTap: true,
                 onAddPressed: () async {
                   var model = await showCreateProfileModelDailog(context);
                   if (model != null) {

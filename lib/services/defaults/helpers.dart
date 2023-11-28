@@ -20,6 +20,7 @@ Future<CachedCollection?> getCollection({
   Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>>)? builder,
   required Duration minmumUpdateDuration,
   OrderBy? orderBy = const OrderBy(field: "updatedAt", descending: false),
+  Iterable<Object?>? startAfter,
 }) async {
   if (getPrefs().getOption<bool>("useCache", defaults: true) == false) {
     behavior = FetchBehavior.serverOnly;
@@ -34,6 +35,30 @@ Future<CachedCollection?> getCollection({
         builder: builder,
         minmumUpdateDuration: minmumUpdateDuration,
         orderBy: orderBy,
+        startAfter:startAfter,
+      );
+}
+
+// getCount
+Future<CachedCount?> getCount({
+  String? cacheId,
+  required String path,
+  bool withExpired = false,
+  FetchBehavior behavior = FetchBehavior.cacheFirst,
+  Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>>)? builder,
+  Duration minmumUpdateDuration = const Duration(minutes: 10),
+  OrderBy? orderBy = const OrderBy(field: "updatedAt", descending: false),
+  Iterable<Object?>? startAfter,
+}) async {
+  return await Services.instance.get<DatabaseService>()!.getCount(
+        cacheId: cacheId,
+        path: path,
+        withExpired: withExpired,
+        behavior: behavior,
+        builder: builder,
+        minmumUpdateDuration: minmumUpdateDuration,
+        orderBy: orderBy,
+        startAfter:startAfter,
       );
 }
 
@@ -47,6 +72,8 @@ Future<List<T>> getModelCollection<T>({
   required T Function(Map<String, dynamic> data) fromJson,
   Duration minmumUpdateDuration = const Duration(seconds: 5),
   OrderBy? orderBy,
+  // startAfterDocument,
+  Iterable<Object?>? startAfter,
 }) async {
   var collection = await getCollection(
     cacheId: cacheId,
@@ -57,6 +84,7 @@ Future<List<T>> getModelCollection<T>({
     builder: builder,
     minmumUpdateDuration: minmumUpdateDuration,
     orderBy: orderBy,
+    startAfter: startAfter,
   );
   if (collection == null) {
     return [];

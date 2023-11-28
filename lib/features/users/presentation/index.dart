@@ -155,7 +155,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
               for (QueryFilterInterface<M> filter in activeFilters) {
                 query = filter.server(query as Query<M>);
               }
-              query = query.orderBy("updatedAt", descending: true);
+              query = query.orderBy("updatedAt", descending: false);
               if (startAfter != null) {
                 query = query.startAfter(startAfter);
               }
@@ -763,6 +763,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
 class ModelListView<M extends Model> extends StatefulWidget {
   final ModelListViewController<M> controller;
+  final bool enableSelectOnTap;
   final Widget? header;
   final double gap;
   final Widget Function(M model)? itemBuilder;
@@ -780,6 +781,7 @@ class ModelListView<M extends Model> extends StatefulWidget {
   // final List<({Icon icon, String label, Future<Null> Function() onTap})>? addOptions;
   const ModelListView({
     super.key,
+    this.enableSelectOnTap = false,
     required this.controller,
     this.header,
     // this.addOptions,
@@ -830,11 +832,42 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                   child: Padding(
                     padding: EdgeInsets.only(top: widget.gap, left: widget.gap, right: widget.gap),
                     child: Row(children: [
-                      Text(
-                        widget.controller.description.name,
-                        style: Theme.of(context).textTheme.headlineMedium!.copyWith(fontWeight: FontWeight.bold),
+                      Flexible(
+                        child: Row(
+                          children: [
+                            Flexible(
+                              flex: 2,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  widget.controller.description.name,
+                                  style: Theme.of(context).textTheme.headlineSmall!.copyWith(fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                            if (value?.models?.length != null && value?.models?.length != 0)
+                              Flexible(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Container(
+                                    margin: const EdgeInsets.only(left: 8),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.primary.withOpacity(.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      // n/ infinty symbol
+                                      "${value?.models?.length}/${value?.count ?? "∞"}",
+                                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                      const Spacer(),
                       if (widget.onAddPressed != null)
                         SizedBox(
                           child: FilledButton.icon(
@@ -847,30 +880,101 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                       const SizedBox(
                         width: 10,
                       ),
-                      OutlinedButton.icon(
+                      TextButton.icon(
                         onPressed: () {
                           showModelExportDialog(context, widget.controller);
                         },
                         label: const Text('Export'),
-                        icon: const Icon(FluentIcons.save_arrow_right_20_regular),
+                        icon: const Icon(FluentIcons.archive_32_regular, size: 18,),
                       ),
                     ]),
+                  ),
+                ),
+
+                // /// filters chips
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        SizedBox(
+                          width: widget.gap,
+                        ),
+                        Padding(
+                          padding:  EdgeInsets.only(right: widget.gap/2),
+                          child: SizedBox(
+                            height: 40,
+                            child: ActionChip(
+                              label: const Icon(
+                                FluentIcons.filter_24_regular,
+                                size: 20,
+                              ),
+                              onPressed: () async {
+                                var filter = await showFilterWizard(context, widget.controller.description);
+                                print(filter);
+                                if (filter != null) {
+                                  widget.controller.value = widget.controller.value!.copyWith(filters: [
+                                    ...widget.controller.value!.filters,
+                                    filter
+                                  ]);
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                        for (var filter in widget.controller.value!.filters)
+                          Padding(
+                          padding:  EdgeInsets.only(right: widget.gap/2),
+                            child: SizedBox(
+                              height: 40,
+                              child: Builder(
+                                builder: (context) {
+                                  bool isActive = filter.active ?? false;
+                                  bool isFixed = filter.fixed ?? false;
+                                  return GestureDetector(
+                                    onTap: () {
+                                      widget.controller.updateFilter(filter.copyWith(active: !filter.active));
+                                    },
+                                    child: Chip(
+                                      label: Text(filter.name.titleCase),
+                                      backgroundColor: isActive == true ? Theme.of(context).colorScheme.primary : null,
+                                      side: isActive == true ? const BorderSide(color: Colors.transparent) : BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
+                                      labelStyle: TextStyle(color: isActive == true ? Theme.of(context).colorScheme.onPrimary : null),
+                                      deleteIcon: isFixed == true
+                                          ? null
+                                          : const Icon(
+                                              FluentIcons.dismiss_24_regular,
+                                              size: 15,
+                                            ),
+                                      deleteIconColor: isActive == true ? Theme.of(context).colorScheme.onPrimary : null,
+                                      onDeleted: isFixed == true
+                                          ? null
+                                          : () {
+                                              widget.controller.removeFilter(filter);
+                                            },
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                      
+                      
+                        SizedBox(
+                          width: widget.gap,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 // put the past widget here, but un sliver
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.only(top: widget.gap, left: widget.gap, right: widget.gap),
+                    padding: EdgeInsets.only( left: widget.gap, right: widget.gap),
                     child: Row(
                       children: [
-                        SizedBox(
-                          child: FilledButton.icon(
-                            onPressed: widget.onAddPressed,
-                            label: const Text('Add'),
-                            icon: const Icon(FeatherIcons.plus),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
                         Expanded(
                           child: AppTextFormField.min(
                             controller: searchController,
@@ -928,72 +1032,6 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                 // SizedBox(height: widget.gap),
 
-                // /// filters chips
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(widget.gap),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: Wrap(
-                        spacing: 8,
-                        children: [
-                          SizedBox(
-                            height: 40,
-                            child: ActionChip(
-                              label: const Icon(
-                                FluentIcons.add_24_regular,
-                                size: 20,
-                              ),
-                              onPressed: () async {
-                                var filter = await showFilterWizard(context, widget.controller.description);
-                                print(filter);
-                                if (filter != null) {
-                                  widget.controller.value = widget.controller.value!.copyWith(filters: [
-                                    ...widget.controller.value!.filters,
-                                    filter
-                                  ]);
-                                }
-                              },
-                            ),
-                          ),
-                          for (var filter in widget.controller.value!.filters)
-                            SizedBox(
-                              height: 40,
-                              child: Builder(
-                                builder: (context) {
-                                  bool isActive = filter.active ?? false;
-                                  bool isFixed = filter.fixed ?? false;
-                                  return GestureDetector(
-                                    onTap: () {
-                                      widget.controller.updateFilter(filter.copyWith(active: !filter.active));
-                                    },
-                                    child: Chip(
-                                      label: Text(filter.name),
-                                      backgroundColor: isActive == true ? Theme.of(context).colorScheme.primary : null,
-                                      side: isActive == true ? const BorderSide(color: Colors.transparent) : BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
-                                      labelStyle: TextStyle(color: isActive == true ? Theme.of(context).colorScheme.onPrimary : null),
-                                      deleteIcon: isFixed == true
-                                          ? null
-                                          : const Icon(
-                                              FluentIcons.dismiss_24_regular,
-                                              size: 15,
-                                            ),
-                                      deleteIconColor: isActive == true ? Theme.of(context).colorScheme.onPrimary : null,
-                                      onDeleted: isFixed == true
-                                          ? null
-                                          : () {
-                                              widget.controller.removeFilter(filter);
-                                            },
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
 
                 if (widget.useFlexTable)
                   SliverToBoxAdapter(
@@ -1063,7 +1101,20 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                             ModelTile(
                               selected: widget.controller.value!.selectedModels.contains(model),
                               onTap: () {
-                                widget.onModelTap?.call(model);
+                                if (!widget.enableSelectOnTap && widget.controller.value!.selectedModels.isEmpty) {
+                                  widget.onModelTap?.call(model);
+                                } else {
+                                  if (widget.controller.value!.selectedModels.contains(model)) {
+                                    widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
+                                      ...widget.controller.value!.selectedModels..remove(model),
+                                    });
+                                  } else {
+                                    widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
+                                      ...widget.controller.value!.selectedModels,
+                                      model
+                                    });
+                                  }
+                                }
                               },
                               child: FlexTableItem(
                                 selected: widget.controller.value!.selectedModels.contains(model),
@@ -1162,11 +1213,8 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           if (widget.controller.needIndexError != null)
-                            Wrap(
-                              alignment: WrapAlignment.center,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              spacing: 12.0,
-                              runSpacing: 12.0,
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
@@ -1175,30 +1223,38 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                   ),
                                   child: Text(widget.controller.needIndexError!.name),
                                 ),
-                                // refresh
-                                OutlinedButton(
-                                  onPressed: () async {
-                                    await launchUrl(Uri.parse(widget.controller.needIndexError!.url));
-                                  },
-                                  child: const Text("Create index"),
+                                Wrap(
+                                  alignment: WrapAlignment.center,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  spacing: 12.0,
+                                  runSpacing: 12.0,
+                                  children: [
+                                    // refresh
+                                    OutlinedButton(
+                                      onPressed: () async {
+                                        await launchUrl(Uri.parse(widget.controller.needIndexError!.url));
+                                      },
+                                      child: const Text("Create index"),
+                                    ),
+                                    // clear search
+                                    if (widget.controller.value!.searchQuery != null)
+                                      TextButton(
+                                        onPressed: () async {
+                                          searchController.clear();
+                                          await widget.controller.clearSearch();
+                                        },
+                                        child: const Text("Clear search"),
+                                      ),
+                                    // un select filters
+                                    if (widget.controller.value!.filters.isNotEmpty)
+                                      TextButton(
+                                        onPressed: () {
+                                          widget.controller.clearFilters();
+                                        },
+                                        child: const Text("Clear filters"),
+                                      ),
+                                  ],
                                 ),
-                                // clear search
-                                if (widget.controller.value!.searchQuery != null)
-                                  TextButton(
-                                    onPressed: () async {
-                                      searchController.clear();
-                                      await widget.controller.clearSearch();
-                                    },
-                                    child: const Text("Clear search"),
-                                  ),
-                                // un select filters
-                                if (widget.controller.value!.filters.isNotEmpty)
-                                  TextButton(
-                                    onPressed: () {
-                                      widget.controller.clearFilters();
-                                    },
-                                    child: const Text("Clear filters"),
-                                  ),
                               ],
                             )
                           else if (value?.loading != false)
@@ -1250,7 +1306,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                 )
                               ],
                             )
-                          else if (widget.controller.hasNext)
+                          else if (widget.controller.value?.hasNext == true)
                             // VisibilityDetector(
                             //   key: Key(controller..toString()),
                             //   onVisibilityChanged: (info) {
@@ -1277,7 +1333,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                 vertical: 24.0,
                                 horizontal: 12,
                               ),
-                              child: Text('You reached the end.'),
+                              child: Text('You reached the end..'),
                             )
                         ],
                       ),
@@ -1559,6 +1615,8 @@ typedef ModelIndexType<M extends Model> = (
 class ModelListViewValue<M extends Model> {
   final bool loading;
   final bool forceFilter;
+  final bool hasNext;
+  final int? count;
   final List<M>? models;
   final SearchQuery? searchQuery;
   final List<IndexViewFilter<M>> filters;
@@ -1568,8 +1626,10 @@ class ModelListViewValue<M extends Model> {
   final String? error;
 
   const ModelListViewValue({
+    this.count,
     this.forceFilter = false,
     this.loading = false,
+    this.hasNext = true,
     this.models,
     this.searchQuery,
     this.filters = const [],
@@ -1580,7 +1640,9 @@ class ModelListViewValue<M extends Model> {
   });
 
   ModelListViewValue<M> copyWith({
+    int? count,
     bool? loading,
+    bool? hasNext,
     bool? forceFilter,
     List<M>? models,
     SearchQuery? searchQuery,
@@ -1591,7 +1653,9 @@ class ModelListViewValue<M extends Model> {
     String? error,
   }) {
     return ModelListViewValue<M>(
+      count: count ?? this.count,
       loading: loading ?? this.loading,
+      hasNext: hasNext ?? this.hasNext,
       forceFilter: forceFilter ?? this.forceFilter,
       models: models ?? this.models,
       searchQuery: searchQuery ?? this.searchQuery,
@@ -1625,14 +1689,42 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   })? needIndexError;
 
   /// [search] is a function to search for models
-  Future<void> search({Iterable<Timestamp>? startAfter, bool concat = false, int limit = 100}) async {
+  Future<void> search({Iterable<String>? startAfter, bool concat = false, int limit = 100}) async {
     needIndexError = null;
-    value = (value ?? ModelListViewValue<M>()).copyWith(loading: true);
+    value = (value ?? ModelListViewValue<M>()).copyWith(
+      loading: true,
+      hasNext: true,
+    );
     try {
+      value = value!.copyWith(
+        models: concat? value!.models : null,
+        count: (await getCount(
+          path: description.path,
+          builder: (query) {
+            var strict = false;
+            if (value?.filters.isEmpty == false) {
+              for (var filter in value!.filters) {
+                if (!filter.active) continue;
+                if (filter.strict) {
+                  strict = true;
+                }
+                var d = filter.remote.call(query);
+                if (d != null) {
+                  query = d;
+                }
+              }
+            }
+            return query;
+          },
+        ))
+            ?.count,
+      );
+      notifyListeners();
       var _models = await getModelCollection(
         path: description.path,
         fromJson: description.fromJson,
         behavior: true ? FetchBehavior.serverOnly : FetchBehavior.serverFirst,
+        startAfter: startAfter,
         builder: (query) {
           var strict = false;
           if (value?.filters.isEmpty == false) {
@@ -1647,25 +1739,12 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
               }
             }
           }
-
-          // search query, if searchQuery is not null
-          if (value?.searchQuery?.value?.isNotEmpty == true) {
-            query = query.where(value!.searchQuery!.field, isGreaterThanOrEqualTo: value!.searchQuery!.value).where(value!.searchQuery!.field, isLessThanOrEqualTo: "${value!.searchQuery!.value!}\uf8ff").orderBy(value!.searchQuery!.field, descending: false);
-          } else {
-            if (value?.searchQuery?.value?.isEmpty == true || !strict && query.parameters["orderBy"]?.isNotEmpty != true) {
-              query = query.orderBy("updatedAt", descending: true);
-            }
-          }
-
-          if (startAfter != null) {
-            query = query.startAfter(startAfter);
-          }
           return query;
         },
         limit: limit,
       );
-      if (_models.length <= 1) {
-        _hasMore = false;
+      if (_models.length < limit) {
+        value = value!.copyWith(hasNext: false);
       }
 
       if (concat) {
@@ -1725,8 +1804,9 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   /// [more] is a function to load more models
   Future<void> more() async {
     return search(startAfter: [
+      if (value?.models?.last.ref.path != null) value!.models!.last.ref.path
       // why 3 seconds? because we are not really sure about the date are the same
-      Timestamp.fromDate((value?.models?.last.updatedAt ?? DateTime.now()).add(const Duration(seconds: 3)))
+      // Timestamp.fromDate((value?.models?.last.updatedAt ?? DateTime.now()).add(const Duration(seconds: 3)))
     ], concat: true);
   }
 
@@ -1842,13 +1922,6 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// [history]
   Map<M, bool> history = {};
-  bool _hasMore = true;
-
-  /// [hasNext] is a function to check if there is more models to load
-  bool get hasNext {
-    return _hasMore;
-    // return value?.models?.lastOrNull?.ref.path != history.keys.lastOrNull?.ref.path;
-  }
 
   /// to make sure that the controller is mounted on the view
   var _mounted = false;
@@ -2352,7 +2425,7 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
                 }).join("\n")}";
                 var rawAsBytes = const Utf8Codec(allowMalformed: true).encode(raw);
                 String? dir;
-                
+
                 if (Platforms.isWeb) {
                   dir = await FileSaver.instance.saveFile(
                     bytes: rawAsBytes,
@@ -2361,7 +2434,7 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
                     ext: 'csv',
                   );
                 } else {
-                  dir= await FileSaver.instance.saveAs(
+                  dir = await FileSaver.instance.saveAs(
                     bytes: rawAsBytes,
                     mimeType: MimeType.microsoftExcel,
                     name: "export_${controller.description.name}_${DateFormat("yyyy-MM-dd").format(DateTime.now())}",

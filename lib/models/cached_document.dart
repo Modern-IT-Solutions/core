@@ -290,3 +290,65 @@ class CachedCollection {
     return CachedCollection(ref: map['ref'], documents: List<CachedDocument>.from(map['documents']?.map((x) => CachedDocument.fromJson(x))), cachedAt: DateTime.fromMillisecondsSinceEpoch(map['cachedAt']), expiresAt: map['expiresAt'] != null ? DateTime.fromMillisecondsSinceEpoch(map['expiresAt']) : null, query: map['query']);
   }
 }
+
+// CachedCount
+class CachedCount {
+  final String ref;
+  final String? query;
+  final int count;
+  final DateTime cachedAt;
+  final DateTime? expiresAt;
+
+  CachedCount({
+    required this.ref,
+    required this.query,
+    required this.count,
+    required this.cachedAt,
+    this.expiresAt,
+  });
+
+  CachedCount copyWith({String? ref,String? query, int? count, DateTime? cachedAt, DateTime? expiresAt}) {
+    return CachedCount(
+      ref: ref ?? this.ref,
+      query: query ?? this.query,
+      count: count ?? this.count,
+      cachedAt: cachedAt ?? this.cachedAt,
+      expiresAt: expiresAt ?? this.expiresAt,
+    );
+  }
+  
+  @override
+  String toString() => 'CachedCount(ref: $ref, count: $count, cachedAt: $cachedAt)';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is CachedCount && other.ref == ref && other.query == query;
+  }
+
+  @override
+  int get hashCode => ref.hashCode;
+
+  /// toJson
+  Map<String, dynamic> toJson() {
+    return {
+      'ref': ref,
+      'query': query,
+      'count': count,
+      'cachedAt': cachedAt.millisecondsSinceEpoch,
+      'expiresAt': expiresAt?.millisecondsSinceEpoch,
+    };
+  }
+
+  /// fromJson
+  factory CachedCount.fromJson(Map<String, dynamic> map) {
+    return CachedCount(
+      ref: map['ref'],
+      query: map['query'],
+      count: map['count'],
+      cachedAt: DateTime.fromMillisecondsSinceEpoch(map['cachedAt']),
+      expiresAt: map['expiresAt'] != null ? DateTime.fromMillisecondsSinceEpoch(map['expiresAt']) : null,
+    );
+  }
+}

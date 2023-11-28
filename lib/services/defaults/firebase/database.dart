@@ -14,7 +14,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../models/cached_document.dart';
 
-
 enum FetchBehavior {
   cacheOnly,
   serverOnly,
@@ -65,10 +64,8 @@ class OrderBy {
   @override
   bool operator ==(covariant OrderBy other) {
     if (identical(this, other)) return true;
-  
-    return 
-      other.field == field &&
-      other.descending == descending;
+
+    return other.field == field && other.descending == descending;
   }
 
   @override
@@ -95,17 +92,21 @@ class DatabaseService extends Service {
   List<CachedDocument> get cachedDocuments => _cachedDocuments;
   List<CachedCollection> _cachedCollections = [];
   List<CachedCollection> get cachedCollections => _cachedCollections;
+  List<CachedCount> _cachedCounts = [];
+  List<CachedCount> get cachedCounts => _cachedCounts;
 
   bool get isEmpty => _cachedDocuments.isEmpty && _cachedCollections.isEmpty;
-  int get length => _cachedDocuments.length + 
-    // get inner docs length
-    _cachedCollections.fold(0, (previousValue, element) => previousValue + element.documents.length);
+  int get length =>
+      _cachedDocuments.length +
+      // get inner docs length
+      _cachedCollections.fold(0, (previousValue, element) => previousValue + element.documents.length);
 
   Future<void> clearCache() async {
-     await prefs.clear();
+    await prefs.clear();
     _cachedDocuments = [];
     _cachedCollections = [];
-     notifyListeners();
+    _cachedCounts = [];
+    notifyListeners();
   }
 
   Future<void> _loadCache() async {
@@ -118,6 +119,11 @@ class DatabaseService extends Service {
     if (cachedCollections != null) {
       _cachedCollections = cachedCollections.map((e) => CachedCollection.fromJson(jsonDecode(e))).toList();
     }
+
+    final cachedCounts = prefs.getStringList('cached_counts');
+    if (cachedCounts != null) {
+      _cachedCounts = cachedCounts.map((e) => CachedCount.fromJson(jsonDecode(e))).toList();
+    }
   }
 
   Future<void> _saveCache() async {
@@ -126,6 +132,9 @@ class DatabaseService extends Service {
 
     final cachedCollections = _cachedCollections.map((e) => jsonEncode(e.toJson())).toList();
     await prefs.setStringList('cached_collections', cachedCollections);
+
+    final cachedCounts = _cachedCounts.map((e) => jsonEncode(e.toJson())).toList();
+    await prefs.setStringList('cached_counts', cachedCounts);
   }
 
   /// getCachedDocument
@@ -175,6 +184,28 @@ class DatabaseService extends Service {
     return cachedCollection.first;
   }
 
+  /// getCachedCount
+  CachedCount? getCachedCount({
+    required String path,
+    String? query = "",
+    bool withExpired = false,
+  }) {
+    Iterable<CachedCount> cachedCount;
+    if (query == null) {
+      cachedCount = _cachedCounts.where((e) => e.ref == path);
+    } else {
+      cachedCount = _cachedCounts.where((e) => e.ref == path && e.query == query);
+    }
+    if (cachedCount.isEmpty) {
+      return null;
+    }
+    cachedCount = cachedCount.where((e) => e.expiresAt == null || e.expiresAt!.isAfter(DateTime.now()));
+    if (cachedCount.isEmpty) {
+      return null;
+    }
+    return cachedCount.first;
+  }
+
   Future<CachedDocument?> getDocument({
     required String path,
     String? cacheId,
@@ -194,6 +225,7 @@ class DatabaseService extends Service {
       withExpired: withExpired,
       behavior: behavior,
       limit: 1,
+      useRef: false,
       builder: (collection) {
         if (builder != null) {
           collection = builder(collection);
@@ -228,6 +260,7 @@ class DatabaseService extends Service {
     await _saveCache();
     return cachedDocument;
   }
+
   /// create a new document
   Future<CachedDocument> setDocument({
     required String path,
@@ -362,6 +395,10 @@ class DatabaseService extends Service {
   //   return null;
   // }
 
+  /// pagination map.
+  /// this map is used to store the last document of each page by the queryString as id
+  Map<String, DocumentSnapshot<Map<String, dynamic>>> _paginationMap = {};
+
   /// getCollection
   /// first check cache,
   ///  if found:
@@ -377,8 +414,9 @@ class DatabaseService extends Service {
     OrderBy? orderBy,
     required String path,
     bool withExpired = false,
+    bool useRef = true,
     // withTrashed
-    bool  withTrashed = false,
+    bool withTrashed = false,
     FetchBehavior behavior = FetchBehavior.serverFirst,
     int limit = 100,
     Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> collection)? builder,
@@ -386,22 +424,32 @@ class DatabaseService extends Service {
     /// time between each update, within this time will return the cached collection instead of going to server if behavior is serverFirst
     Duration minmumUpdateDuration = const Duration(seconds: 5),
 
+    // startAfterRef
+    Iterable<Object?>? startAfter,
   }) async {
-    // orderBy ??= const OrderBy(field: "updatedAt", descending: true);
     Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection(path);
+    if (useRef) {
+      query=query.orderBy("ref");
+    }
+    if (startAfter != null) {
+      query = query.startAfter(startAfter);
+    }
 
     if (builder != null) {
-      query = builder(query);
+      query = builder(FirebaseFirestore.instance.collection(path));
+      if (useRef) {
+        query=query.orderBy("ref");
+      }
+      if (startAfter != null) {
+        query = query.startAfter(startAfter);
+      }
     }
-    print("GET: $path");
-    print(query.parameters);
-
 
     query = query
-        // .where(
-        //   'deletedAt',
-        //   isNull: true,
-        // )
+        .where(
+          'deletedAt',
+          isNull: true,
+        )
         .limit(limit);
 
     var queryString = smallCacheId((cacheId ?? "") + path, {
@@ -494,6 +542,92 @@ class DatabaseService extends Service {
 
   List<CachedDocument> _filterTrashed(List<CachedDocument> docs) {
     return docs.where((doc) => doc.data["deletedAt"] == null).toList();
+  }
+
+  /// count cache
+  Map<String, int> _countCache = {};
+
+  /// [getCount]
+  Future<CachedCount?> getCount({
+    String? cacheId,
+    OrderBy? orderBy,
+    required String path,
+    bool withExpired = false,
+    // withTrashed
+    bool withTrashed = false,
+    FetchBehavior behavior = FetchBehavior.cacheFirst,
+    Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> collection)? builder,
+
+    /// time between each update, within this time will return the cached collection instead of going to server if behavior is serverFirst
+    Duration minmumUpdateDuration = const Duration(seconds: 5),
+
+    // startAfterRef
+    Iterable<Object?>? startAfter,
+  }) async {
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection(path).orderBy("ref");
+    if (startAfter != null) {
+      query = query.startAfter(startAfter);
+    }
+
+    if (builder != null) {
+      query = builder(FirebaseFirestore.instance.collection(path));
+      query = query.orderBy("ref");
+      if (startAfter != null) {
+        query = query.startAfter(startAfter);
+      }
+    }
+
+    query = query
+        .where(
+          'deletedAt',
+          isNull: true,
+        );
+
+    var queryString = smallCacheId((cacheId ?? "") + path, {
+      ...query.parameters,
+      "orderBy": orderBy.toString(),
+    });
+    CachedCount? _cachedCount;
+    CachedCount? _count;
+    CachedCount? _getCachedCount() {
+      _cachedCount = _cachedCount ?? getCachedCount(path: path, query: queryString, withExpired: withExpired);
+      return _cachedCount;
+    }
+    Future<CachedCount?> _getCount() async {
+      if (_count != null) {
+        return Future.value(_count);
+      }
+      try {
+        var response = await query.count().get();
+        _count = CachedCount(
+          ref: path,
+          query: queryString,
+          count: response.count,
+          cachedAt: DateTime.now(),
+          expiresAt: DateTime.now().add(minmumUpdateDuration),
+        );
+        _cachedCounts.removeWhere((e) => e.ref == path);
+        _cachedCounts.add(_count!);
+        await _saveCache();
+        return _count;
+      } catch (e) {
+        _count = null;
+        print(e);
+      }
+    }
+
+    if (behavior == FetchBehavior.cacheOnly) {
+      return _getCachedCount();
+    } else if (behavior == FetchBehavior.serverOnly) {
+      await _getCount();
+      return _count;
+    } else if (behavior == FetchBehavior.cacheFirst) {
+      return _getCachedCount() ?? await _getCount();
+    } else if (behavior == FetchBehavior.serverFirst) {
+      return await _getCount() ?? _getCachedCount();
+    }
+
+    return null;
   }
 
   // String _firestoreQueryToString(String id, Query<Map<String, dynamic>> query) {
@@ -606,4 +740,4 @@ class DatabaseService extends Service {
       });
     });
   }
- }
+}
