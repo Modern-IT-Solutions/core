@@ -19,7 +19,7 @@ Future<CachedCollection?> getCollection({
   int limit = 100,
   Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>>)? builder,
   required Duration minmumUpdateDuration,
-  OrderBy? orderBy = const OrderBy(field: "updatedAt", descending: false),
+  OrderBy? orderBy,
   Iterable<Object?>? startAfter,
 }) async {
   if (getPrefs().getOption<bool>("useCache", defaults: true) == false) {
@@ -47,7 +47,7 @@ Future<CachedCount?> getCount({
   FetchBehavior behavior = FetchBehavior.cacheFirst,
   Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>>)? builder,
   Duration minmumUpdateDuration = const Duration(minutes: 10),
-  OrderBy? orderBy = const OrderBy(field: "updatedAt", descending: false),
+  OrderBy? orderBy,
   Iterable<Object?>? startAfter,
 }) async {
   return await Services.instance.get<DatabaseService>()!.getCount(
