@@ -415,6 +415,7 @@ class DatabaseService extends Service {
     required String path,
     bool withExpired = false,
     bool useRef = true,
+    bool useDeletedAt = true,
     // withTrashed
     bool withTrashed = false,
     FetchBehavior behavior = FetchBehavior.serverFirst,
@@ -429,7 +430,7 @@ class DatabaseService extends Service {
   }) async {
     Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection(path);
     if (useRef) {
-      query=query.orderBy("ref");
+      query = query.orderBy("ref");
     }
     if (startAfter != null) {
       query = query.startAfter(startAfter);
@@ -438,19 +439,18 @@ class DatabaseService extends Service {
     if (builder != null) {
       query = builder(FirebaseFirestore.instance.collection(path));
       if (useRef) {
-        query=query.orderBy("ref");
+        query = query.orderBy("ref");
       }
       if (startAfter != null) {
         query = query.startAfter(startAfter);
       }
     }
 
-    query = query
-        .where(
-          'deletedAt',
-          isNull: true,
-        )
-        .limit(limit);
+    if (useDeletedAt) {
+      query = query.where('deletedAt', isNull: true);
+    }
+
+    query = query.limit(limit);
 
     var queryString = smallCacheId((cacheId ?? "") + path, {
       ...query.parameters,
@@ -577,11 +577,10 @@ class DatabaseService extends Service {
       }
     }
 
-    query = query
-        .where(
-          'deletedAt',
-          isNull: true,
-        );
+    query = query.where(
+      'deletedAt',
+      isNull: true,
+    );
 
     var queryString = smallCacheId((cacheId ?? "") + path, {
       ...query.parameters,
@@ -593,6 +592,7 @@ class DatabaseService extends Service {
       _cachedCount = _cachedCount ?? getCachedCount(path: path, query: queryString, withExpired: withExpired);
       return _cachedCount;
     }
+
     Future<CachedCount?> _getCount() async {
       if (_count != null) {
         return Future.value(_count);
