@@ -472,10 +472,18 @@ class DatabaseService extends Service {
         if (behavior == FetchBehavior.serverFirst) {
           /// go to current document collection
           /// then serach for the document with the same id where updatedAt is greater than the cached one
-          Query<Map<String, dynamic>> query2 = query.where(
-            'updatedAt',
-            isGreaterThan: Timestamp.fromDate(cachedCollection.updatedAtOrCachedAt),
-          );
+          Query<Map<String, dynamic>> query2;
+          try {
+            query2 = query.where(
+              'updatedAt',
+              isGreaterThan: Timestamp.fromDate(cachedCollection.updatedAtOrCachedAt),
+            );
+          } catch (e) {
+            query2 = FirebaseFirestore.instance.collection(path).where(
+              'updatedAt',
+              isGreaterThan: Timestamp.fromDate(cachedCollection.updatedAtOrCachedAt),
+            );
+          }
           if (orderBy != null) {
             query2 = query.orderBy(orderBy.field, descending: orderBy.descending);
           }
