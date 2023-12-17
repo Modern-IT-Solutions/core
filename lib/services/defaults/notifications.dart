@@ -13,6 +13,7 @@ class NotificationServiceConfigs extends ServiceConfigs {
 
   const NotificationServiceConfigs({
     this.icon = 'ic_launcher_foreground',
+    
   });
 }
 

@@ -15,7 +15,7 @@ _$AttachmentModelImpl _$$AttachmentModelImplFromJson(
       updatedAt:
           const TimestampDateTimeSerializer().fromJson(json['updatedAt']),
       deletedAt: const NullableTimestampDateTimeSerializer()
-          .fromJson(json['deletedAt'] as Timestamp?),
+          .fromJson(json['deletedAt']),
       name: json['name'] as String,
       type: json['type'] as String,
       url: json['url'] as String,

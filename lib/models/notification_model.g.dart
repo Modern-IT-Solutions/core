@@ -1,17 +1,20 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'stadium_model.dart';
+part of 'notification_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$StadiumModelImpl _$$StadiumModelImplFromJson(Map<String, dynamic> json) =>
-    _$StadiumModelImpl(
+_$NotificationModelImpl _$$NotificationModelImplFromJson(
+        Map<String, dynamic> json) =>
+    _$NotificationModelImpl(
       ref: const ModelRefSerializer().fromJson(json['ref'] as String),
-      name: json['name'] as String,
-      photoUrl: json['photoUrl'] as String? ?? "",
-      disabled: json['disabled'] as bool,
+      photoUrl: json['photoUrl'] as String?,
+      title: json['title'] as String,
+      subtitle: json['subtitle'] as String?,
+      body: json['body'] as String?,
+      profile: ProfileModel.fromJson(json['profile'] as Map<String, dynamic>),
       metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
       createdAt:
           const TimestampDateTimeSerializer().fromJson(json['createdAt']),
@@ -21,12 +24,15 @@ _$StadiumModelImpl _$$StadiumModelImplFromJson(Map<String, dynamic> json) =>
           .fromJson(json['deletedAt']),
     );
 
-Map<String, dynamic> _$$StadiumModelImplToJson(_$StadiumModelImpl instance) =>
+Map<String, dynamic> _$$NotificationModelImplToJson(
+        _$NotificationModelImpl instance) =>
     <String, dynamic>{
       'ref': const ModelRefSerializer().toJson(instance.ref),
-      'name': instance.name,
       'photoUrl': instance.photoUrl,
-      'disabled': instance.disabled,
+      'title': instance.title,
+      'subtitle': instance.subtitle,
+      'body': instance.body,
+      'profile': instance.profile.toJson(),
       'metadata': instance.metadata,
       'createdAt':
           const TimestampDateTimeSerializer().toJson(instance.createdAt),

@@ -13,7 +13,7 @@ _$ProfileModelImpl _$$ProfileModelImplFromJson(Map<String, dynamic> json) =>
       email: json['email'] as String,
       phoneNumber: json['phoneNumber'] as String?,
       birthday: const NullableTimestampDateTimeSerializer()
-          .fromJson(json['birthday'] as Timestamp?),
+          .fromJson(json['birthday']),
       photoUrl: json['photoUrl'] as String? ?? "",
       address: json['address'] == null
           ? null
@@ -31,9 +31,9 @@ _$ProfileModelImpl _$$ProfileModelImplFromJson(Map<String, dynamic> json) =>
       updatedAt:
           const TimestampDateTimeSerializer().fromJson(json['updatedAt']),
       deletedAt: const NullableTimestampDateTimeSerializer()
-          .fromJson(json['deletedAt'] as Timestamp?),
+          .fromJson(json['deletedAt']),
       lastSignInAt: const NullableTimestampDateTimeSerializer()
-          .fromJson(json['lastSignInAt'] as Timestamp?),
+          .fromJson(json['lastSignInAt']),
     );
 
 Map<String, dynamic> _$$ProfileModelImplToJson(_$ProfileModelImpl instance) =>
