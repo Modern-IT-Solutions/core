@@ -15,7 +15,6 @@ class NotificationServiceConfigs extends ServiceConfigs {
 
   const NotificationServiceConfigs({
     this.icon = 'ic_launcher_foreground',
-    
   });
 }
 
@@ -37,6 +36,7 @@ class NotificationService extends Service {
 
   NotificationResponse? notificationResponse;
   ReceivedNotification? receivedNotification;
+
   @pragma('vm:entry-point')
   static void notificationTapBackground(NotificationResponse notificationResponse) {
     // ignore: avoid_print
@@ -152,18 +152,8 @@ class NotificationService extends Service {
 
   /// request apple permission
   Future<void> _requestApplePermission() async {
-    iOSPermissionGranted = await _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()?.requestPermissions(
-              alert: true,
-              badge: true,
-              sound: true,
-            ) ??
-        false;
-    macOSPermissionGranted = await _plugin.resolvePlatformSpecificImplementation<MacOSFlutterLocalNotificationsPlugin>()?.requestPermissions(
-              alert: true,
-              badge: true,
-              sound: true,
-            ) ??
-        false;
+    iOSPermissionGranted = await _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()?.requestPermissions(alert: true, badge: true, sound: true) ?? false;
+    macOSPermissionGranted = await _plugin.resolvePlatformSpecificImplementation<MacOSFlutterLocalNotificationsPlugin>()?.requestPermissions(alert: true, badge: true, sound: true) ?? false;
     notifyListeners();
     log.info('App~Service: Apple Notifications permission requested');
   }
@@ -192,10 +182,10 @@ class NotificationService extends Service {
       title,
       body,
       details ??
-           NotificationDetails(
+          NotificationDetails(
               android: AndroidNotificationDetails(
-            "ZED_DEFAULT",
-            'ZED_DEFAULT_CHANNEL',
+            "DEFAULT",
+            'DEFAULT_CHANNEL',
             color: Colors.purple,
             category: AndroidNotificationCategory.status,
             autoCancel: true,
