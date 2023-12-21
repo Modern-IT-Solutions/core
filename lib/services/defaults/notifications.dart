@@ -22,6 +22,7 @@ class NotificationService extends Service {
   final _plugin = FlutterLocalNotificationsPlugin();
   FlutterLocalNotificationsPlugin get plugin => _plugin;
 
+  // for checking if notification is enabled on android
   bool? isAndroidPermissionGranted;
 
   NotificationResponse? notificationResponse;
