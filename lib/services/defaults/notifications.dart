@@ -30,7 +30,7 @@ class NotificationService extends Service {
   Stream<NotificationResponse> get onDidReceiveNotificationResponseStream => _onDidReceiveNotificationResponseStreamController.stream;
 
   // [notificationAppLaunchDetails]
-  NotificationAppLaunchDetails? launchDetails;
+  NotificationAppLaunchDetails? appLaunchDetails;
 
   // for checking if notification is enabled on android
   bool? isAndroidPermissionGranted;
@@ -69,9 +69,9 @@ class NotificationService extends Service {
 
   /// init lunch details
   Future<void> _initLunchDetails() async {
-    launchDetails = await _plugin.getNotificationAppLaunchDetails();
-    if (launchDetails?.didNotificationLaunchApp ?? false) {
-      notificationResponse = launchDetails!.notificationResponse;
+    appLaunchDetails = await _plugin.getNotificationAppLaunchDetails();
+    if (appLaunchDetails?.didNotificationLaunchApp ?? false) {
+      notificationResponse = appLaunchDetails!.notificationResponse;
       notifyListeners();
       log.info('App~Service: received notification on launch: ${notificationResponse!.payload}');
     }
