@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -21,6 +23,11 @@ class NotificationServiceConfigs extends ServiceConfigs {
 class NotificationService extends Service {
   final _plugin = FlutterLocalNotificationsPlugin();
   FlutterLocalNotificationsPlugin get plugin => _plugin;
+
+  // stream controller
+  final StreamController<NotificationResponse> _onDidReceiveNotificationResponseStreamController = StreamController.broadcast();
+  // stream for receiving notifications
+  Stream<NotificationResponse> get onDidReceiveNotificationResponseStream => _onDidReceiveNotificationResponseStreamController.stream;
 
   // [notificationAppLaunchDetails]
   NotificationAppLaunchDetails? launchDetails;
