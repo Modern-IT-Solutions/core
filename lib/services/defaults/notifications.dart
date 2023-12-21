@@ -22,6 +22,9 @@ class NotificationService extends Service {
   final _plugin = FlutterLocalNotificationsPlugin();
   FlutterLocalNotificationsPlugin get plugin => _plugin;
 
+  // [notificationAppLaunchDetails]
+  NotificationAppLaunchDetails? launchDetails;
+
   // for checking if notification is enabled on android
   bool? isAndroidPermissionGranted;
 
@@ -52,8 +55,19 @@ class NotificationService extends Service {
     if (Platform.isAndroid) await _checkAndroidPermission();
     await _requestPermission();
     await _initMessaging();
+    await _initLunchDetails();
     super.init();
     log.info('App~Service: Notification initialized');
+  }
+
+  /// init lunch details
+  Future<void> _initLunchDetails() async {
+    launchDetails = await _plugin.getNotificationAppLaunchDetails();
+    if (launchDetails?.didNotificationLaunchApp ?? false) {
+      notificationResponse = launchDetails!.notificationResponse;
+      notifyListeners();
+      log.info('App~Service: received notification on launch: ${notificationResponse!.payload}');
+    }
   }
 
   Future<void> _checkAndroidPermission() async {
