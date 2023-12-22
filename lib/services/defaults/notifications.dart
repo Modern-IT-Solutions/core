@@ -92,7 +92,10 @@ class NotificationService extends Service {
       log.info('App~Service: received notification on launch: ${notificationResponse!.payload}');
     }
     // platforms initialization settings
-    late AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings((configs).icon);
+    late AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings(
+      (configs).icon,
+
+    );
     final DarwinInitializationSettings initializationSettingsDarwin = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -126,6 +129,7 @@ class NotificationService extends Service {
       onDidReceiveNotificationResponse: (NotificationResponse notificationResponse) {
         notificationResponse = notificationResponse;
         notifyListeners();
+        _onDidReceiveNotificationResponseStreamController.add(notificationResponse);
         log.info('App~Service: received notification: ${notificationResponse.payload}');
       },
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
