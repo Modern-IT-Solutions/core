@@ -14,6 +14,7 @@ class NotificationModel with _$NotificationModel implements Model {
     required String title,
     String? subtitle,
     String? body,
+    @Default(false) bool seen,
     required ProfileModel profile,
     @Default({}) Map<String,dynamic> metadata,
     @TimestampDateTimeSerializer()
