@@ -14,6 +14,7 @@ _$NotificationModelImpl _$$NotificationModelImplFromJson(
       title: json['title'] as String,
       subtitle: json['subtitle'] as String?,
       body: json['body'] as String?,
+      seen: json['seen'] as bool? ?? false,
       profile: ProfileModel.fromJson(json['profile'] as Map<String, dynamic>),
       metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
       createdAt:
@@ -32,6 +33,7 @@ Map<String, dynamic> _$$NotificationModelImplToJson(
       'title': instance.title,
       'subtitle': instance.subtitle,
       'body': instance.body,
+      'seen': instance.seen,
       'profile': instance.profile.toJson(),
       'metadata': instance.metadata,
       'createdAt':
