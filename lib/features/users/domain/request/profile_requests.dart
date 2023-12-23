@@ -89,6 +89,8 @@ class ProfileUpdateRequest<T extends ProfileModel> extends UpdateRequest<T> {
   bool? emailVerified;
   AddressModel? address;
 
+  String? newPassword;
+
   ProfileUpdateRequest({
     required super.id,
     this.displayName,
@@ -101,7 +103,9 @@ class ProfileUpdateRequest<T extends ProfileModel> extends UpdateRequest<T> {
     this.roles,
     // address
     this.address,
+    this.newPassword,
   });
+
 
   @override
   Map<String, dynamic> toMap() {
@@ -116,6 +120,7 @@ class ProfileUpdateRequest<T extends ProfileModel> extends UpdateRequest<T> {
       'disabled': disabled,
       'address': address?.toJson(),
       'roles': roles?.map((x) => x.name).toList(),
+      'customClaims._password': newPassword,
     };
   }
 }

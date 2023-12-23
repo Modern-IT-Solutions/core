@@ -77,8 +77,7 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
         _loading = true;
       });
       try {
-        await ProfileRepository.instance.update(request);
-        widget.onUpdated?.call(model.copyWith(
+        var newModel = model.copyWith(
           displayName: request.displayName ?? model.displayName,
           email: request.email ?? model.email,
           photoUrl: request.photoUrl ?? model.photoUrl,
@@ -88,7 +87,22 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
           uid: request.uid ?? model.uid,
           emailVerified: request.emailVerified ?? model.emailVerified,
           address: request.address ?? model.address,
-        ));
+          customClaims: {
+            '_password': request.newPassword?.trim().nullIfEmpty
+          }
+        );
+        if (widget.model == null) {
+          await setDocument(
+            path: 'profiles/${newModel.ref.id}',
+            data: newModel.toJson(),
+          );
+        } else {
+          await updateDocument(
+            path: 'profiles/${newModel.ref.id}',
+            data: newModel.toJson(),
+          );
+        }
+        widget.onUpdated?.call(newModel);
       }
       // FirebaseFunctionsException
       on FirebaseFunctionsException catch (e) {
@@ -472,6 +486,29 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                           label: const Text('Custom uid'),
                           alignLabelWithHint: true,
                           helperText: 'The uid of the user, required *',
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      // new password
+                      AppTextFormField(
+                        initialValue: request.newPassword,
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
+                        onChanged: (v) async {
+                          setState(() {
+                            request.newPassword = v.nullIfEmpty;
+                          });
+                        },
+                        validator: FormBuilderValidators.compose([
+                          FormBuilderValidators.required(),
+                          // must >= 6
+                          FormBuilderValidators.minLength(6),
+                        ]),
+                        decoration: InputDecoration(
+                          errorText: _errors['password'],
+                          prefixIcon: const Icon(FluentIcons.password_24_regular),
+                          label: const Text('Password'),
+                          alignLabelWithHint: true,
+                          helperText: 'The password of the user, required *',
                         ),
                       ),
                       Padding(
