@@ -278,6 +278,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       final url = await uploadFile(file);
       if (url != null) {
         _controller.text = url;
+        widget.onChanged?.call(_controller.text);
       }
     }
     setState(() {

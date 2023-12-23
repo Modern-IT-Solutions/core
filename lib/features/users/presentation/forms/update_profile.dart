@@ -16,8 +16,9 @@ import '../../domain/request/profile_requests.dart';
 class UpdateProfileForm extends StatefulWidget {
   final VoidCallback? onCancel;
   final Null Function(ProfileModel user)? onUpdated;
-  final ProfileModel model;
-  const UpdateProfileForm({Key? key, this.onUpdated, this.onCancel, required this.model}) : super(key: key);
+  final Null Function(ProfileModel user)? onCreated;
+  final ProfileModel? model;
+  const UpdateProfileForm({Key? key, this.onUpdated,this.onCreated, this.onCancel, required this.model}) : super(key: key);
 
   @override
   State<UpdateProfileForm> createState() => _UpdateProfileFormState();
@@ -31,23 +32,39 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
   bool _loading = false;
   late String? _error;
   late Map<String, String> _errors;
+  late ProfileModel model;
 
   @override
   void initState() {
     super.initState();
     _error = null;
     _errors = {};
+    var xpath =FirebaseFirestore.instance.collection('profiles').doc();
+    model = widget.model ?? ProfileModel(
+    ref: ModelRef(xpath.path),
+    uid: xpath.id,
+    displayName: "sss",
+    email: "",
+    phoneNumber: "",
+    photoUrl: "",
+    roles: [],
+    emailVerified: false,
+    disabled: false,
+    address: AddressModel(raw: ""),
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+  );
     request = ProfileUpdateRequest(
-      id: widget.model.ref.id,
-      displayName: widget.model.displayName,
-      email: widget.model.email,
-      phoneNumber: widget.model.phoneNumber,
-      photoUrl: widget.model.photoUrl,
-      uid: widget.model.uid,
-      roles: widget.model.roles,
-      emailVerified: widget.model.emailVerified,
-      disabled: widget.model.disabled,
-      address: widget.model.address ?? AddressModel(raw: ""),
+      id: model.ref.id,
+      displayName: model.displayName,
+      email: model.email,
+      phoneNumber: model.phoneNumber,
+      photoUrl: model.photoUrl,
+      uid: model.uid,
+      roles: model.roles,
+      emailVerified: model.emailVerified,
+      disabled: model.disabled,
+      address: model.address ?? AddressModel(raw: ""),
     );
     print(request);
   }
@@ -61,16 +78,16 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
       });
       try {
         await ProfileRepository.instance.update(request);
-        widget.onUpdated?.call(widget.model.copyWith(
-          displayName: request.displayName ?? widget.model.displayName,
-          email: request.email ?? widget.model.email,
-          photoUrl: request.photoUrl ?? widget.model.photoUrl,
-          phoneNumber: request.phoneNumber ?? widget.model.phoneNumber,
-          disabled: request.disabled ?? widget.model.disabled,
-          roles: request.roles ?? widget.model.roles,
-          uid: request.uid ?? widget.model.uid,
-          emailVerified: request.emailVerified ?? widget.model.emailVerified,
-          address: request.address ?? widget.model.address,
+        widget.onUpdated?.call(model.copyWith(
+          displayName: request.displayName ?? model.displayName,
+          email: request.email ?? model.email,
+          photoUrl: request.photoUrl ?? model.photoUrl,
+          phoneNumber: request.phoneNumber ?? model.phoneNumber,
+          disabled: request.disabled ?? model.disabled,
+          roles: request.roles ?? model.roles,
+          uid: request.uid ?? model.uid,
+          emailVerified: request.emailVerified ?? model.emailVerified,
+          address: request.address ?? model.address,
         ));
       }
       // FirebaseFunctionsException
@@ -108,7 +125,6 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
     return LoadingBox(
       loading: _loading,
       child: Container(
-        width: 400,
         padding: const EdgeInsets.only(bottom: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -177,7 +193,8 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                       ),
                       const SizedBox(height: 20),
                       AppTextFormField.upload(
-                        initialValue: ( request.photoUrl),
+                        key: Key((request.photoUrl).toString()),
+                        initialValue: request.photoUrl,
                         margin: const EdgeInsets.symmetric(horizontal: 24),
                         onChanged: (v) async {
                           setState(() {
@@ -438,8 +455,8 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
 
                       /// Custom uid
                       AppTextFormField(
-                        initialValue: ( request.uid),
-                        enabled: false,
+                        initialValue: request.uid,
+                        enabled: widget.model == null,
                         margin: const EdgeInsets.symmetric(horizontal: 24),
                         onChanged: (v) async {
                           setState(() {
@@ -531,7 +548,7 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                       width: double.infinity,
                       child: FilledButton(
                         onPressed: _submit,
-                        child: const Text('Update'),
+                        child: widget.model == null ? const Text('Create') : const Text('Update'),
                       ),
                     ),
                   ),

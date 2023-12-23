@@ -51,13 +51,31 @@ Future<ProfileModel?> showCreateProfileModelDailog(BuildContext context) async {
 }
 
 // update station
-Future<ProfileModel?> showUpdateProfileModelDailog(BuildContext context, ProfileModel model) async {
+Future<ProfileModel?> showUpdateProfileModelDailog(BuildContext context, ProfileModel? model) async {
   var child = Container(
     constraints: const BoxConstraints(maxWidth: 500),
     child: Center(
       child: UpdateProfileForm(
         model: model,
         onUpdated: (model) {
+          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              width: 400.0,
+              content: Text('Profile ${model.displayName} updated'),
+              action: SnackBarAction(
+                label: 'Show',
+                onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  showUpdateProfileModelDailog(context, model);
+                },
+              ),
+            ),
+          );
+          Navigator.of(context).pop(model);
+          // load();
+        },
+        onCreated: (model) {
           ScaffoldMessenger.maybeOf(context)?.showSnackBar(
             SnackBar(
               behavior: SnackBarBehavior.floating,
