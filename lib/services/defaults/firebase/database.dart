@@ -295,7 +295,11 @@ class DatabaseService extends Service {
     );
     _cachedDocuments.removeWhere((e) => e.ref == path);
     _cachedDocuments.add(cachedDocument);
-    await _saveCache();
+    try {
+      await _saveCache();
+    } catch (e) {
+      print(e);
+    }
     return cachedDocument;
   }
 
