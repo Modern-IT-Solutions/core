@@ -1,10 +1,10 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:feather_icons/feather_icons.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -12,11 +12,11 @@ import 'package:lib/lib.dart';
 import 'package:recase/recase.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:visibility_detector/visibility_detector.dart';
+import 'package:gradient_borders/gradient_borders.dart';
 
 import 'package:core/core.dart';
 import 'package:core/services/defaults/helpers.dart';
 
-import 'dailogs.dart';
 import 'find.dart';
 import 'forms/create_profile.dart';
 import 'forms/update_profile.dart';
@@ -814,6 +814,38 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
     super.initState();
   }
 
+  Future<String?> _exportModels(Set<M> selectedModels) async {
+    var models = selectedModels.toList();
+    var raw = "[${models.map((e) => jsonEncode(
+      e.toJson(),
+      // in case of time stamp
+      toEncodable: (object) {
+        if (object is Timestamp) {
+          return object.toDate().toIso8601String();
+        }
+      }
+      )).join(",")}]";
+    var rawAsBytes = const Utf8Codec(allowMalformed: true).encode(raw);
+    String? dir;
+
+    if (Platforms.isWeb) {
+      dir = await FileSaver.instance.saveFile(
+        bytes: rawAsBytes,
+        mimeType: MimeType.microsoftExcel,
+        name: "export_${DateFormat("yyyy-MM-dd").format(DateTime.now())}",
+        ext: 'csv',
+      );
+    } else {
+      dir = await FileSaver.instance.saveAs(
+        bytes: rawAsBytes,
+        mimeType: MimeType.microsoftExcel,
+        name: "export_${DateFormat("yyyy-MM-dd").format(DateTime.now())}",
+        ext: 'csv',
+      );
+    }
+    return dir;
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTextStyle(
@@ -905,9 +937,109 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                         SizedBox(
                           width: widget.gap,
                         ),
+                        if (widget.controller.value!.selectedModels.isNotEmpty)
+                          SizedBox(
+                            height: 40,
+                            child: Center(
+                              child: Container(
+                                height: 33,
+                                margin: EdgeInsetsDirectional.only(end: widget.gap / 2),
+                                clipBehavior: Clip.antiAlias,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(30),
+                                  border: GradientBoxBorder(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Theme.of(context).colorScheme.primary,
+                                        Theme.of(context).colorScheme.inversePrimary,
+                                        Theme.of(context).colorScheme.secondary,
+                                      ],
+                                      begin: const Alignment(-1.0, 0.0),
+                                      end: const Alignment(1.0, 0.0),
+                                      transform: const GradientRotation(pi / 4),
+                                    ),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(width: 10),
+                                    Text("${widget.controller.value!.selectedModels.length}"),
+                                    const SizedBox(width: 10),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 5),
+                                      child: VerticalDivider(width: 1),
+                                    ),
+                                    TextButton.icon(
+                                      style: TextButton.styleFrom(shape: RoundedRectangleBorder()),
+                                      onPressed: () => widget.controller.unselectAll(),
+                                      label: const Text("unselect"),
+                                      icon: const Icon(
+                                        FluentIcons.dismiss_24_regular,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 5),
+                                      child: VerticalDivider(width: 1),
+                                    ),
+                                    TextButton.icon(
+                                      style: TextButton.styleFrom(shape: RoundedRectangleBorder()),
+                                      onPressed: () {
+                                        // _exportModels(widget.controller.value!.selectedModels);
+                                        showModelExportDialog(context, widget.controller, widget.controller.value!.selectedModels.toList());
+                                      },
+                                      label: const Text("export"),
+                                      icon: const Icon(
+                                        FluentIcons.archive_32_regular,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 5),
+                                      child: VerticalDivider(width: 1),
+                                    ),
+                                    TextButton.icon(
+                                      style: TextButton.styleFrom(shape: RoundedRectangleBorder()),
+                                      onPressed: () {
+                                        showDeleteModelsDailog(context, widget.controller.value!.selectedModels.toList());
+                                      },
+                                      label: const Text("delete"),
+                                      icon: const Icon(
+                                        FluentIcons.delete_16_regular,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    for (var action in widget.controller.description.actions.where((e) => e.multiple != null)) ...[
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 5),
+                                        child: VerticalDivider(width: 1),
+                                      ),
+                                      TextButton(
+                                        style: TextButton.styleFrom(shape: RoundedRectangleBorder()),
+                                        onPressed: () async {
+                                          await action.multiple!(context, widget.controller.value!.selectedModels.toList());
+                                          // TODO: refresh after done
+                                          // widget.controller.load();
+                                        },
+                                        child: Text(action.label),
+                                        // icon: action.icon == null? SizedBox() : Icon(
+                                        //   action.icon!,
+                                        //   size: 18,
+                                        // ),
+                                      ),
+                                    ]
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         Container(
-                          width: 200,
+                          width: 300,
                           height: 40,
+                          // max with is view port -50
+                          constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 50),
                           child: Center(
                             child: AppTextFormField.min(
                               controller: searchController,
@@ -926,9 +1058,10 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                               },
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(FluentIcons.search_24_regular),
-                                label: Text('Search${value!.searchQuery!.field.isNotEmpty == true ? " (${value.searchQuery!.field})" : ""}',
-                                maxLines: 1,
-                                softWrap: false,
+                                label: Text(
+                                  'Search${value!.searchQuery!.field.isNotEmpty == true ? " (${value.searchQuery!.field})" : ""}',
+                                  maxLines: 1,
+                                  softWrap: false,
                                 ),
                                 alignLabelWithHint: true,
                                 // select search field
@@ -963,29 +1096,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                           ),
                         ),
                         SizedBox(
-                          width: widget.gap/2,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(right: widget.gap / 2),
-                          child: SizedBox(
-                            height: 40,
-                            child: ActionChip(
-                              label: const Icon(
-                                FluentIcons.filter_24_regular,
-                                size: 20,
-                              ),
-                              onPressed: () async {
-                                var filter = await showFilterWizard(context, widget.controller.description);
-                                print(filter);
-                                if (filter != null) {
-                                  widget.controller.value = widget.controller.value!.copyWith(filters: [
-                                    ...widget.controller.value!.filters,
-                                    filter
-                                  ]);
-                                }
-                              },
-                            ),
-                          ),
+                          width: widget.gap / 2,
                         ),
                         for (var filter in widget.controller.value!.filters)
                           Padding(
@@ -1023,6 +1134,28 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                               ),
                             ),
                           ),
+                        Padding(
+                          padding: EdgeInsets.only(right: widget.gap / 2),
+                          child: SizedBox(
+                            height: 40,
+                            child: ActionChip(
+                              label: const Icon(
+                                FluentIcons.add_28_regular,
+                                size: 20,
+                              ),
+                              onPressed: () async {
+                                var filter = await showFilterWizard(context, widget.controller.description);
+                                print(filter);
+                                if (filter != null) {
+                                  widget.controller.value = widget.controller.value!.copyWith(filters: [
+                                    ...widget.controller.value!.filters,
+                                    filter
+                                  ]);
+                                }
+                              },
+                            ),
+                          ),
+                        ),
                         SizedBox(
                           width: widget.gap,
                         ),
@@ -1145,7 +1278,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                 ],
                               ),
                         ),
-                        value?.loading == true ? const LinearProgressIndicator(minHeight: 2) : const Divider(height: 2),
+                        value.loading == true ? const LinearProgressIndicator(minHeight: 2) : const Divider(height: 2),
                       ],
                     ),
                   ),
@@ -1153,12 +1286,17 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
+                      M? prevModel = index == 0 ? null : widget.controller.filtered![index - 1];
+                      M? nextModel = index == widget.controller.filtered!.length - 1 ? null : widget.controller.filtered![index + 1];
                       var model = widget.controller.filtered![index];
                       var tile = widget.controller.description.tileBuilder(model);
                       return Padding(
                         padding: EdgeInsets.symmetric(horizontal: widget.gap),
                         child: widget.itemBuilder?.call(model) ??
                             ModelTile(
+                              isOdd: index.isOdd,
+                              prevSelected: prevModel == null ? false : widget.controller.value!.selectedModels.contains(prevModel),
+                              nextSelected: nextModel == null ? false : widget.controller.value!.selectedModels.contains(nextModel),
                               selected: widget.controller.value!.selectedModels.contains(model),
                               onTap: () {
                                 if (!widget.enableSelectOnTap && widget.controller.value!.selectedModels.isEmpty) {
@@ -1393,7 +1531,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                 vertical: 24.0,
                                 horizontal: 12,
                               ),
-                              child: Text('You reached the end..'),
+                              child: Text('You reached the end.'),
                             )
                         ],
                       ),
@@ -1578,28 +1716,41 @@ class ModelTile extends StatelessWidget {
     required this.child,
     this.onTap,
     this.selected = false,
+    this.prevSelected = false,
+    this.nextSelected = false,
+    this.isOdd = false,
   });
 
   final Widget child;
   final VoidCallback? onTap;
   final bool selected;
+  final bool prevSelected;
+  final bool nextSelected;
+  final bool isOdd;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      highlightColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+      highlightColor: Theme.of(context).colorScheme.primary.withOpacity(isOdd ? 0.1 : 0.2),
       focusColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
       hoverColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(prevSelected ? 0 : 8),
+        bottom: Radius.circular(nextSelected ? 0 : 8),
+      ),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+        // child: Text("${prevSelected}/${nextSelected}"),
         child: child,
         // when selected
         decoration: selected
             ? BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(prevSelected ? 0 : 8),
+                  bottom: Radius.circular(nextSelected ? 0 : 8),
+                ),
+                color: Theme.of(context).colorScheme.primary.withOpacity(isOdd ? 0.1 : 0.15),
               )
             : null,
       ),
@@ -1854,6 +2005,16 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         loading: false,
       );
     }
+
+    /// sync selected models
+    syncSelectedModels();
+  }
+
+  /// remove selected items that are not in the list
+  void syncSelectedModels() {
+    value = value?.copyWith(
+      selectedModels: value!.selectedModels.where((e) => value!.models!.contains(e)).toSet(),
+    );
   }
 
   /// [load] is a function to load models
@@ -2009,6 +2170,20 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   }
 
   /// [mounted] is a function to mount the controller on the view and bind it to the view
+
+  /// selectAll
+  void selectAll() {
+    value = value?.copyWith(
+      selectedModels: value!.models!.toSet(),
+    );
+  }
+
+  /// unselectAll
+  void unselectAll() {
+    value = value?.copyWith(
+      selectedModels: const {},
+    );
+  }
 }
 
 enum FieldGroup {
@@ -2384,11 +2559,12 @@ class SearchFilter {
 /// it takes a [context] and a [controller]
 /// it will show a dialog with a list of fields to export
 /// it will export the data as a csv file
-Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelListViewController<M> controller) async {
+Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelListViewController<M> controller, [List<M>? selectedModels]) async {
   var fields = controller.description.fields.toList();
   var selectedFields = fields.where((e) => e.group != FieldGroup.hidden).toList();
   var selectedFieldsController = TextEditingController(text: selectedFields.map((e) => e.path).join(","));
   getGelectedFields() {
+    // just in case the user used arabic comma i added the replaceAll
     return selectedFieldsController.text.replaceAll("،", ",").split(",");
   }
 
@@ -2439,6 +2615,7 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
               ),
               const SizedBox(height: 8),
               // limit
+              if (selectedModels == null)
               AppTextFormField(
                 controller: TextEditingController(text: limit.toString()),
                 onChanged: (v) {
@@ -2461,11 +2638,15 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
             ),
             TextButton(
               onPressed: () async {
+                var models = selectedModels;
+              if (models == null) {
                 await controller.search(limit: limit);
+                models = controller.value!.models;
+              }
                 // download directly
                 // var dir = await getExternalStorageDirectory();
                 var rawFields = selectedFieldsController.text.replaceAll("،", ",").split(",");
-                var raw = "${rawFields.join(";")}\n${controller.value!.models!.map((e) {
+                var raw = "${rawFields.join(";")}\n${models!.map((e) {
                   var data = <String>[];
                   for (var field in rawFields) {
                     // field coud be "name" or "name.first"

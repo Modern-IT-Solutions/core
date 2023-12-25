@@ -57,6 +57,7 @@ dependencies:
   # SharedPreferences
   shared_preferences:
   google_fonts:
+  gradient_borders: ^1.0.0
 
 dependency_overrides:
   http: ^1.0.0
