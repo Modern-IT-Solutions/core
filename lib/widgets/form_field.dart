@@ -251,7 +251,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
                           ),
                         )
                       : TextButton.icon(
-                          label: Text('UPLOAD'),
+                          label: Text('UPLOAD',),
                           onPressed: _trigerUpload,
                           icon: const Icon(FluentIcons.arrow_upload_24_regular),
                         )

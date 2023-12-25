@@ -885,7 +885,10 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                           showModelExportDialog(context, widget.controller);
                         },
                         label: const Text('Export'),
-                        icon: const Icon(FluentIcons.archive_32_regular, size: 18,),
+                        icon: const Icon(
+                          FluentIcons.archive_32_regular,
+                          size: 18,
+                        ),
                       ),
                     ]),
                   ),
@@ -902,8 +905,68 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                         SizedBox(
                           width: widget.gap,
                         ),
+                        Container(
+                          width: 200,
+                          height: 40,
+                          child: Center(
+                            child: AppTextFormField.min(
+                              controller: searchController,
+                              // enabled: !loading.value,
+                              onSubmitted: (String value) {
+                                widget.controller.value = widget.controller.value!.copyWith(
+                                  searchQuery: SearchQuery(
+                                    field: widget.controller.value!.searchQuery?.field ?? widget.controller.description.fields.firstOrNull?.name ?? "",
+                                    value: value,
+                                  ),
+                                );
+                                widget.controller.search();
+                              },
+                              onChanged: (String value) async {
+                                widget.controller.setSearchQueryValue(value);
+                              },
+                              decoration: InputDecoration(
+                                prefixIcon: const Icon(FluentIcons.search_24_regular),
+                                label: Text('Search${value!.searchQuery!.field.isNotEmpty == true ? " (${value.searchQuery!.field})" : ""}',
+                                maxLines: 1,
+                                softWrap: false,
+                                ),
+                                alignLabelWithHint: true,
+                                // select search field
+                                suffixIcon: value?.searchQuery == null
+                                    ? null
+                                    : MenuAnchor(
+                                        builder: (context, controller, child) {
+                                          return IconButton(
+                                            icon: const Icon(
+                                              FluentIcons.filter_24_regular,
+                                            ),
+                                            onPressed: () => controller.open(),
+                                            // label: Text(value!.searchQuery!.field),
+                                          );
+                                        },
+                                        menuChildren: [
+                                          for (var field in widget.controller.description.fields)
+                                            MenuItemButton(
+                                              leadingIcon: const Icon(FeatherIcons.user),
+                                              trailingIcon: value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                                              onPressed: value.searchQuery!.field == field
+                                                  ? null
+                                                  : () {
+                                                      widget.controller.setSearchQueryField(field.name);
+                                                    },
+                                              child: Text(field.name.titleCase),
+                                            ),
+                                        ],
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: widget.gap/2,
+                        ),
                         Padding(
-                          padding:  EdgeInsets.only(right: widget.gap/2),
+                          padding: EdgeInsets.only(right: widget.gap / 2),
                           child: SizedBox(
                             height: 40,
                             child: ActionChip(
@@ -926,7 +989,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                         ),
                         for (var filter in widget.controller.value!.filters)
                           Padding(
-                          padding:  EdgeInsets.only(right: widget.gap/2),
+                            padding: EdgeInsets.only(right: widget.gap / 2),
                             child: SizedBox(
                               height: 40,
                               child: Builder(
@@ -960,8 +1023,6 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                               ),
                             ),
                           ),
-                      
-                      
                         SizedBox(
                           width: widget.gap,
                         ),
@@ -970,68 +1031,67 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                   ),
                 ),
                 // put the past widget here, but un sliver
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.only( left: widget.gap, right: widget.gap),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: AppTextFormField.min(
-                            controller: searchController,
-                            // enabled: !loading.value,
-                            onSubmitted: (String value) {
-                              widget.controller.value = widget.controller.value!.copyWith(
-                                searchQuery: SearchQuery(
-                                  field: widget.controller.value!.searchQuery?.field ?? widget.controller.description.fields.firstOrNull?.name ?? "",
-                                  value: value,
-                                ),
-                              );
-                              widget.controller.search();
-                            },
-                            onChanged: (String value) async {
-                              widget.controller.setSearchQueryValue(value);
-                            },
-                            decoration: InputDecoration(
-                              prefixIcon: const Icon(FluentIcons.search_24_regular),
-                              label: const Text('Search'),
-                              alignLabelWithHint: true,
-                              // select search field
-                              suffixIcon: value?.searchQuery == null
-                                  ? null
-                                  : MenuAnchor(
-                                      builder: (context, controller, child) {
-                                        return TextButton.icon(
-                                          icon: const Icon(
-                                            FluentIcons.filter_24_regular,
-                                          ),
-                                          onPressed: () => controller.open(),
-                                          label: Text(value!.searchQuery!.field),
-                                        );
-                                      },
-                                      menuChildren: [
-                                        for (var field in widget.controller.description.fields)
-                                          MenuItemButton(
-                                            leadingIcon: const Icon(FeatherIcons.user),
-                                            trailingIcon: value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
-                                            onPressed: value.searchQuery!.field == field
-                                                ? null
-                                                : () {
-                                                    widget.controller.setSearchQueryField(field.name);
-                                                  },
-                                            child: Text(field.name.titleCase),
-                                          ),
-                                      ],
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                // SliverToBoxAdapter(
+                //   child: Padding(
+                //     padding: EdgeInsets.only( left: widget.gap, right: widget.gap),
+                //     child: Row(
+                //       children: [
+                //         Expanded(
+                //           child: AppTextFormField.min(
+                //             controller: searchController,
+                //             // enabled: !loading.value,
+                //             onSubmitted: (String value) {
+                //               widget.controller.value = widget.controller.value!.copyWith(
+                //                 searchQuery: SearchQuery(
+                //                   field: widget.controller.value!.searchQuery?.field ?? widget.controller.description.fields.firstOrNull?.name ?? "",
+                //                   value: value,
+                //                 ),
+                //               );
+                //               widget.controller.search();
+                //             },
+                //             onChanged: (String value) async {
+                //               widget.controller.setSearchQueryValue(value);
+                //             },
+                //             decoration: InputDecoration(
+                //               prefixIcon: const Icon(FluentIcons.search_24_regular),
+                //               label: const Text('Search'),
+                //               alignLabelWithHint: true,
+                //               // select search field
+                //               suffixIcon: value?.searchQuery == null
+                //                   ? null
+                //                   : MenuAnchor(
+                //                       builder: (context, controller, child) {
+                //                         return TextButton.icon(
+                //                           icon: const Icon(
+                //                             FluentIcons.filter_24_regular,
+                //                           ),
+                //                           onPressed: () => controller.open(),
+                //                           label: Text(value!.searchQuery!.field),
+                //                         );
+                //                       },
+                //                       menuChildren: [
+                //                         for (var field in widget.controller.description.fields)
+                //                           MenuItemButton(
+                //                             leadingIcon: const Icon(FeatherIcons.user),
+                //                             trailingIcon: value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                //                             onPressed: value.searchQuery!.field == field
+                //                                 ? null
+                //                                 : () {
+                //                                     widget.controller.setSearchQueryField(field.name);
+                //                                   },
+                //                             child: Text(field.name.titleCase),
+                //                           ),
+                //                       ],
+                //                     ),
+                //             ),
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
 
                 // SizedBox(height: widget.gap),
-
 
                 if (widget.useFlexTable)
                   SliverToBoxAdapter(
@@ -1697,7 +1757,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     );
     try {
       value = value!.copyWith(
-        models: concat? value!.models : null,
+        models: concat ? value!.models : null,
         count: (await getCount(
           path: description.path,
           builder: (query) {
