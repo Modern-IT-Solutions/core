@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+// ignore: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 
 import 'package:core/core.dart';
@@ -184,13 +185,13 @@ enum QueryOperations {
     } else if (this == QueryOperations.notEqual) {
       query = query.where(field, isNotEqualTo: value);
     } else if (this == QueryOperations.lessThan) {
-      query = query.where(field, isLessThan: value);
+      query = query.where(field, isLessThan: value).orderBy(field);
     } else if (this == QueryOperations.lessThanOrEqual) {
-      query = query.where(field, isLessThanOrEqualTo: value);
+      query = query.where(field, isLessThanOrEqualTo: value).orderBy(field);
     } else if (this == QueryOperations.greaterThan) {
-      query = query.where(field, isGreaterThan: value);
+      query = query.where(field, isGreaterThan: value).orderBy(field);
     } else if (this == QueryOperations.greaterThanOrEqual) {
-      query = query.where(field, isGreaterThanOrEqualTo: value);
+      query = query.where(field, isGreaterThanOrEqualTo: value).orderBy(field);
     } else if (this == QueryOperations.arrayContainsAny) {
       query = query.where(field, arrayContainsAny: value.toString().split("|"));
     } else if (this == QueryOperations.arrayContains) {
@@ -204,35 +205,40 @@ enum QueryOperations {
   }
 
   bool local<T extends Model>({required T model,required String field,required dynamic value}) {
+    dynamic fieldValue = model.toJson()[field];
+    if (fieldValue is Timestamp) fieldValue = fieldValue.toDate();
+    if (fieldValue is DateTime) fieldValue = fieldValue.millisecondsSinceEpoch;
+    if (value is Timestamp) value = value.toDate();
+    if (value is DateTime) value = value.millisecondsSinceEpoch;
     // return true;
     if (this == QueryOperations.equal) {
-      return model.toJson()[field] == value;
+      return fieldValue == value;
     } else if (this == QueryOperations.notEqual) {
-      return model.toJson()[field] != value;
+      return fieldValue != value;
     } else if (this == QueryOperations.lessThan) {
-      return model.toJson()[field] < value;
+      return fieldValue < value;
     } else if (this == QueryOperations.lessThanOrEqual) {
-      return model.toJson()[field] <= value;
+      return fieldValue <= value;
     } else if (this == QueryOperations.greaterThan) {
-      return model.toJson()[field] > value;
+      return fieldValue > value;
     } else if (this == QueryOperations.greaterThanOrEqual) {
-      return model.toJson()[field] >= value;
+      return fieldValue >= value;
     } else if (this == QueryOperations.arrayContainsAny) {
       // check if the field is a Iterable
-      assert(model.toJson()[field] is Iterable);
+      assert(fieldValue is Iterable);
       // check if the value is a Iterable
       assert(value is Iterable);
       // return true if the field contains any of the values
-      return (List.from(model.toJson()[field])).any((element) => (value as List).contains(element));
+      return (List.from(fieldValue)).any((element) => (value as List).contains(element));
     } else if (this == QueryOperations.arrayContains) {
       // check if the field is a Iterable
-      assert(model.toJson()[field] is Iterable);
+      assert(fieldValue is Iterable);
       // check if the value is a Iterable
       assert(value is Iterable);
       // return true if the field contains any of the values
-      return (List.from(model.toJson()[field])).contains(value);
+      return (List.from(fieldValue)).contains(value);
     } else if (this == QueryOperations.whereIn) {
-      return (List.from(model.toJson()[field])).contains(value);
+      return (List.from(fieldValue)).contains(value);
     } else {
       return false;
     }
@@ -335,6 +341,7 @@ class DynamicQueryFilter<T extends Model> implements QueryFilterInterface<T> {
         return (List.from(m.toJson()[field])).contains(value);
       };
     }
+    return null;
   }
 
   @override

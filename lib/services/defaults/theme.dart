@@ -11,15 +11,79 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 
-
 /// [ThemeService] responsible for database of the app content and users
 class ThemeService extends Service {
+  /// [mode]
+  final Color colorSeed;
   ThemeService({
     super.id = 'DEFAULT',
+    ThemeMode themeMode = ThemeMode.system,
+    this.colorSeed = Colors.yellow,
     ThemeData? defaultTheme,
-  }) : _themeData = defaultTheme ?? ThemeData();
+    ThemeData? defaultDarkTheme,
+  })  : _themeMode = themeMode,
+        _themeData = defaultTheme ??
+            ThemeData(
+              chipTheme: ChipThemeData(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              listTileTheme: const ListTileThemeData(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                ),
+              ),
+              textTheme: GoogleFonts.poppinsTextTheme(
+                ThemeData().textTheme.apply(),
+              ),
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: colorSeed,
+                brightness: Brightness.light,
+              ),
+              useMaterial3: true,
+              tabBarTheme: const TabBarTheme(
+                dividerColor: Colors.transparent,
+              ),
+              scaffoldBackgroundColor: Colors.transparent,
+            ),
+        _darkThemeData = defaultDarkTheme ??
+            ThemeData(
+              chipTheme: ChipThemeData(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              listTileTheme: const ListTileThemeData(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                ),
+              ),
+              textTheme: GoogleFonts.poppinsTextTheme(
+                ThemeData().textTheme.apply(
+                      bodyColor: Colors.white,
+                      displayColor: Colors.white,
+                ),
+              ),
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: colorSeed,
+                brightness: Brightness.dark,
+              ),
+              useMaterial3: true,
+              tabBarTheme: const TabBarTheme(
+                dividerColor: Colors.transparent,
+              ),
+              scaffoldBackgroundColor: Colors.transparent,
+            );
 
   late SharedPreferences prefs;
+
+
+  // _themeData.copyWith(
+  //       colorScheme: _themeData.colorScheme.copyWith(
+  //         brightness: Brightness.dark,
+  //       ),
+  //     );
 
   @override
   Future<void> init() async {
@@ -33,135 +97,51 @@ class ThemeService extends Service {
   late ThemeData _themeData;
   ThemeData get themeData => _themeData;
 
+  late ThemeData _darkThemeData;
+  ThemeData get darkThemeData => _darkThemeData;
+
   // mode
   ThemeMode _themeMode = ThemeMode.system;
   ThemeMode get themeMode => _themeMode;
 
-  void setThemeData(ThemeData themeData)  {
+  void setThemeData(ThemeData themeData) {
     _themeData = themeData;
     notifyListeners();
   }
 
-  void setThemeMode(ThemeMode themeMode)  {
+  void setDarkThemeData(ThemeData themeData) {
+    _darkThemeData = themeData;
+    notifyListeners();
+  }
+
+  void setThemeMode(ThemeMode themeMode) {
     _themeMode = themeMode;
     notifyListeners();
   }
 
-  void setColorScheme(ColorScheme colorScheme)  {
+  void setColorScheme(ColorScheme colorScheme) {
     _themeData = _themeData.copyWith(
-      colorScheme: colorScheme,
-      primaryColor: colorScheme.primary,
-      scaffoldBackgroundColor: colorScheme.primaryContainer,
-      brightness: colorScheme.brightness,
-      appBarTheme: _themeData.appBarTheme.copyWith(
-        backgroundColor: colorScheme.primaryContainer,
-        foregroundColor: colorScheme.primary,
-        systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarIconBrightness: Brightness.dark,
-          statusBarBrightness: Brightness.dark,
-          statusBarColor: Colors.transparent,
-        ),
-      ),
-      bottomNavigationBarTheme: _themeData.bottomNavigationBarTheme.copyWith(
-        backgroundColor: colorScheme.primaryContainer,
-        selectedItemColor: colorScheme.primary,
-        unselectedItemColor: colorScheme.primary.withOpacity(0.5),
-      ),
-      tabBarTheme: _themeData.tabBarTheme.copyWith(
-        labelColor: colorScheme.primary,
-        unselectedLabelColor: colorScheme.primary.withOpacity(0.5),
-      ),
-      textTheme: GoogleFonts.notoKufiArabicTextTheme().copyWith(
-        headline1: GoogleFonts.notoKufiArabic(
-          color: colorScheme.primary,
-          fontSize: 96,
-          fontWeight: FontWeight.w300,
-          letterSpacing: -1.5,
-        ),
-        headline2: GoogleFonts.notoKufiArabic(
-          color: colorScheme.primary,
-          fontSize: 60,
-          fontWeight: FontWeight.w300,
-          letterSpacing: -0.5,
-        ),
-        headline3: GoogleFonts.notoKufiArabic(
-          color: colorScheme.primary,
-          fontSize: 48,
-          fontWeight: FontWeight.w400,
-        ),
-        headline4: GoogleFonts.notoKufiArabic(
-          color: colorScheme.primary,
-          fontSize: 34,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0.25,
-        ),
-        headline5: GoogleFonts.notoKufiArabic(
-          color: colorScheme.primary,
-          fontSize: 24,
-          fontWeight: FontWeight.w400,
-        ),
-        headline6: GoogleFonts.notoKufiArabic(
-          color: colorScheme.primary,
-          fontSize: 20,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.15,
-        ),
-        subtitle1: GoogleFonts.notoKufiArabic(
-          color: colorScheme.primary,
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0.15,
-        ),
-        subtitle2: GoogleFonts.notoKufiArabic(
-          color: colorScheme.primary,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.1,
-        ),
-        bodyText1: GoogleFonts.notoKufiArabic(
-          color: colorScheme.primary,
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0.5,
-        ),
-        bodyText2: GoogleFonts.notoKufiArabic(
-          color: colorScheme.primary,
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0.25,
-        ),
-        button: GoogleFonts.notoKufiArabic(
-          color: colorScheme.primary,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 1.25,
-        ),
-        caption: GoogleFonts.notoKufiArabic(
-          color: colorScheme.primary,
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0.4,
-        ),
-        overline: GoogleFonts.notoKufiArabic(
-          color: colorScheme.primary,
-          fontSize: 10,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 1.5,
-        ),
-      ),
-
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: colorScheme.primary,
+        brightness: Brightness.light,
+      )
+    );
+    _darkThemeData = _darkThemeData.copyWith(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: colorScheme.primary,
+        brightness: Brightness.dark,
+      )
     );
     notifyListeners();
   }
 
   Future<void> setColorSchemeFromImage(ImageProvider image) async {
     final colorSchema = await ColorScheme.fromImageProvider(provider: image);
-     setColorScheme(colorSchema);
+    setColorScheme(colorSchema);
   }
 
-  void setColorSchemeColor(Color color) {
+  void setColorSeed(Color color) {
     final colorSchema = ColorScheme.fromSeed(seedColor: color);
-     setColorScheme(colorSchema);
+    setColorScheme(colorSchema);
   }
-
 }

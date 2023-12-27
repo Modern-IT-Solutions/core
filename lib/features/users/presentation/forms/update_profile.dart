@@ -197,11 +197,22 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                       const SizedBox(height: 10),
                       // preview image
                       Center(
-                        child: CircleAvatar(
-                          radius: 40,
-                          backgroundImage: request.photoUrl == null || request.photoUrl!.isEmpty ? null : NetworkImage(request.photoUrl!),
-                          child: const Center(
-                            child: Icon(FluentIcons.image_28_regular, size: 30),
+                        child: Container(
+                          // border
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.primary,
+                              width: 2,
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(2),
+                          child: CircleAvatar(
+                            radius: 40,
+                            backgroundImage: request.photoUrl?.nullIfEmpty == null ? null : NetworkImage(request.photoUrl!),
+                            child: request.photoUrl?.nullIfEmpty == null? const Center(
+                              child: Icon(FluentIcons.image_28_regular, size: 30),
+                            ):null,
                           ),
                         ),
                       ),
@@ -499,16 +510,15 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                           });
                         },
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                          // must >= 6
-                          FormBuilderValidators.minLength(6),
+                          // 
+                          FormBuilderValidators.minLength(6,allowEmpty: true),
                         ]),
                         decoration: InputDecoration(
                           errorText: _errors['password'],
                           prefixIcon: const Icon(FluentIcons.password_24_regular),
-                          label: const Text('Password'),
+                          label: const Text('New Password'),
                           alignLabelWithHint: true,
-                          helperText: 'The password of the user, required *',
+                          helperText: 'The new password of the user, optional',
                         ),
                       ),
                       Padding(
@@ -518,6 +528,8 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                           contentPadding: const EdgeInsets.only(left: 12),
                           visualDensity: const VisualDensity(vertical: -3),
                           title: const Text('Blocked'),
+                          // desicibe what happen when accound disabled in firebas
+                          subtitle: const Text('when disabled, the user will not be able to login, if he is already logged in, he will be logged out with in 1 hour'),
                           value: request.disabled!,
                           onChanged: (e) => setState(() {
                             request.disabled = e;
@@ -527,15 +539,19 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: SwitchListTile(
+                          secondary: const Icon(FluentIcons.mail_24_regular),
                           contentPadding: const EdgeInsets.only(left: 12),
                           visualDensity: const VisualDensity(vertical: -3),
                           title: const Text('Email Verified'),
+                          subtitle: const Text('some features require email to be verified'),
                           value: request.emailVerified!,
                           onChanged: (e) => setState(() {
                             request.emailVerified = e;
                           }),
                         ),
                       ),
+
+                      SizedBox(height: 10),
 
                       /// show dialog to select roles
                       // Padding(
@@ -573,7 +589,7 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
             const Divider(
               height: 1,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 24),
             // row for 2 buttons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),

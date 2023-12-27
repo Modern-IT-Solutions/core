@@ -87,6 +87,13 @@ class ProfileModel with _$ProfileModel implements Model {
           type: FieldType.datetime,
           group: FieldGroup.metadata,
         ),
+        FieldDescription(
+          name: "deletedAt",
+          path: "deletedAt",
+          map: (m)=>m.createdAt,
+          type: FieldType.datetime,
+          group: FieldGroup.metadata,
+        ),
       },
       name: "Profile",
       path: "profiles",

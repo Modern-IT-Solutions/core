@@ -7,6 +7,7 @@ import 'package:file_saver/file_saver.dart';
 import 'package:intl/intl.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:muskey/muskey.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:lib/lib.dart';
 import 'package:recase/recase.dart';
@@ -805,6 +806,10 @@ class ModelListView<M extends Model> extends StatefulWidget {
 }
 
 class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
+  /// [_allowMultipleFilters]
+  /// its good tool but in maney cases it requires creating a new index in firestore
+  bool _allowMultipleFilters = false;
+
   var searchController = TextEditingController();
   @override
   void initState() {
@@ -816,15 +821,13 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
   Future<String?> _exportModels(Set<M> selectedModels) async {
     var models = selectedModels.toList();
-    var raw = "[${models.map((e) => jsonEncode(
-      e.toJson(),
-      // in case of time stamp
-      toEncodable: (object) {
-        if (object is Timestamp) {
-          return object.toDate().toIso8601String();
-        }
-      }
-      )).join(",")}]";
+    var raw = "[${models.map((e) => jsonEncode(e.toJson(),
+            // in case of time stamp
+            toEncodable: (object) {
+          if (object is Timestamp) {
+            return object.toDate().toIso8601String();
+          }
+        })).join(",")}]";
     var rawAsBytes = const Utf8Codec(allowMalformed: true).encode(raw);
     String? dir;
 
@@ -912,15 +915,95 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                       const SizedBox(
                         width: 10,
                       ),
-                      TextButton.icon(
-                        onPressed: () {
-                          showModelExportDialog(context, widget.controller);
+                      // TextButton.icon(
+                      //   onPressed: () {
+                      //     showModelExportDialog(context, widget.controller);
+                      //   },
+                      //   label: const Text('Export'),
+                      //   icon: const Icon(
+                      //     FluentIcons.archive_32_regular,
+                      //     size: 18,
+                      //   ),
+                      // ),
+                      MenuAnchor(
+                        builder: (context, controller, child) {
+                          return IconButton(
+                            icon: const Icon(
+                              FluentIcons.more_vertical_24_regular,
+                            ),
+                            onPressed: () => controller.isOpen ? controller.close() : controller.open(),
+                            // label: Text(value!.searchQuery!.field),
+                          );
                         },
-                        label: const Text('Export'),
-                        icon: const Icon(
-                          FluentIcons.archive_32_regular,
-                          size: 18,
-                        ),
+                        menuChildren: [
+                          SizedBox(height: 8),
+                          MenuItemButton(
+                            leadingIcon: const Icon(
+                              FluentIcons.archive_32_regular,
+                              size: 18,
+                            ),
+                            onPressed: () {
+                              showModelExportDialog(context, widget.controller);
+                            },
+                            child: const Text('Export'),
+                          ),
+                          // MenuItemButton(
+                          //   leadingIcon: const Icon(
+                          //     FluentIcons.archive_arrow_back_16_regular,
+                          //     size: 18,
+                          //   ),
+                          //   onPressed: () {
+                          //     // showModelImportDialog(context, widget.controller);
+                          //   },
+                          //   child: const Text('Import'),
+                          // ),
+                          Divider(),
+                          Container(
+                            // min width is 300
+                            constraints: const BoxConstraints(minWidth: 250),
+                            padding: EdgeInsets.all(12),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Flexible(
+                                  child: AppTextFormField(
+                                    decoration: InputDecoration(
+                                      prefixIcon: SizedBox(child: const Icon(FluentIcons.search_20_regular)),
+                                      label: Text('Limit'),
+                                      alignLabelWithHint: true,
+                                    ),
+                                    controller: TextEditingController(text: widget.controller.value?.limit.toString() ?? "50"),
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      MuskeyFormatter(
+                                        masks: [
+                                          '####'
+                                        ],
+                                        overflow: OverflowBehavior.forbidden(),
+                                      ),
+                                    ],
+                                    onChanged: (value) {
+                                      widget.controller.setLimit(int.tryParse(value) ?? 50);
+                                    },
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                          // alow multiple filter combinations
+                          SwitchListTile(
+                            value: _allowMultipleFilters,
+                            onChanged: (value) {
+                              setState(() {
+                                _allowMultipleFilters = value;
+                              });
+                            },
+                            title: const Text('Allow multiple filters'),
+                          ),
+                          SizedBox(height: 8),
+                        ],
                       ),
                     ]),
                   ),
@@ -1109,7 +1192,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                   bool isFixed = filter.fixed ?? false;
                                   return GestureDetector(
                                     onTap: () {
-                                      widget.controller.updateFilter(filter.copyWith(active: !filter.active));
+                                      widget.controller.updateFilter(filter.copyWith(active: !filter.active), _allowMultipleFilters);
                                     },
                                     child: Chip(
                                       label: Text(filter.name.titleCase),
@@ -1278,7 +1361,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                 ],
                               ),
                         ),
-                        value.loading == true ? const LinearProgressIndicator(minHeight: 2) : const Divider(height: 2),
+                        value.loading == true ? const LinearProgressIndicator(minHeight: 2) : Divider(height: 2, color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
                       ],
                     ),
                   ),
@@ -1836,6 +1919,9 @@ class ModelListViewValue<M extends Model> {
   final Map<String, dynamic> metadata;
   final String? error;
 
+  /// [limit] (max items loaded each time)
+  final int limit;
+
   const ModelListViewValue({
     this.count,
     this.forceFilter = false,
@@ -1848,6 +1934,7 @@ class ModelListViewValue<M extends Model> {
     this.history = const [],
     this.metadata = const {},
     this.error,
+    this.limit = 50,
   });
 
   ModelListViewValue<M> copyWith({
@@ -1862,6 +1949,7 @@ class ModelListViewValue<M extends Model> {
     List<ModelIndexType<M>>? history,
     Map<String, dynamic>? metadata,
     String? error,
+    int? limit,
   }) {
     return ModelListViewValue<M>(
       count: count ?? this.count,
@@ -1875,6 +1963,7 @@ class ModelListViewValue<M extends Model> {
       history: history ?? this.history,
       metadata: metadata ?? this.metadata,
       error: error ?? this.error,
+      limit: limit ?? this.limit,
     );
   }
 }
@@ -1899,13 +1988,22 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     String url
   })? needIndexError;
 
+  /// [setLimit] is a function to set the limit
+  void setLimit(int limit) {
+    value = value?.copyWith(
+      limit: limit,
+    );
+    notifyListeners();
+  }
+
   /// [search] is a function to search for models
-  Future<void> search({Iterable<String>? startAfter, bool concat = false, int limit = 100}) async {
+  Future<void> search({Iterable<String>? startAfter, bool concat = false, int? limit}) async {
     needIndexError = null;
     value = (value ?? ModelListViewValue<M>()).copyWith(
       loading: true,
       hasNext: true,
     );
+    limit = limit ?? value!.limit;
     try {
       value = value!.copyWith(
         models: concat ? value!.models : null,
@@ -2070,7 +2168,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   }
 
   /// [activateFilter]
-  Future<void> updateFilter(IndexViewFilter<M> filter) async {
+  Future<void> updateFilter(IndexViewFilter<M> filter, bool allowMultipleFilters) async {
     // check filter if extst, take the index and activat it
     var index = value!.filters.indexWhere((f) => f.name == filter.name);
     if (index >= 0) {
@@ -2084,10 +2182,15 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     } else {
       value!.filters.add(filter);
     }
-    value = value?.copyWith(
-      // disable all filters except the one we want to activate and add it to the list
-      filters: value!.filters.map((e) => e.copyWith(active: e.name == filter.name && filter.active)).toList(),
-    );
+    if (!allowMultipleFilters) {
+      value = value?.copyWith(
+        filters: value!.filters.map((e) => e.copyWith(active: e.name == filter.name && filter.active)).toList(),
+      );
+    }
+    // value = value?.copyWith(
+    //   // disable all filters except the one we want to activate and add it to the list
+    //   filters: value!.filters.map((e) => e.copyWith(active: e.name == filter.name && filter.active)).toList(),
+    // );
     await search();
   }
 
@@ -2376,6 +2479,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
   TextEditingController fieldController = TextEditingController();
   TextEditingController operatorController = TextEditingController();
   TextEditingController valueController = TextEditingController();
+  FieldType fieldType = FieldType.text;
 
   FieldType? _fieldType() => description.fields.where((e) => e.name == fieldController.text).firstOrNull?.type;
   FieldDescription? _field() => description.fields.where((e) => e.name == fieldController.text).firstOrNull;
@@ -2422,6 +2526,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                           : () {
                               setState(() {
                                 fieldController.text = field.path;
+                                fieldType = _fieldType() ?? fieldType;
                               });
                             },
                       child: Text(field.name.titleCase),
@@ -2460,56 +2565,106 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                 ],
               ),
               const SizedBox(height: 8),
+              // value type, depending on this it may show things to help
+              // use filter chips
+
+              // operator
+              MenuAnchor(
+                builder: (context, controller, child) {
+                  return AppTextFormField(
+                    key: Key(fieldType.name),
+                    initialValue: fieldType.name,
+                    onTap: (v) => controller.open(),
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(FluentIcons.data_area_24_regular),
+                      label: Text('Data Type'),
+                      alignLabelWithHint: true,
+                    ),
+                  );
+                },
+                menuChildren: [
+                  for (var type in [
+                    FieldType.text,
+                    FieldType.number,
+                    FieldType.boolean,
+                    FieldType.date
+                  ])
+                    MenuItemButton(
+                      leadingIcon: const Icon(FluentIcons.calculator_24_regular),
+                      trailingIcon: fieldType == type ? Text(fieldType.toString()) : null,
+                      onPressed: fieldType == type
+                          ? null
+                          : () {
+                              setState(() {
+                                fieldType = type;
+                              });
+                            },
+                      child: Text(type.toString().titleCase),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
               // value
-              if (_fieldType() != FieldType.boolean)
+              if (fieldType == FieldType.text || fieldType == FieldType.number)
                 AppTextFormField(
                   onChanged: (String v) async {
                     value = v;
                   },
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     prefixIcon: Icon(FluentIcons.search_24_regular),
-                    label: Text('Value'),
+                    label: Text(fieldType.name.titleCase),
+                    alignLabelWithHint: true,
+                  ),
+                )
+              else if (fieldType == FieldType.boolean)
+                SwitchListTile(
+                  value: value == true,
+                  onChanged: (v) {
+                    value = v;
+                    setState(() {});
+                  },
+                  title: const Text('Activate'),
+                )
+              else if (fieldType == FieldType.date || fieldType == FieldType.time || fieldType == FieldType.datetime)
+                AppTextFormField(
+                  key: Key(value?.toString() ?? ""),
+                  initialValue: value?.toString(),
+                  onTap: (v) async {
+                    DateTime? date;
+                    if (fieldType == FieldType.date || fieldType == FieldType.datetime) {
+                      date = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2050),
+                      );
+                    }
+                    if (fieldType == FieldType.time || fieldType == FieldType.datetime) {
+                      var time = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (time == null) return null;
+                      date = DateTime(
+                        date?.year ?? DateTime.now().year,
+                        date?.month ?? DateTime.now().month,
+                        date?.day ?? DateTime.now().day,
+                        time!.hour,
+                        time!.minute,
+                      );
+                    }
+                    setState(() {
+                      value = date;
+                    });
+                  },
+                  decoration:  InputDecoration(
+                    prefixIcon:const Icon(FluentIcons.calendar_20_regular),
+                    label: Text(fieldType.name),
                     alignLabelWithHint: true,
                   ),
                 )
               else
-                MenuAnchor(
-                  builder: (context, controller, child) {
-                    return TextButton.icon(
-                      icon: const Icon(FluentIcons.chevron_down_24_regular),
-                      onPressed: () => controller.open(),
-                      label: Text(value.toString().titleCase),
-                    );
-                  },
-                  menuChildren: [
-                    // true
-                    MenuItemButton(
-                      leadingIcon: const Icon(FluentIcons.checkmark_24_regular),
-                      trailingIcon: value == true ? const Icon(FluentIcons.checkmark_24_regular) : null,
-                      onPressed: value == true
-                          ? null
-                          : () {
-                              setState(() {
-                                value = true;
-                              });
-                            },
-                      child: const Text("True"),
-                    ),
-                    // false
-                    MenuItemButton(
-                      leadingIcon: const Icon(FluentIcons.dismiss_24_regular),
-                      trailingIcon: value == false ? const Icon(FluentIcons.checkmark_24_regular) : null,
-                      onPressed: value == false
-                          ? null
-                          : () {
-                              setState(() {
-                                value = false;
-                              });
-                            },
-                      child: const Text("False"),
-                    ),
-                  ],
-                ),
+                const SizedBox(),
             ],
           ),
           actions: [
@@ -2527,11 +2682,11 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                         name: "${fieldController.text}${operatorController.text}${value}",
                         remote: (query) {
                           if (_fieldType() == FieldType.number) value = num.tryParse(value) ?? value;
-                          return _operator()!.remote(query: query, field: _field()!.name, value: value);
+                          return _operator()!.remote(query: query, field: _field()?.name ?? fieldController.text, value: value);
                         },
                         local: (model) {
                           return _operator()!.local(
-                            field: _field()!.name,
+                            field: _field()?.name ?? fieldController.text,
                             value: value,
                             model: model,
                           );
@@ -2616,17 +2771,17 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
               const SizedBox(height: 8),
               // limit
               if (selectedModels == null)
-              AppTextFormField(
-                controller: TextEditingController(text: limit.toString()),
-                onChanged: (v) {
-                  limit = int.tryParse(v) ?? 100;
-                },
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(FluentIcons.filter_24_regular),
-                  label: Text('Limit'),
-                  alignLabelWithHint: true,
+                AppTextFormField(
+                  controller: TextEditingController(text: limit.toString()),
+                  onChanged: (v) {
+                    limit = int.tryParse(v) ?? 100;
+                  },
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(FluentIcons.filter_24_regular),
+                    label: Text('Limit'),
+                    alignLabelWithHint: true,
+                  ),
                 ),
-              ),
             ],
           ),
           actions: [
@@ -2639,10 +2794,10 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
             TextButton(
               onPressed: () async {
                 var models = selectedModels;
-              if (models == null) {
-                await controller.search(limit: limit);
-                models = controller.value!.models;
-              }
+                if (models == null) {
+                  await controller.search(limit: limit);
+                  models = controller.value!.models;
+                }
                 // download directly
                 // var dir = await getExternalStorageDirectory();
                 var rawFields = selectedFieldsController.text.replaceAll("،", ",").split(",");

@@ -12,11 +12,18 @@ export 'core/model_manager.dart';
 export 'services/services.dart';
 export 'services/defaults/service.dart';
 
+/// models
+export 'models/notification_model.dart';
+export 'models/address_model.dart';
+// export 'models/attachment_model.dart';
+
 /// features
 export 'features/users/users.dart';
 
 /// widgets
 export './widgets/form_field.dart';
+export './widgets/profile_avatar.dart';
+export './widgets/data_flag.dart';
 
 export './imports/firebase.dart';
 export './converters.dart';

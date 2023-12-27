@@ -68,7 +68,12 @@ class AppTextFormField extends StatefulWidget {
   /// [initialValue]
   final String? initialValue;
 
+  /// [inputFormatters]
   final List<TextInputFormatter>? inputFormatters;
+
+  /// keyboardType
+  final TextInputType? keyboardType;
+
   const AppTextFormField({
     super.key,
     this.onChanged,
@@ -86,6 +91,7 @@ class AppTextFormField extends StatefulWidget {
     this.margin,
     this.mode = AppTextFormFieldMode.text,
     this.fileUploadTriger,
+    this.keyboardType,
   });
 
   /// min constracter
@@ -106,6 +112,7 @@ class AppTextFormField extends StatefulWidget {
     this.decoration = const InputDecoration(),
     this.mode = AppTextFormFieldMode.text,
     this.fileUploadTriger,
+    this.keyboardType,
   });
 
   /// min constracter
@@ -126,6 +133,7 @@ class AppTextFormField extends StatefulWidget {
     this.margin,
     this.mode = AppTextFormFieldMode.upload,
     this.fileUploadTriger,
+    this.keyboardType,
   });
 
 
@@ -167,6 +175,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
           margin: widget.margin,
           height: widget.height,
           child: TextFormField(
+            keyboardType: widget.keyboardType,
             initialValue: widget.initialValue,
             onTap: () async {
               widget.onTap?.call(_controller.text);
