@@ -2587,7 +2587,9 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                     FieldType.text,
                     FieldType.number,
                     FieldType.boolean,
-                    FieldType.date
+                    FieldType.date,
+                    FieldType.time,
+                    FieldType.datetime,
                   ])
                     MenuItemButton(
                       leadingIcon: const Icon(FluentIcons.calculator_24_regular),

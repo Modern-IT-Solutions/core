@@ -206,6 +206,7 @@ enum QueryOperations {
 
   bool local<T extends Model>({required T model,required String field,required dynamic value}) {
     dynamic fieldValue = model.toJson()[field];
+    if (fieldValue == null) return false;
     if (fieldValue is Timestamp) fieldValue = fieldValue.toDate();
     if (fieldValue is DateTime) fieldValue = fieldValue.millisecondsSinceEpoch;
     if (value is Timestamp) value = value.toDate();
