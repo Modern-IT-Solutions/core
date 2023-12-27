@@ -1612,6 +1612,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
 
     await showDialog(
+
       context: context,
 
       builder: (context) {
@@ -2202,7 +2203,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                     width: double.infinity,
 
-                    height: 50,
+                    height: 40,
 
                     child: ListView(
 
@@ -2218,207 +2219,206 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                         if (widget.controller.value!.selectedModels.isNotEmpty)
 
-                          SizedBox(
+                          Center(
+                            child: Container(
+                            
+                              margin: EdgeInsetsDirectional.only(end: widget.gap / 2),
+                            
+                              clipBehavior: Clip.antiAlias,
+                            
+                              decoration: BoxDecoration(
+                            
+                                borderRadius: BorderRadius.circular(30),
+                            
+                                border: GradientBoxBorder(
+                            
+                                  gradient: LinearGradient(
+                            
+                                    colors: [
+                            
+                                      Theme.of(context).colorScheme.primary,
+                            
+                                      Theme.of(context).colorScheme.inversePrimary,
+                            
+                                      Theme.of(context).colorScheme.secondary,
+                            
+                                    ],
+                            
+                                    begin: const Alignment(-1.0, 0.0),
+                            
+                                    end: const Alignment(1.0, 0.0),
+                            
+                                    transform: const GradientRotation(pi / 4),
+                            
+                                  ),
+                            
+                                  width: 1,
+                            
+                                ),
+                            
+                              ),
+                            
+                              child: Row(
+                            
+                                mainAxisSize: MainAxisSize.min,
+                            
+                                children: [
+                            
+                                  const SizedBox(width: 10),
+                            
+                                  Text("${widget.controller.value!.selectedModels.length}"),
+                            
+                                  const SizedBox(width: 10),
+                            
 
-                            height: 40,
 
-                            child: Center(
 
-                              child: Container(
+                                Container(
 
-                                height: 33,
+                                  height: 30,
 
-                                margin: EdgeInsetsDirectional.only(end: widget.gap / 2),
+                                  padding: EdgeInsets.symmetric(vertical: 5),
 
-                                clipBehavior: Clip.antiAlias,
+                                  child: VerticalDivider(width: 1),
 
-                                decoration: BoxDecoration(
+                                ),
 
-                                  borderRadius: BorderRadius.circular(30),
 
-                                  border: GradientBoxBorder(
+                                TextButton.icon(
 
-                                    gradient: LinearGradient(
+                                  style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
 
-                                      colors: [
+                                  onPressed: () => widget.controller.unselectAll(),
 
-                                        Theme.of(context).colorScheme.primary,
+                                  label: const Text("unselect"),
 
-                                        Theme.of(context).colorScheme.inversePrimary,
+                                  icon: const Icon(
 
-                                        Theme.of(context).colorScheme.secondary,
+                                    FluentIcons.dismiss_24_regular,
 
-                                      ],
-
-                                      begin: const Alignment(-1.0, 0.0),
-
-                                      end: const Alignment(1.0, 0.0),
-
-                                      transform: const GradientRotation(pi / 4),
-
-                                    ),
-
-                                    width: 1,
+                                    size: 18,
 
                                   ),
 
                                 ),
 
-                                child: Row(
+                                Container(
 
-                                  mainAxisSize: MainAxisSize.min,
+                                  height: 30,
 
-                                  children: [
+                                  padding: EdgeInsets.symmetric(vertical: 5),
 
-                                    const SizedBox(width: 10),
-
-                                    Text("${widget.controller.value!.selectedModels.length}"),
-
-                                    const SizedBox(width: 10),
-
-                                    const Padding(
-
-                                      padding: EdgeInsets.symmetric(vertical: 5),
-
-                                      child: VerticalDivider(width: 1),
-
-                                    ),
-
-                                    TextButton.icon(
-
-                                      style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
-
-                                      onPressed: () => widget.controller.unselectAll(),
-
-                                      label: const Text("unselect"),
-
-                                      icon: const Icon(
-
-                                        FluentIcons.dismiss_24_regular,
-
-                                        size: 18,
-
-                                      ),
-
-                                    ),
-
-                                    const Padding(
-
-                                      padding: EdgeInsets.symmetric(vertical: 5),
-
-                                      child: VerticalDivider(width: 1),
-
-                                    ),
-
-                                    TextButton.icon(
-
-                                      style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
-
-                                      onPressed: () {
-
-                                        // _exportModels(widget.controller.value!.selectedModels);
-
-
-                                        showModelExportDialog(context, widget.controller, widget.controller.value!.selectedModels.toList());
-
-                                      },
-
-                                      label: const Text("export"),
-
-                                      icon: const Icon(
-
-                                        FluentIcons.archive_32_regular,
-
-                                        size: 18,
-
-                                      ),
-
-                                    ),
-
-                                    const Padding(
-
-                                      padding: EdgeInsets.symmetric(vertical: 5),
-
-                                      child: VerticalDivider(width: 1),
-
-                                    ),
-
-                                    TextButton.icon(
-
-                                      style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
-
-                                      onPressed: () {
-
-                                        showDeleteModelsDailog(context, widget.controller.value!.selectedModels.toList());
-
-                                      },
-
-                                      label: const Text("delete"),
-
-                                      icon: const Icon(
-
-                                        FluentIcons.delete_16_regular,
-
-                                        size: 18,
-
-                                      ),
-
-                                    ),
-
-                                    for (var action in widget.controller.description.actions.where((e) => e.multiple != null)) ...[
-
-                                      const Padding(
-
-                                        padding: EdgeInsets.symmetric(vertical: 5),
-
-                                        child: VerticalDivider(width: 1),
-
-                                      ),
-
-                                      TextButton(
-
-                                        style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
-
-
-                                        onPressed: () async {
-
-                                          await action.multiple!(context, widget.controller.value!.selectedModels.toList());
-
-
-                                          // TODO: refresh after done
-
-
-                                          // widget.controller.load();
-
-                                        },
-
-
-                                        child: Text(action.label),
-
-
-                                        // icon: action.icon == null? SizedBox() : Icon(
-
-
-                                        //   action.icon!,
-
-
-                                        //   size: 18,
-
-
-                                        // ),
-
-                                      ),
-
-                                    ]
-
-                                  ],
+                                  child: VerticalDivider(width: 1),
 
                                 ),
 
+                                TextButton.icon(
+
+                                  style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
+
+                                  onPressed: () {
+
+                                    // _exportModels(widget.controller.value!.selectedModels);
+
+
+                                    showModelExportDialog(context, widget.controller, widget.controller.value!.selectedModels.toList());
+
+                                  },
+
+                                  label: const Text("export"),
+
+                                  icon: const Icon(
+
+                                    FluentIcons.archive_32_regular,
+
+                                    size: 18,
+
+                                  ),
+
+                                ),
+
+                                Container(
+
+                                  height: 30,
+
+                                  padding: EdgeInsets.symmetric(vertical: 5),
+
+                                  child: VerticalDivider(width: 1),
+
+                                ),
+
+                                TextButton.icon(
+
+                                  style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
+
+                                  onPressed: () {
+
+                                    showDeleteModelsDailog(context, widget.controller.value!.selectedModels.toList());
+
+                                  },
+
+                                  label: const Text("delete"),
+
+                                  icon: const Icon(
+
+                                    FluentIcons.delete_16_regular,
+
+                                    size: 18,
+
+                                  ),
+
+                                ),
+
+                                for (var action in widget.controller.description.actions.where((e) => e.multiple != null)) ...[
+
+                                  const Padding(
+
+                                    padding: EdgeInsets.symmetric(vertical: 5),
+
+                                    child: VerticalDivider(width: 1),
+
+                                  ),
+
+                                  TextButton(
+
+                                    style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
+
+
+                                    onPressed: () async {
+
+                                      await action.multiple!(context, widget.controller.value!.selectedModels.toList());
+
+
+                                      // TODO: refresh after done
+
+
+                                      // widget.controller.load();
+
+                                    },
+
+
+                                    child: Text(action.label),
+
+
+                                    // icon: action.icon == null? SizedBox() : Icon(
+
+
+                                    //   action.icon!,
+
+
+                                    //   size: 18,
+
+
+                                    // ),
+
+                                  ),
+
+                                ]
+                                ],
+                            
                               ),
-
+                            
                             ),
-
                           ),
 
                         Container(
@@ -3181,7 +3181,6 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                         // copy ref button
 
 
-
                                         if (widget.controller.description.groupedActions.keys.isNotEmpty) ...[
 
                                           for (var group in widget.controller.description.groupedActions.keys) ...[
@@ -3216,12 +3215,13 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                         ],
 
 
-
                                         MenuItemButton(
 
                                           onPressed: () async {
 
                                             await Clipboard.setData(ClipboardData(text: model.ref.path));
+
+
                                             ScaffoldMessenger.maybeOf(context)?.showSnackBar(
 
                                               const SnackBar(
@@ -3243,7 +3243,6 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                           child: const Text("Copy ref"),
 
                                         ),
-                                        
 
 
                                         const SizedBox(
