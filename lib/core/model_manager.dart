@@ -104,7 +104,6 @@ abstract class QueryFilterInterface<T extends Model> {
   set name(String value);
   // onSelect
   void Function(Map<String, QueryFilterInterface<T>> filters)? get onSelect;
-
 }
 
 /// QueryFilter
@@ -140,7 +139,6 @@ class QueryFilter<T extends Model> implements QueryFilterInterface<T> {
     required this.fields,
   });
 
-
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -156,8 +154,8 @@ class ModelAction<M extends Model> {
   final Widget? icon;
   final String? group;
   final String label;
-  final FutureOr<M?> Function(BuildContext,M?)? single;
-  final FutureOr<List<M>?> Function(BuildContext,List<M>?)? multiple;
+  final FutureOr<M?> Function(BuildContext, M?)? single;
+  final FutureOr<List<M>?> Function(BuildContext, List<M>?)? multiple;
   const ModelAction({
     this.icon,
     required this.label,
@@ -178,8 +176,7 @@ enum QueryOperations {
   arrayContainsAny,
   whereIn;
 
-  Query<Map<String,dynamic>> remote({required Query<Map<String,dynamic>> query,required String field,required dynamic value}) {
-    
+  Query<Map<String, dynamic>> remote({required Query<Map<String, dynamic>> query, required String field, required dynamic value}) {
     if (this == QueryOperations.equal) {
       query = query.where(field, isEqualTo: value);
     } else if (this == QueryOperations.notEqual) {
@@ -197,50 +194,54 @@ enum QueryOperations {
     } else if (this == QueryOperations.arrayContains) {
       query = query.where(field, arrayContains: value);
     } else if (this == QueryOperations.whereIn) {
-      query = query.where(field,whereIn: value.toString().split("|"));
+      query = query.where(field, whereIn: value.toString().split("|"));
     } else {
       query = query.where(field, isEqualTo: value);
     }
     return query;
   }
 
-  bool local<T extends Model>({required T model,required String field,required dynamic value}) {
-    dynamic fieldValue = model.toJson()[field];
-    if (fieldValue == null) return false;
-    if (fieldValue is Timestamp) fieldValue = fieldValue.toDate();
-    if (fieldValue is DateTime) fieldValue = fieldValue.millisecondsSinceEpoch;
-    if (value is Timestamp) value = value.toDate();
-    if (value is DateTime) value = value.millisecondsSinceEpoch;
-    // return true;
-    if (this == QueryOperations.equal) {
-      return fieldValue == value;
-    } else if (this == QueryOperations.notEqual) {
-      return fieldValue != value;
-    } else if (this == QueryOperations.lessThan) {
-      return fieldValue < value;
-    } else if (this == QueryOperations.lessThanOrEqual) {
-      return fieldValue <= value;
-    } else if (this == QueryOperations.greaterThan) {
-      return fieldValue > value;
-    } else if (this == QueryOperations.greaterThanOrEqual) {
-      return fieldValue >= value;
-    } else if (this == QueryOperations.arrayContainsAny) {
-      // check if the field is a Iterable
-      assert(fieldValue is Iterable);
-      // check if the value is a Iterable
-      assert(value is Iterable);
-      // return true if the field contains any of the values
-      return (List.from(fieldValue)).any((element) => (value as List).contains(element));
-    } else if (this == QueryOperations.arrayContains) {
-      // check if the field is a Iterable
-      assert(fieldValue is Iterable);
-      // check if the value is a Iterable
-      assert(value is Iterable);
-      // return true if the field contains any of the values
-      return (List.from(fieldValue)).contains(value);
-    } else if (this == QueryOperations.whereIn) {
-      return (List.from(fieldValue)).contains(value);
-    } else {
+  bool local<T extends Model>({required T model, required String field, required dynamic value}) {
+    try {
+      dynamic fieldValue = model.toJson()[field];
+      if (fieldValue == null) return false;
+      if (fieldValue is Timestamp) fieldValue = fieldValue.toDate();
+      if (fieldValue is DateTime) fieldValue = fieldValue.millisecondsSinceEpoch;
+      if (value is Timestamp) value = value.toDate();
+      if (value is DateTime) value = value.millisecondsSinceEpoch;
+      // return true;
+      if (this == QueryOperations.equal) {
+        return fieldValue == value;
+      } else if (this == QueryOperations.notEqual) {
+        return fieldValue != value;
+      } else if (this == QueryOperations.lessThan) {
+        return fieldValue < value;
+      } else if (this == QueryOperations.lessThanOrEqual) {
+        return fieldValue <= value;
+      } else if (this == QueryOperations.greaterThan) {
+        return fieldValue > value;
+      } else if (this == QueryOperations.greaterThanOrEqual) {
+        return fieldValue >= value;
+      } else if (this == QueryOperations.arrayContainsAny) {
+        // check if the field is a Iterable
+        assert(fieldValue is Iterable);
+        // check if the value is a Iterable
+        assert(value is Iterable);
+        // return true if the field contains any of the values
+        return (List.from(fieldValue)).any((element) => (value as List).contains(element));
+      } else if (this == QueryOperations.arrayContains) {
+        // check if the field is a Iterable
+        assert(fieldValue is Iterable);
+        // check if the value is a Iterable
+        assert(value is Iterable);
+        // return true if the field contains any of the values
+        return (List.from(fieldValue)).contains(value);
+      } else if (this == QueryOperations.whereIn) {
+        return (List.from(fieldValue)).contains(value);
+      } else {
+        return false;
+      }
+    } catch (e) {
       return false;
     }
   }
@@ -381,7 +382,7 @@ class DynamicQueryFilter<T extends Model> implements QueryFilterInterface<T> {
       };
     } else if (operations == QueryOperations.whereIn) {
       return (Query<T> query) {
-        return query.where(field,whereIn: value as List);
+        return query.where(field, whereIn: value as List);
       };
     } else {
       return (Query<T> query) {
@@ -389,6 +390,4 @@ class DynamicQueryFilter<T extends Model> implements QueryFilterInterface<T> {
       };
     }
   }
-  
-  
 }
