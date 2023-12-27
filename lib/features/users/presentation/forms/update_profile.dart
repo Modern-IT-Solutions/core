@@ -199,21 +199,10 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                       Center(
                         child: Container(
                           // border
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.primary,
-                              width: 2,
-                            ),
-                          ),
                           padding: const EdgeInsets.all(2),
-                          child: CircleAvatar(
-                            radius: 40,
-                            backgroundImage: request.photoUrl?.nullIfEmpty == null ? null : NetworkImage(request.photoUrl!),
-                            child: request.photoUrl?.nullIfEmpty == null? const Center(
-                              child: Icon(FluentIcons.image_28_regular, size: 30),
-                            ):null,
-                          ),
+                          width: 100,
+                          height: 100,
+                          child: ProfileAvatar(profile: model),
                         ),
                       ),
                       const SizedBox(height: 20),

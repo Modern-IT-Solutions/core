@@ -1,54 +1,73 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
+
 import 'dart:convert';
 
+
 import 'dart:math';
+
 
 import 'package:flutter/services.dart';
 
 
 import 'package:feather_icons/feather_icons.dart';
 
+
 import 'package:file_saver/file_saver.dart';
+
 
 import 'package:intl/intl.dart';
 
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+
 
 import 'package:flutter/material.dart';
 
+
 import 'package:muskey/muskey.dart';
+
 
 import 'package:url_launcher/url_launcher.dart';
 
+
 import 'package:lib/lib.dart';
+
 
 import 'package:recase/recase.dart';
 
+
 import 'package:timeago/timeago.dart' as timeago;
 
+
 import 'package:visibility_detector/visibility_detector.dart';
+
 
 import 'package:gradient_borders/gradient_borders.dart';
 
 
 import 'package:core/core.dart';
 
+
 import 'package:core/services/defaults/helpers.dart';
 
 
 import 'find.dart';
 
+
 import 'forms/create_profile.dart';
+
 
 import 'forms/update_profile.dart';
 
 
 /// [ProfilesSearchType] is a class to build a query to search
 
+
 enum ProfilesSearchType implements SearchType {
 
   name,
+
 
   email;
 
@@ -60,6 +79,7 @@ enum ProfilesSearchType implements SearchType {
       case ProfilesSearchType.name:
 
         return FeatherIcons.user;
+
 
       case ProfilesSearchType.email:
 
@@ -89,11 +109,14 @@ enum ProfilesSearchType implements SearchType {
 
 /// [ManageProfilesView] is a tab for stations
 
+
 class ManageProfilesView<M extends ProfileModel> extends ModelMnanagerView<M> {
 
   final ProfileRepositoryInterface<M> repository;
 
+
   final Map<String, QueryFilterInterface<M>> filters;
+
 
   final List<ModelAction<M>> actions;
 
@@ -102,6 +125,7 @@ class ManageProfilesView<M extends ProfileModel> extends ModelMnanagerView<M> {
 
     var map = <String, List<ModelAction<M>>>{};
 
+
     for (var action in actions) {
 
       if (action.group == null) {
@@ -109,6 +133,7 @@ class ManageProfilesView<M extends ProfileModel> extends ModelMnanagerView<M> {
         continue;
 
       }
+
 
       if (map.containsKey(action.group)) {
 
@@ -125,6 +150,7 @@ class ManageProfilesView<M extends ProfileModel> extends ModelMnanagerView<M> {
       }
 
     }
+
 
     return map;
 
@@ -153,6 +179,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
   var searchType = ValueNotifier(ProfilesSearchType.email);
 
+
   Map<String, QueryFilterInterface<M>> filters = {};
 
 
@@ -161,6 +188,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
   void initState() {
 
     super.initState();
+
 
     filters['All'] = QueryFilter(
 
@@ -186,9 +214,12 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
     );
 
+
     // filters = widget.filters;
 
+
     filters.addAll(widget.filters as Map<String, QueryFilterInterface<M>>);
+
 
     for (var filter in activeFilters) {
 
@@ -215,27 +246,33 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
   Map<DateTime, bool> history = {};
 
+
   DateTime? get currentStartAt => history.keys.lastOrNull;
 
 
   bool get hasNext => filteredModels.isNotEmpty && nextStartAt != null && nextStartAt != currentStartAt;
+
 
   DateTime? get nextStartAt => models.value?.items.lastOrNull?.updatedAt;
 
 
   // prevStartAt
 
+
   DateTime? get prevStartAt {
 
     // index of latest item
 
+
     var index = models.value?.items.indexWhere((element) => element.updatedAt == currentStartAt);
+
 
     if (index != null && index > 0) {
 
       return models.value?.items[index - 1].updatedAt;
 
     }
+
 
     return null;
 
@@ -256,7 +293,9 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
   /// [search] is a function to search for profiles
 
+
   /// it takes a [query] and a [type] to search by
+
 
   Future<void> search({String? query, SearchType? type, Iterable<Timestamp>? startAfter}) async {
 
@@ -266,15 +305,19 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
     }
 
+
     loading.value = true;
 
+
     var concat = false;
+
 
     try {
 
       if (startAfter != null && startAfter.isNotEmpty == true) {
 
         history[startAfter.first.toDate()] = true;
+
 
         concat = true;
 
@@ -295,13 +338,16 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
               }
 
+
               query = query.orderBy("updatedAt", descending: false);
+
 
               if (startAfter != null) {
 
                 query = query.startAfter(startAfter);
 
               }
+
 
               return query;
 
@@ -316,6 +362,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
             )),
 
       )) as ListResult<M>;
+
 
       if (concat) {
 
@@ -343,6 +390,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
     }
 
+
     loading.value = false;
 
   }
@@ -355,6 +403,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       return [];
 
     }
+
 
     bool _filters(ProfileModel model) {
 
@@ -372,6 +421,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
       }
 
+
       return true;
 
     }
@@ -383,17 +433,21 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
     }
 
+
     // search in display name and email and phone number and uid
+
 
     return models.value!.items.where((profile) {
 
       var query = searchController.text.toLowerCase();
+
 
       if (!_filters(profile)) {
 
         return false;
 
       }
+
 
       return profile.toString().toLowerCase().contains(query);
 
@@ -450,13 +504,16 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
                     // enabled: !loading.value,
 
+
                     onSubmitted: (String value) {
 
                       search(query: value, type: searchType.value);
 
                     },
 
+
                     controller: searchController,
+
 
                     decoration: InputDecoration(
 
@@ -532,9 +589,12 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
             ),
 
+
             // row of filters using chips, each chip is a filter can be remove
 
+
             // if no filters, hide this row
+
 
             Padding(
 
@@ -560,7 +620,9 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
                             filters[filter.name]?.active = !(filters[filter.name]?.active ?? false);
 
+
                             filters[filter.name]!.onSelect?.call(filters);
+
 
                             search();
 
@@ -602,6 +664,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
                                     filters.remove(filter.name);
 
+
                                     search();
 
                                   });
@@ -623,15 +686,20 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
             // table of profiles, profile is the same as firebase
 
+
             // use ListTile for each profile
+
 
             FlexTable(
 
               selectable: false,
 
+
               scrollable: false,
 
+
               // the space bitween each item called gap
+
 
               configs: const [
 
@@ -646,6 +714,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                 FlexTableItemConfig.square(40),
 
               ],
+
 
               child: ListenableBuilder(
 
@@ -669,6 +738,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
                             SizedBox(),
 
+
                             Text(
 
                               'Name',
@@ -681,7 +751,9 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
                             ),
 
+
                             // create at
+
 
                             Text(
 
@@ -695,6 +767,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
                             ),
 
+
                             Text(
 
                               'Roles',
@@ -706,6 +779,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                               maxLines: 1,
 
                             ),
+
 
                             SizedBox(),
 
@@ -737,6 +811,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
                                 var model = filteredModels[index];
 
+
                                 return InkWell(
 
                                   highlightColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
@@ -750,7 +825,9 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
                                       //  BorderRadius.circular(8),
 
+
                                       // in first
+
 
                                       index == 0
 
@@ -798,6 +875,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
                                         ),
 
+
                                         Text(
 
                                           model.displayName.isNotEmpty ? model.displayName : "(No name)",
@@ -807,6 +885,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                           overflow: TextOverflow.ellipsis,
 
                                         ),
+
 
                                         // roles
 
@@ -820,6 +899,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                           overflow: TextOverflow.ellipsis,
 
                                         ),
+
 
                                         SizedBox(
 
@@ -838,6 +918,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                           ),
 
                                         ),
+
 
                                         MenuAnchor(
 
@@ -884,6 +965,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                                     onPressed: () async {
 
                                                       var updatedModel = await action.single?.call(context, model);
+
 
                                                       if (updatedModel != null) {
 
@@ -1033,7 +1115,9 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
                                           ),
 
+
                                           // refresh
+
 
                                           OutlinedButton(
 
@@ -1089,7 +1173,9 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
                                     else
 
+
                                     // you reached the end text
+
 
                                     if (models.value != null && models.value!.items.isNotEmpty)
 
@@ -1144,6 +1230,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
   // update station
 
+
   Future<void> showCreateModelDailog(BuildContext context) async {
 
     var child = Container(
@@ -1172,6 +1259,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
+
                   showUpdateModelDailog(context, model);
 
                 },
@@ -1182,7 +1270,9 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
           );
 
+
           Navigator.of(context).pop();
+
 
           // load();
 
@@ -1191,6 +1281,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       ),
 
     );
+
 
     await showDialog(
 
@@ -1227,6 +1318,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
   // update station
 
+
   Future<void> showUpdateModelDailog(BuildContext context, ProfileModel model) async {
 
     var child = Container(
@@ -1259,6 +1351,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
+
                     showUpdateModelDailog(context, model as M);
 
                   },
@@ -1269,7 +1362,9 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
             );
 
+
             Navigator.of(context).pop();
+
 
             // load();
 
@@ -1280,6 +1375,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       ),
 
     );
+
 
     await showDialog(
 
@@ -1316,103 +1412,153 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
   // // delete station, a simple dialog with a text and two buttons
 
+
   // Future<void> showDeleteModelDailog(BuildContext context, ProfileModel model) async {
+
 
   //   bool _loading = false;
 
+
   //   await showDialog(
+
 
   //     context: context,
 
+
   //     builder: (context) => AlertDialog(
+
 
   //       title: const Text('Confirm delete'),
 
+
   //       content: const Text('this action cannot be undone, are you sure you want to continue?'),
+
 
   //       actions: [
 
+
   //         TextButton(
+
 
   //           onPressed: () {
 
+
   //             Navigator.of(context).pop();
+
 
   //           },
 
+
   //           child: const Text('Cancel'),
+
 
   //         ),
 
+
   //         StatefulBuilder(builder: (context, setState) {
+
 
   //           return TextButton(
 
+
   //             onPressed: _loading
+
 
   //                 ? null
 
+
   //                 : () async {
 
+
   //                     setState(() {
+
 
   //                       _loading = true;
 
+
   //                     });
+
 
   //                     try {
 
+
   //                       await widget.repository.delete(DeleteRequest(model.ref.id));
+
 
   //                       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
 
+
   //                         SnackBar(
+
 
   //                             behavior: SnackBarBehavior.floating,
 
+
   //                             width: 400.0,
+
 
   //                             content: Text('${model.ref.id} deleted'),
 
+
   //                             action: SnackBarAction(
+
 
   //                               label: 'Close',
 
+
   //                               onPressed: () {
+
 
   //                                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
+
   //                               },
+
 
   //                             )),
 
+
   //                       );
+
 
   //                       Navigator.of(context).pop();
 
+
   //                       load();
+
 
   //                     } catch (e) {}
 
+
   //                     setState(() {
+
 
   //                       _loading = false;
 
+
   //                     });
+
 
   //                   },
 
+
   //             child: _loading ? const CircularProgressIndicator.adaptive() : const Text('Delete'),
+
 
   //           );
 
+
   //         }),
+
 
   //       ],
 
+
   //     ),
 
+
   //   );
+
 
   // }
 
@@ -1435,11 +1581,13 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
           // edit
 
+
           IconButton(
 
             onPressed: () {
 
               Navigator.of(context).pop();
+
 
               showUpdateModelDailog(context, model);
 
@@ -1448,6 +1596,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
             icon: const Icon(FluentIcons.edit_16_regular),
 
           ),
+
 
           const SizedBox(
 
@@ -1461,8 +1610,8 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
     );
 
-    await showDialog(
 
+    await showDialog(
       context: context,
 
       builder: (context) {
@@ -1500,13 +1649,18 @@ class ModelListView<M extends Model> extends StatefulWidget {
 
   final ModelListViewController<M> controller;
 
+
   final bool enableSelectOnTap;
+
 
   final Widget? header;
 
+
   final double gap;
 
+
   final Widget Function(M model)? itemBuilder;
+
 
   final List<
 
@@ -1520,17 +1674,24 @@ class ModelListView<M extends Model> extends StatefulWidget {
 
       })>? flexTableItemBuilders;
 
+
   final bool useFlexTable;
+
 
   final List<FlexTableItemConfig> flexTableConfigs;
 
+
   final Widget? flexTableHeader;
+
 
   final void Function(M model)? onModelTap;
 
+
   final void Function()? onAddPressed;
 
+
   // final List<({Icon icon, String label, Future<Null> Function() onTap})>? addOptions;
+
 
   const ModelListView({
 
@@ -1542,7 +1703,9 @@ class ModelListView<M extends Model> extends StatefulWidget {
 
     this.header,
 
+
     // this.addOptions,
+
 
     this.gap = 14,
 
@@ -1584,12 +1747,15 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
   /// [_allowMultipleFilters]
 
+
   /// its good tool but in maney cases it requires creating a new index in firestore
+
 
   bool _allowMultipleFilters = false;
 
 
   var searchController = TextEditingController();
+
 
   @override
 
@@ -1601,6 +1767,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
     });
 
+
     super.initState();
 
   }
@@ -1610,9 +1777,12 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
     var models = selectedModels.toList();
 
+
     var raw = "[${models.map((e) => jsonEncode(e.toJson(),
 
+
             // in case of time stamp
+
 
             toEncodable: (object) {
 
@@ -1624,7 +1794,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
         })).join(",")}]";
 
+
     var rawAsBytes = const Utf8Codec(allowMalformed: true).encode(raw);
+
 
     String? dir;
 
@@ -1658,6 +1830,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
       );
 
     }
+
 
     return dir;
 
@@ -1754,7 +1927,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                       // n/ infinty symbol
 
+
                                       "${value?.models?.length}/${value?.count ?? "∞"}",
+
 
                                       style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
 
@@ -1772,6 +1947,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                       ),
 
+
                       if (widget.onAddPressed != null)
 
                         SizedBox(
@@ -1788,7 +1964,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                         ),
 
+
                       // export/import
+
 
                       const SizedBox(
 
@@ -1796,25 +1974,36 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                       ),
 
+
                       // TextButton.icon(
+
 
                       //   onPressed: () {
 
+
                       //     showModelExportDialog(context, widget.controller);
+
 
                       //   },
 
+
                       //   label: const Text('Export'),
+
 
                       //   icon: const Icon(
 
+
                       //     FluentIcons.archive_32_regular,
+
 
                       //     size: 18,
 
+
                       //   ),
 
+
                       // ),
+
 
                       MenuAnchor(
 
@@ -1828,7 +2017,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                             ),
 
+
                             onPressed: () => controller.isOpen ? controller.close() : controller.open(),
+
 
                             // label: Text(value!.searchQuery!.field),
 
@@ -1838,7 +2029,8 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                         menuChildren: [
 
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
+
 
                           MenuItemButton(
 
@@ -1860,35 +2052,50 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                           ),
 
+
                           // MenuItemButton(
+
 
                           //   leadingIcon: const Icon(
 
+
                           //     FluentIcons.archive_arrow_back_16_regular,
+
 
                           //     size: 18,
 
+
                           //   ),
+
 
                           //   onPressed: () {
 
+
                           //     // showModelImportDialog(context, widget.controller);
+
 
                           //   },
 
+
                           //   child: const Text('Import'),
+
 
                           // ),
 
-                          Divider(),
+
+                          const Divider(),
+
 
                           Container(
 
                             // min width is 300
 
+
                             constraints: const BoxConstraints(minWidth: 250),
 
-                            padding: EdgeInsets.all(12),
+
+                            padding: const EdgeInsets.all(12),
+
 
                             child: Row(
 
@@ -1904,9 +2111,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                   child: AppTextFormField(
 
-                                    decoration: InputDecoration(
+                                    decoration: const InputDecoration(
 
-                                      prefixIcon: SizedBox(child: const Icon(FluentIcons.search_20_regular)),
+                                      prefixIcon: SizedBox(child: Icon(FluentIcons.search_20_regular)),
 
                                       label: Text('Limit'),
 
@@ -1950,7 +2157,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                           ),
 
+
                           // alow multiple filter combinations
+
 
                           SwitchListTile(
 
@@ -1970,7 +2179,8 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                           ),
 
-                          SizedBox(height: 8),
+
+                          const SizedBox(height: 8),
 
                         ],
 
@@ -1984,6 +2194,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
 
                 // /// filters chips
+
 
                 SliverToBoxAdapter(
 
@@ -2075,7 +2286,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                     TextButton.icon(
 
-                                      style: TextButton.styleFrom(shape: RoundedRectangleBorder()),
+                                      style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
 
                                       onPressed: () => widget.controller.unselectAll(),
 
@@ -2101,11 +2312,12 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                     TextButton.icon(
 
-                                      style: TextButton.styleFrom(shape: RoundedRectangleBorder()),
+                                      style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
 
                                       onPressed: () {
 
                                         // _exportModels(widget.controller.value!.selectedModels);
+
 
                                         showModelExportDialog(context, widget.controller, widget.controller.value!.selectedModels.toList());
 
@@ -2133,7 +2345,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                     TextButton.icon(
 
-                                      style: TextButton.styleFrom(shape: RoundedRectangleBorder()),
+                                      style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
 
                                       onPressed: () {
 
@@ -2165,25 +2377,33 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                       TextButton(
 
-                                        style: TextButton.styleFrom(shape: RoundedRectangleBorder()),
+                                        style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
+
 
                                         onPressed: () async {
 
                                           await action.multiple!(context, widget.controller.value!.selectedModels.toList());
 
+
                                           // TODO: refresh after done
+
 
                                           // widget.controller.load();
 
                                         },
 
+
                                         child: Text(action.label),
+
 
                                         // icon: action.icon == null? SizedBox() : Icon(
 
+
                                         //   action.icon!,
 
+
                                         //   size: 18,
+
 
                                         // ),
 
@@ -2205,11 +2425,15 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                           width: 300,
 
+
                           height: 40,
+
 
                           // max with is view port -50
 
+
                           constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 50),
+
 
                           child: Center(
 
@@ -2217,7 +2441,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                               controller: searchController,
 
+
                               // enabled: !loading.value,
+
 
                               onSubmitted: (String value) {
 
@@ -2233,9 +2459,11 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                 );
 
+
                                 widget.controller.search();
 
                               },
+
 
                               onChanged: (String value) async {
 
@@ -2243,9 +2471,11 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                               },
 
+
                               decoration: InputDecoration(
 
                                 prefixIcon: const Icon(FluentIcons.search_24_regular),
+
 
                                 label: Text(
 
@@ -2257,9 +2487,12 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                 ),
 
+
                                 alignLabelWithHint: true,
 
+
                                 // select search field
+
 
                                 suffixIcon: value?.searchQuery == null
 
@@ -2277,7 +2510,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                             ),
 
+
                                             onPressed: () => controller.open(),
+
 
                                             // label: Text(value!.searchQuery!.field),
 
@@ -2343,7 +2578,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                   bool isActive = filter.active ?? false;
 
+
                                   bool isFixed = filter.fixed ?? false;
+
 
                                   return GestureDetector(
 
@@ -2421,7 +2658,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                 var filter = await showFilterWizard(context, widget.controller.description);
 
+
                                 print(filter);
+
 
                                 if (filter != null) {
 
@@ -2457,123 +2696,183 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                 ),
 
+
                 // put the past widget here, but un sliver
+
 
                 // SliverToBoxAdapter(
 
+
                 //   child: Padding(
+
 
                 //     padding: EdgeInsets.only( left: widget.gap, right: widget.gap),
 
+
                 //     child: Row(
+
 
                 //       children: [
 
+
                 //         Expanded(
+
 
                 //           child: AppTextFormField.min(
 
+
                 //             controller: searchController,
+
 
                 //             // enabled: !loading.value,
 
+
                 //             onSubmitted: (String value) {
+
 
                 //               widget.controller.value = widget.controller.value!.copyWith(
 
+
                 //                 searchQuery: SearchQuery(
+
 
                 //                   field: widget.controller.value!.searchQuery?.field ?? widget.controller.description.fields.firstOrNull?.name ?? "",
 
+
                 //                   value: value,
+
 
                 //                 ),
 
+
                 //               );
+
 
                 //               widget.controller.search();
 
+
                 //             },
+
 
                 //             onChanged: (String value) async {
 
+
                 //               widget.controller.setSearchQueryValue(value);
+
 
                 //             },
 
+
                 //             decoration: InputDecoration(
+
 
                 //               prefixIcon: const Icon(FluentIcons.search_24_regular),
 
+
                 //               label: const Text('Search'),
+
 
                 //               alignLabelWithHint: true,
 
+
                 //               // select search field
+
 
                 //               suffixIcon: value?.searchQuery == null
 
+
                 //                   ? null
+
 
                 //                   : MenuAnchor(
 
+
                 //                       builder: (context, controller, child) {
+
 
                 //                         return TextButton.icon(
 
+
                 //                           icon: const Icon(
+
 
                 //                             FluentIcons.filter_24_regular,
 
+
                 //                           ),
+
 
                 //                           onPressed: () => controller.open(),
 
+
                 //                           label: Text(value!.searchQuery!.field),
+
 
                 //                         );
 
+
                 //                       },
+
 
                 //                       menuChildren: [
 
+
                 //                         for (var field in widget.controller.description.fields)
+
 
                 //                           MenuItemButton(
 
+
                 //                             leadingIcon: const Icon(FeatherIcons.user),
+
 
                 //                             trailingIcon: value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
 
+
                 //                             onPressed: value.searchQuery!.field == field
+
 
                 //                                 ? null
 
+
                 //                                 : () {
+
 
                 //                                     widget.controller.setSearchQueryField(field.name);
 
+
                 //                                   },
+
 
                 //                             child: Text(field.name.titleCase),
 
+
                 //                           ),
+
 
                 //                       ],
 
+
                 //                     ),
+
 
                 //             ),
 
+
                 //           ),
+
 
                 //         ),
 
+
                 //       ],
+
 
                 //     ),
 
+
                 //   ),
+
 
                 // ),
 
@@ -2702,11 +3001,15 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                       M? prevModel = index == 0 ? null : widget.controller.filtered![index - 1];
 
+
                       M? nextModel = index == widget.controller.filtered!.length - 1 ? null : widget.controller.filtered![index + 1];
+
 
                       var model = widget.controller.filtered![index];
 
+
                       var tile = widget.controller.description.tileBuilder(model);
+
 
                       return Padding(
 
@@ -2794,6 +3097,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                     if (tile.leading != null) tile.leading! else const SizedBox(),
 
+
                                     Text(
 
                                       tile.title ?? "(No title)",
@@ -2803,6 +3107,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                       overflow: TextOverflow.ellipsis,
 
                                     ),
+
 
                                     Text(
 
@@ -2814,7 +3119,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                     ),
 
+
                                     // create at
+
 
                                     Text(
 
@@ -2870,22 +3177,10 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                         ),
 
-                                        // copy ref button
-                                        MenuItemButton(
-                                          onPressed: () async {
-                                            await Clipboard.setData(ClipboardData(text: model.ref.path));
 
-                                            ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                                              SnackBar(
-                                                behavior: SnackBarBehavior.floating,
-                                                width: 400.0,
-                                                content: Text('ref copied to clipboard'),
-                                              ),
-                                            );
-                                          },
-                                          leadingIcon: Icon(FluentIcons.copy_24_regular),
-                                          child: Text("Copy ref"),
-                                        ),
+                                        // copy ref button
+
+
 
                                         if (widget.controller.description.groupedActions.keys.isNotEmpty) ...[
 
@@ -2898,6 +3193,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                                 onPressed: () async {
 
                                                   var updatedModel = await action.single?.call(context, model);
+
 
                                                   if (updatedModel != null) {
 
@@ -2918,6 +3214,37 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                           ]
 
                                         ],
+
+
+
+                                        MenuItemButton(
+
+                                          onPressed: () async {
+
+                                            await Clipboard.setData(ClipboardData(text: model.ref.path));
+                                            ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+
+                                              const SnackBar(
+
+                                                behavior: SnackBarBehavior.floating,
+
+                                                width: 400.0,
+
+                                                content: Text('ref copied to clipboard'),
+
+                                              ),
+
+                                            );
+
+                                          },
+
+                                          leadingIcon: const Icon(FluentIcons.copy_24_regular),
+
+                                          child: const Text("Copy ref"),
+
+                                        ),
+                                        
+
 
                                         const SizedBox(
 
@@ -3000,6 +3327,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                     // refresh
 
+
                                     OutlinedButton(
 
                                       onPressed: () async {
@@ -3012,7 +3340,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                     ),
 
+
                                     // clear search
+
 
                                     if (widget.controller.value!.searchQuery != null)
 
@@ -3022,6 +3352,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                           searchController.clear();
 
+
                                           await widget.controller.clearSearch();
 
                                         },
@@ -3030,7 +3361,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                       ),
 
+
                                     // un select filters
+
 
                                     if (widget.controller.value!.filters.isNotEmpty)
 
@@ -3070,7 +3403,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                             ))
 
+
                           // if controller.filtered is empty but controller.value is not empty suggest to clear searchQuery
+
 
                           else if (widget.controller.value?.models != null && widget.controller.value!.models!.isEmpty && widget.controller.value!.searchQuery != null)
 
@@ -3094,7 +3429,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                 ),
 
+
                                 // refresh
+
 
                                 if (searchController.text.isNotEmpty)
 
@@ -3103,6 +3440,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                     onPressed: () async {
 
                                       searchController.clear();
+
 
                                       await widget.controller.clearSearch();
 
@@ -3138,7 +3476,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                 ),
 
+
                                 // refresh
+
 
                                 OutlinedButton(
 
@@ -3154,25 +3494,36 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                           else if (widget.controller.value?.hasNext == true)
 
+
                             // VisibilityDetector(
+
 
                             //   key: Key(controller..toString()),
 
+
                             //   onVisibilityChanged: (info) {
+
 
                             //     if (info.visibleFraction > 0) {
 
+
                             //       search(startAfter: [
+
 
                             //         Timestamp.fromDate(nextStartAt!)
 
+
                             //       ]);
+
 
                             //     }
 
+
                             //   },
 
+
                             //   child:
+
 
                             OutlinedButton.icon(
 
@@ -3188,11 +3539,15 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                             )
 
+
                           // )
+
 
                           else
 
+
                           // you reached the end text
+
 
                           if (widget.controller.value?.models != null && widget.controller.value!.models!.isNotEmpty)
 
@@ -3220,299 +3575,447 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                 ),
 
+
                 // Expanded(
+
 
                 //   child: RefreshIndicator.adaptive(
 
+
                 //     triggerMode: RefreshIndicatorTriggerMode.anywhere,
+
 
                 //     onRefresh: widget.controller.load,
 
+
                 //     child: Stack(
+
 
                 //       children: [
 
+
                 //         Positioned.fill(
+
 
                 //           child: Padding(
 
+
                 //             padding: EdgeInsets.symmetric(horizontal: widget.gap),
+
 
                 //             child: Column(
 
+
                 //               mainAxisSize: MainAxisSize.min,
+
 
                 //               mainAxisAlignment: MainAxisAlignment.center,
 
+
                 //               children: [
+
 
                 //                 if (widget.controller.filtered != null)
 
+
                 //                   Expanded(
+
 
                 //                     child: ListView.builder(
 
+
                 //                       // physics: const NeverScrollableScrollPhysics(),
+
 
                 //                       // shrinkWrap: true,
 
+
                 //                       itemCount: widget.controller.filtered!.length,
+
 
                 //                       itemBuilder: (context, index) {
 
+
                 //                         var model = widget.controller.filtered![index];
+
 
                 //                         var tile = widget.controller.description.tileBuilder(model);
 
+
                 //                         return widget.itemBuilder?.call(model) ??
+
 
                 //                             ModelTile(
 
+
                 //                               selected: widget.controller.value!.selectedModels.contains(model),
+
 
                 //                               onTap: () {
 
+
                 //                                 widget.onModelTap?.call(model);
+
 
                 //                               },
 
+
                 //                               child: FlexTableItem(
+
 
                 //                                 selected: widget.controller.value!.selectedModels.contains(model),
 
+
                 //                                 onSelectChanged: (val) {
+
 
                 //                                   if (val == true) {
 
+
                 //                                     widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
+
 
                 //                                       ...widget.controller.value!.selectedModels,
 
+
                 //                                       model
 
+
                 //                                     });
+
 
                 //                                   } else {
 
+
                 //                                     widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
+
 
                 //                                       ...widget.controller.value!.selectedModels..remove(model),
 
+
                 //                                     });
+
 
                 //                                   }
 
+
                 //                                 },
+
 
                 //                                 children: [
 
+
                 //                                   if (widget.flexTableItemBuilders != null) ...[
+
 
                 //                                     for (var item in widget.flexTableItemBuilders!) item.builder(model),
 
+
                 //                                   ] else ...[
+
 
                 //                                     if (tile.leading != null) tile.leading! else const SizedBox(),
 
+
                 //                                     Text(
+
 
                 //                                       tile.title ?? "(No title)",
 
+
                 //                                       maxLines: 1,
+
 
                 //                                       overflow: TextOverflow.ellipsis,
 
+
                 //                                     ),
 
+
                 //                                     Text(
+
 
                 //                                       tile.subtitle ?? "(No subtitle)",
 
+
                 //                                       maxLines: 1,
+
 
                 //                                       overflow: TextOverflow.ellipsis,
 
+
                 //                                     ),
+
 
                 //                                     // create at
 
+
                 //                                     Text(
+
 
                 //                                       timeago.format(model.updatedAt.toLocal()),
 
+
                 //                                       style: const TextStyle(fontWeight: FontWeight.bold),
+
 
                 //                                       overflow: TextOverflow.ellipsis,
 
+
                 //                                       maxLines: 1,
+
 
                 //                                     ),
 
+
                 //                                   ],
+
 
                 //                                   if (tile.trailing != null)
 
+
                 //                                     tile.trailing!
+
 
                 //                                   else
 
+
                 //                                     MenuAnchor(
+
 
                 //                                       builder: (context, controller, child) {
 
+
                 //                                         return IconButton(
+
 
                 //                                           onPressed: () {
 
+
                 //                                             if (controller.isOpen) {
+
 
                 //                                               controller.close();
 
+
                 //                                             } else {
+
 
                 //                                               controller.open();
 
+
                 //                                             }
+
 
                 //                                           },
 
+
                 //                                           icon: const Icon(Icons.more_vert),
+
 
                 //                                         );
 
+
                 //                                       },
+
 
                 //                                       menuChildren: [
 
+
                 //                                         const SizedBox(
+
 
                 //                                           height: 8,
 
+
                 //                                         ),
+
 
                 //                                         if (widget.controller.description.groupedActions.keys.isNotEmpty) ...[
 
+
                 //                                           for (var group in widget.controller.description.groupedActions.keys) ...[
+
 
                 //                                             for (var action in widget.controller.description.groupedActions[group]!)
 
+
                 //                                               MenuItemButton(
+
 
                 //                                                 onPressed: () => action.single?.call(model),
 
+
                 //                                                 leadingIcon: action.icon,
+
 
                 //                                                 child: Text(action.label),
 
+
                 //                                               ),
+
 
                 //                                             const Divider()
 
+
                 //                                           ]
+
 
                 //                                         ],
 
+
                 //                                         const SizedBox(
+
 
                 //                                           height: 8,
 
+
                 //                                         ),
+
 
                 //                                       ],
 
+
                 //                                     )
+
 
                 //                                 ],
 
+
                 //                               ),
+
 
                 //                             );
 
+
                 //                       },
+
 
                 //                     ),
 
+
                 //                   ),
+
 
                 //               ],
 
+
                 //             ),
 
+
                 //           ),
+
 
                 //         ),
 
+
                 //         if (widget.controller.value?.selectedModels.isNotEmpty == true)
+
 
                 //           Positioned(
 
+
                 //             left: 0,
+
 
                 //             right: 0,
 
+
                 //             bottom: 0,
+
 
                 //             child: Center(
 
+
                 //               child: Container(
+
 
                 //                 // constraints: BoxConstraints(maxWidth: 600),
 
+
                 //                 margin: EdgeInsets.all(12),
+
 
                 //                 // height: 50,
 
+
                 //                 child: Material(
+
 
                 //                   // color: Theme.of(context).colorScheme.primary,
 
+
                 //                   borderRadius: BorderRadius.circular(50),
+
 
                 //                   child: Padding(
 
+
                 //                     padding: const EdgeInsets.all(8.0),
+
 
                 //                     child: Row(
 
+
                 //                       children: [
+
 
                 //                         IconButton(onPressed: () {}, icon: Icon(Icons.close)),
 
+
                 //                         for (var action in widget.controller.description.actions.where((e) => e.multiple != null))
+
 
                 //                           TextButton.icon(
 
+
                 //                             onPressed: () {
+
 
                 //                               // action.multiple?.call(controller.value!.selectedModels);
 
+
                 //                             },
+
 
                 //                             icon: action.icon ?? const SizedBox(),
 
+
                 //                             label: Text(action.label),
+
 
                 //                           ),
 
+
                 //                       ],
+
 
                 //                     ),
 
+
                 //                   ),
+
 
                 //                 ),
 
+
                 //               ),
+
 
                 //             ),
 
+
                 //           ),
+
 
                 //       ],
 
+
                 //     ),
 
+
                 //   ),
+
 
                 // ),
 
@@ -3522,7 +4025,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
           );
 
+
           if (!widget.useFlexTable) return child;
+
 
           return FlexTable(
 
@@ -3586,13 +4091,18 @@ class ModelTile extends StatelessWidget {
 
   final Widget child;
 
+
   final VoidCallback? onTap;
+
 
   final bool selected;
 
+
   final bool prevSelected;
 
+
   final bool nextSelected;
+
 
   final bool isOdd;
 
@@ -3623,11 +4133,15 @@ class ModelTile extends StatelessWidget {
 
         padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
 
+
         // child: Text("${prevSelected}/${nextSelected}"),
+
 
         child: child,
 
+
         // when selected
+
 
         decoration: selected
 
@@ -3658,26 +4172,35 @@ class ModelTile extends StatelessWidget {
 
 typedef LocalFilterBuilder<T extends Model> = bool Function(T model);
 
+
 typedef RemoteFilterBuilder<T extends Model> = Query<T> Function(Query<T> query);
+
 
 typedef RemoteJsonFilterBuilder = Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> query);
 
 
 /// [IndexViewFilter] is a class to hold the state of the filter
 
+
 class IndexViewFilter<T extends Model> {
 
   final String name;
 
+
   final LocalFilterBuilder<T> local;
+
 
   final RemoteJsonFilterBuilder remote;
 
+
   final bool active;
+
 
   final bool fixed;
 
+
   final bool strict;
+
 
   const IndexViewFilter({
 
@@ -3756,17 +4279,24 @@ class IndexViewFilter<T extends Model> {
 
 // typedef IndexViewFilter<M extends Model> = ({
 
+
 //   bool? active,
+
 
 //   bool? fixed,
 
+
 //   bool Function(M)? local,
+
 
 //   Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>>)? remote,
 
+
 //   String name,
 
+
 // });
+
 
 typedef ModelIndexType<M extends Model> = (
 
@@ -3779,32 +4309,44 @@ typedef ModelIndexType<M extends Model> = (
 
 /// [ModelListViewValue] is a class to hold the state of the view
 
+
 class ModelListViewValue<M extends Model> {
 
   final bool loading;
 
+
   final bool forceFilter;
+
 
   final bool hasNext;
 
+
   final int? count;
+
 
   final List<M>? models;
 
+
   final SearchQuery? searchQuery;
+
 
   final List<IndexViewFilter<M>> filters;
 
+
   final Set<M> selectedModels;
+
 
   final List<ModelIndexType<M>> history;
 
+
   final Map<String, dynamic> metadata;
+
 
   final String? error;
 
 
   /// [limit] (max items loaded each time)
+
 
   final int limit;
 
@@ -3901,13 +4443,17 @@ class ModelListViewValue<M extends Model> {
 
 /// [ModelListViewController] just like other controllers in flutter
 
+
 class ModelListViewController<M extends Model> extends ValueNotifier<ModelListViewValue<M>?> {
 
   final ModelDescription<M> description;
 
+
   // where
 
+
   final bool Function(M model)? where;
+
 
   ModelListViewController({ModelListViewValue<M>? value, required this.description, this.where})
 
@@ -3928,6 +4474,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// need index error
 
+
   ({
 
     String name,
@@ -3939,6 +4486,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// [setLimit] is a function to set the limit
 
+
   void setLimit(int limit) {
 
     value = value?.copyWith(
@@ -3947,6 +4495,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
     );
 
+
     notifyListeners();
 
   }
@@ -3954,9 +4503,11 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// [search] is a function to search for models
 
+
   Future<void> search({Iterable<String>? startAfter, bool concat = false, int? limit}) async {
 
     needIndexError = null;
+
 
     value = (value ?? ModelListViewValue<M>()).copyWith(
 
@@ -3966,7 +4517,9 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
     );
 
+
     limit = limit ?? value!.limit;
+
 
     try {
 
@@ -3982,11 +4535,13 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
             var strict = false;
 
+
             if (value?.filters.isEmpty == false) {
 
               for (var filter in value!.filters) {
 
                 if (!filter.active) continue;
+
 
                 if (filter.strict) {
 
@@ -3994,7 +4549,9 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
                 }
 
+
                 var d = filter.remote.call(query);
+
 
                 if (d != null) {
 
@@ -4006,6 +4563,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
             }
 
+
             return query;
 
           },
@@ -4016,7 +4574,9 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
       );
 
+
       notifyListeners();
+
 
       var _models = await getModelCollection(
 
@@ -4032,11 +4592,13 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
           var strict = false;
 
+
           if (value?.filters.isEmpty == false) {
 
             for (var filter in value!.filters) {
 
               if (!filter.active) continue;
+
 
               if (filter.strict) {
 
@@ -4044,7 +4606,9 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
               }
 
+
               var d = filter.remote.call(query);
+
 
               if (d != null) {
 
@@ -4056,6 +4620,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
           }
 
+
           return query;
 
         },
@@ -4063,6 +4628,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         limit: limit,
 
       );
+
 
       if (_models.length < limit) {
 
@@ -4075,13 +4641,16 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
         // check if the first item equal to the last item in the current models
 
+
         if (value?.models?.lastOrNull != null && value!.models!.lastOrNull!.ref.path == _models.firstOrNull?.ref.path) {
 
           // delete the last item
 
+
           value!.models!.removeAt(value!.models!.length - 1);
 
         }
+
 
         value = value!.copyWith(
 
@@ -4111,7 +4680,9 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
     }
 
+
     // need index error from firebase
+
 
     on FirebaseException catch (e) {
 
@@ -4119,9 +4690,12 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
         var data = e.message!.split("https");
 
+
         var message = data[0];
 
+
         var url = "https${data[1]}";
+
 
         needIndexError = (
 
@@ -4130,6 +4704,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
           url: url,
 
         );
+
 
         value = value?.copyWith(
 
@@ -4168,12 +4743,14 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
     /// sync selected models
 
+
     syncSelectedModels();
 
   }
 
 
   /// remove selected items that are not in the list
+
 
   void syncSelectedModels() {
 
@@ -4188,6 +4765,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// [load] is a function to load models
 
+
   Future<void> load() async {
 
     return search();
@@ -4197,13 +4775,16 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// [more] is a function to load more models
 
+
   Future<void> more() async {
 
     return search(startAfter: [
 
       if (value?.models?.last.ref.path != null) value!.models!.last.ref.path
 
+
       // why 3 seconds? because we are not really sure about the date are the same
+
 
       // Timestamp.fromDate((value?.models?.last.updatedAt ?? DateTime.now()).add(const Duration(seconds: 3)))
 
@@ -4214,14 +4795,17 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// [models] getter to get the models
 
+
   List<M>? get models => value?.models;
 
 
   /// [filtered] is a function to get the filtered models
 
+
   List<M>? get filtered {
 
     print(where);
+
 
     if (models == null) {
 
@@ -4229,11 +4813,13 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
     }
 
+
     bool _filters(M model) {
 
       for (var filter in value?.filters ?? <IndexViewFilter<M>>[]) {
 
         if (!filter.active) continue;
+
 
         if (filter.local != null) {
 
@@ -4247,6 +4833,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
       }
 
+
       return where?.call(model) ?? true;
 
     }
@@ -4258,7 +4845,9 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
     }
 
+
     // search in display name and email and phone number and uid
+
 
     return models!.where((model) {
 
@@ -4268,7 +4857,9 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
       }
 
+
       var query = value?.searchQuery?.value?.toLowerCase();
+
 
       if (query != null) {
 
@@ -4287,17 +4878,21 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// [activateFilter]
 
+
   Future<void> updateFilter(IndexViewFilter<M> filter, bool allowMultipleFilters) async {
 
     // check filter if extst, take the index and activat it
 
+
     var index = value!.filters.indexWhere((f) => f.name == filter.name);
+
 
     if (index >= 0) {
 
       if (value?.forceFilter == true) {
 
         var currentActive = value!.filters.where((e) => e.active).firstOrNull;
+
 
         if (currentActive != null && currentActive.name == filter.name && filter.active == false) {
 
@@ -4307,6 +4902,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
       }
 
+
       value!.filters[index] = filter;
 
     } else {
@@ -4314,6 +4910,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       value!.filters.add(filter);
 
     }
+
 
     if (!allowMultipleFilters) {
 
@@ -4325,13 +4922,18 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
     }
 
+
     // value = value?.copyWith(
+
 
     //   // disable all filters except the one we want to activate and add it to the list
 
+
     //   filters: value!.filters.map((e) => e.copyWith(active: e.name == filter.name && filter.active)).toList(),
 
+
     // );
+
 
     await search();
 
@@ -4340,11 +4942,13 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// remove filter
 
+
   Future<void> removeFilter(IndexViewFilter<M> filter) async {
 
     if (value?.forceFilter == true) {
 
       // if no active filters prevent from removing
+
 
       if (value!.filters.where((e) => e.active).length <= 1) {
 
@@ -4354,11 +4958,13 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
     }
 
+
     value = value?.copyWith(
 
       filters: value!.filters.where((e) => e.name != filter.name).toList(),
 
     );
+
 
     await search();
 
@@ -4366,6 +4972,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
 
   /// replaceModel
+
 
   void replaceModel(M oldModel, M newModel) {
 
@@ -4379,6 +4986,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
 
   /// [addModel]
+
 
   void addModel(M model) {
 
@@ -4399,6 +5007,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// [clearFilters]
 
+
   Future<void> clearFilters({bool refresh = true}) async {
 
     value = value?.copyWith(
@@ -4407,12 +5016,14 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
     );
 
+
     if (refresh) await search();
 
   }
 
 
   /// [clearSearch]
+
 
   Future<void> clearSearch({bool refresh = true}) async {
 
@@ -4428,6 +5039,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
     );
 
+
     await search();
 
   }
@@ -4435,12 +5047,15 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// [history]
 
+
   Map<M, bool> history = {};
 
 
   /// to make sure that the controller is mounted on the view
 
+
   var _mounted = false;
+
 
   bool get mounted => _mounted;
 
@@ -4489,6 +5104,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// selectAll
 
+
   void selectAll() {
 
     value = value?.copyWith(
@@ -4501,6 +5117,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
 
   /// unselectAll
+
 
   void unselectAll() {
 
@@ -4519,9 +5136,12 @@ enum FieldGroup {
 
   primary,
 
+
   secondary,
 
+
   metadata,
+
 
   hidden,
 
@@ -4532,53 +5152,78 @@ enum FieldType {
 
   number,
 
+
   text,
+
 
   date,
 
+
   time,
+
 
   datetime,
 
+
   email,
+
 
   phone,
 
+
   url,
+
 
   image,
 
+
   file,
+
 
   color,
 
+
   boolean,
+
 
   reference,
 
+
   listNumber,
+
 
   listText,
 
+
   listDate,
+
 
   listTime,
 
+
   listDatetime,
+
 
   listEmail,
 
+
   listPhone,
+
 
   listUrl,
 
+
   listImage,
+
 
   listFile,
 
+
   listColor,
 
+
   listBoolean,
+
 
   listReference,
 
@@ -4587,27 +5232,38 @@ enum FieldType {
 
 /// FieldDescription
 
+
 class FieldDescription<M> {
 
   final String name;
 
+
   final String path;
+
 
   final bool nullable;
 
+
   final String? details;
+
 
   final FieldGroup group;
 
+
   // type
+
 
   final FieldType type;
 
+
   // mapping
+
 
   final Object? Function(M model) map;
 
+
   final Widget Function(M model)? builder;
+
 
   final Widget Function(M model)? header;
 
@@ -4636,6 +5292,7 @@ class FieldDescription<M> {
 
 
   /// copyWith
+
 
   FieldDescription<M> copyWith({
 
@@ -4718,32 +5375,44 @@ class FieldDescription<M> {
 
 /// [ModelDescription] is a class to describe a model
 
+
 class ModelDescription<T extends Model> {
 
   // fields to search in
 
+
   final Set<FieldDescription<T>> fields;
+
 
   // name of the collection
 
+
   final String name;
+
 
   // path to collection
 
+
   final String path;
+
 
   // fromJson
 
+
   final T Function(Map<String, dynamic> data) fromJson;
 
+
   // semantics (general title, description, icon, etc..)
+
 
   final ModelGeneralData Function(T model) tileBuilder;
 
 
   /// actions
 
+
   final List<ModelAction<T>> actions;
+
 
   const ModelDescription({
 
@@ -4761,9 +5430,11 @@ class ModelDescription<T extends Model> {
 
   });
 
+
   Map<String, List<ModelAction<T>>> get groupedActions {
 
     var map = <String, List<ModelAction<T>>>{};
+
 
     for (var action in actions) {
 
@@ -4772,6 +5443,7 @@ class ModelDescription<T extends Model> {
         continue;
 
       }
+
 
       if (map.containsKey(action.group)) {
 
@@ -4789,12 +5461,14 @@ class ModelDescription<T extends Model> {
 
     }
 
+
     return map;
 
   }
 
 
   // copyWith
+
 
   ModelDescription<T> copyWith({
 
@@ -4837,11 +5511,15 @@ class ModelGeneralData {
 
   final String? title;
 
+
   final String? subtitle;
+
 
   final Widget? leading;
 
+
   final Widget? trailing;
+
 
   ModelGeneralData({
 
@@ -4860,31 +5538,41 @@ class ModelGeneralData {
 
 /// [showFilterWizard] is a function to show a filter wizard dailog
 
+
 /// it is very useful to create a filter
+
 
 /// it contains a list of fields and a list of operators
 
+
 /// the operation dropdown will change based on the field selected
 
+
 /// the value field will change based on the operator selected
+
 
 Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext context, ModelDescription<M> description) async {
 
   // var _operator = QueryOperations.equal;
+
 
   dynamic value;
 
 
   TextEditingController fieldController = TextEditingController();
 
+
   TextEditingController operatorController = TextEditingController();
 
+
   TextEditingController valueController = TextEditingController();
+
 
   FieldType fieldType = FieldType.text;
 
 
   FieldType? _fieldType() => description.fields.where((e) => e.name == fieldController.text).firstOrNull?.type;
+
 
   FieldDescription? _field() => description.fields.where((e) => e.name == fieldController.text).firstOrNull;
 
@@ -4915,6 +5603,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
 
               // field
 
+
               MenuAnchor(
 
                 builder: (context, controller, child) {
@@ -4939,13 +5628,18 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
 
                   );
 
+
                   // return TextButton.icon(
+
 
                   //   icon: const Icon(FluentIcons.filter_24_regular),
 
+
                   //   onPressed: () => controller.open(),
 
+
                   //   label: Text(_field?.name.titleCase ?? "Select field"),
+
 
                   // );
 
@@ -4971,6 +5665,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
 
                                 fieldController.text = field.path;
 
+
                                 fieldType = _fieldType() ?? fieldType;
 
                               });
@@ -4985,10 +5680,12 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
 
               ),
 
+
               const SizedBox(height: 8),
 
 
               // operator
+
 
               MenuAnchor(
 
@@ -5046,14 +5743,18 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
 
               ),
 
+
               const SizedBox(height: 8),
 
+
               // value type, depending on this it may show things to help
+
 
               // use filter chips
 
 
               // operator
+
 
               MenuAnchor(
 
@@ -5127,9 +5828,12 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
 
               ),
 
+
               const SizedBox(height: 8),
 
+
               // value
+
 
               if (fieldType == FieldType.text || fieldType == FieldType.number)
 
@@ -5143,7 +5847,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
 
                   decoration: InputDecoration(
 
-                    prefixIcon: Icon(FluentIcons.search_24_regular),
+                    prefixIcon: const Icon(FluentIcons.search_24_regular),
 
                     label: Text(fieldType.name.titleCase),
 
@@ -5162,6 +5866,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                   onChanged: (v) {
 
                     value = v;
+
 
                     setState(() {});
 
@@ -5183,6 +5888,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
 
                     DateTime? date;
 
+
                     if (fieldType == FieldType.date || fieldType == FieldType.datetime) {
 
                       date = await showDatePicker(
@@ -5199,6 +5905,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
 
                     }
 
+
                     if (fieldType == FieldType.time || fieldType == FieldType.datetime) {
 
                       var time = await showTimePicker(
@@ -5209,7 +5916,9 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
 
                       );
 
+
                       if (time == null) return null;
+
 
                       date = DateTime(
 
@@ -5226,6 +5935,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                       );
 
                     }
+
 
                     setState(() {
 
@@ -5285,6 +5995,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
 
                           if (_fieldType() == FieldType.number) value = num.tryParse(value) ?? value;
 
+
                           return _operator()!.remote(query: query, field: _field()?.name ?? fieldController.text, value: value);
 
                         },
@@ -5305,7 +6016,9 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
 
                       );
 
+
                       print(filter);
+
 
                       Navigator.of(context).pop<IndexViewFilter<M>>(filter);
 
@@ -5332,6 +6045,7 @@ class SearchFilter {
 
   final List<dynamic> query;
 
+
   const SearchFilter({required this.query});
 
 }
@@ -5339,25 +6053,34 @@ class SearchFilter {
 
 /// [showModelExportDialog]
 
+
 /// [showModelExportDialog] is a function to show a model export dialog
+
 
 /// it takes a [context] and a [controller]
 
+
 /// it will show a dialog with a list of fields to export
 
+
 /// it will export the data as a csv file
+
 
 Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelListViewController<M> controller, [List<M>? selectedModels]) async {
 
   var fields = controller.description.fields.toList();
 
+
   var selectedFields = fields.where((e) => e.group != FieldGroup.hidden).toList();
 
+
   var selectedFieldsController = TextEditingController(text: selectedFields.map((e) => e.path).join(","));
+
 
   getGelectedFields() {
 
     // just in case the user used arabic comma i added the replaceAll
+
 
     return selectedFieldsController.text.replaceAll("،", ",").split(",");
 
@@ -5365,6 +6088,7 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
 
 
   var limit = 100;
+
 
   await showDialog(
 
@@ -5385,6 +6109,7 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
             children: [
 
               // fields
+
 
               MenuAnchor(
 
@@ -5409,6 +6134,7 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
                     onChanged: (v) {
 
                       selectedFieldsController.text = v;
+
 
                       selectedFields = fields.where((e) => getGelectedFields().contains(e.path)).toList();
 
@@ -5454,9 +6180,12 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
 
               ),
 
+
               const SizedBox(height: 8),
 
+
               // limit
+
 
               if (selectedModels == null)
 
@@ -5506,37 +6235,49 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
 
                 var models = selectedModels;
 
+
                 if (models == null) {
 
                   await controller.search(limit: limit);
+
 
                   models = controller.value!.models;
 
                 }
 
+
                 // download directly
+
 
                 // var dir = await getExternalStorageDirectory();
 
+
                 var rawFields = selectedFieldsController.text.replaceAll("،", ",").split(",");
+
 
                 var raw = "${rawFields.join(";")}\n${models!.map((e) {
 
                   var data = <String>[];
 
+
                   for (var field in rawFields) {
 
                     // field coud be "name" or "name.first"
 
+
                     // use while loop to get the value and add it to the data
 
+
                     Map? map = e.toJson();
+
 
                     while (field.contains(".")) {
 
                       var key = field.split(".").first;
 
+
                       field = field.split(".").sublist(1).join(".");
+
 
                       if (map == null) {
 
@@ -5544,19 +6285,24 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
 
                       }
 
+
                       map = map[key];
 
                     }
+
 
                     data.add(map?[field]?.toString() ?? "");
 
                   }
 
+
                   return data.join(";");
 
                 }).join("\n")}";
 
+
                 var rawAsBytes = const Utf8Codec(allowMalformed: true).encode(raw);
+
 
                 String? dir;
 
@@ -5591,9 +6337,12 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
 
                 }
 
+
                 // show dailog with path
 
+
                 // ignore: use_build_context_synchronously
+
 
                 await showDialog(
 
@@ -5638,6 +6387,7 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
                   },
 
                 );
+
 
                 Navigator.of(context).pop();
 
