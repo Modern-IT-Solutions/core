@@ -58,6 +58,8 @@ dependencies:
   shared_preferences:
   google_fonts:
   gradient_borders: ^1.0.0
+  puncher:
+    # path: /Users/mohamad/Desktop/projects/kflutter/puncher
 
 dependency_overrides:
   http: ^1.0.0

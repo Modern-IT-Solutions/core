@@ -14,14 +14,23 @@ import 'package:flutter/services.dart';
 /// [ThemeService] responsible for database of the app content and users
 class ThemeService extends Service {
   /// [mode]
-  final Color colorSeed;
+  Color colorSeed;
+  /// [_blurEnabled]
+  bool _blurEnabled;
+  set blurEnabled(bool value) {
+    _blurEnabled = value;
+    notifyListeners();
+  }
+  bool get blurEnabled => _blurEnabled;
   ThemeService({
     super.id = 'DEFAULT',
     ThemeMode themeMode = ThemeMode.system,
     this.colorSeed = Colors.yellow,
     ThemeData? defaultTheme,
     ThemeData? defaultDarkTheme,
+    bool blurEnabled = true,
   })  : _themeMode = themeMode,
+        _blurEnabled = blurEnabled,
         _themeData = defaultTheme ??
             ThemeData(
               chipTheme: ChipThemeData(
