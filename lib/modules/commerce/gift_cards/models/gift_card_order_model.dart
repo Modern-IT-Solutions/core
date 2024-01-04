@@ -48,7 +48,7 @@ class GiftCardOrderModel with _$GiftCardOrderModel implements Model {
           path: "shipping.address.state",
           map: (m)=>m.shipping.address.state,
           type: FieldType.text,
-          group: FieldGroup.metadata,
+          group: FieldGroup.primary,
         ),
         FieldDescription(
           name: "uid",
