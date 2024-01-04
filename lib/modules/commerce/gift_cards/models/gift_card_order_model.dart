@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:core/core.dart';
 import 'package:core/modules/commerce/shipping/shipping_model.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'gift_card_order_model.freezed.dart';
@@ -108,7 +110,19 @@ class GiftCardOrderModel with _$GiftCardOrderModel implements Model {
         subtitle: model.profile.email.nullIfEmpty ?? model.profile.phoneNumber?.nullIfEmpty,
         leading: ProfileAvatar(profile: model.profile),
       ),
-      actions: []
+      actions: [
+        // cancel order
+        ModelAction(
+          label: "Cancel order",
+          group: "control",
+          icon: Icon(FluentIcons.delete_20_regular),
+          multiple: (context, models) async {
+            for (var model in models!) {
+              // await showStationModelHistoryDailog(context, model!);
+            }
+          },
+        ),
+      ]
     );
 
 }

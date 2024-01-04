@@ -15,6 +15,7 @@ export 'services/defaults/service.dart';
 /// models
 export 'models/notification_model.dart';
 export 'models/address_model.dart';
+export 'modules/commerce/gift_cards/models/gift_card_order_model.dart';
 // export 'models/attachment_model.dart';
 
 /// features
