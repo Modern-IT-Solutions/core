@@ -12,8 +12,10 @@ _$AddressModelImpl _$$AddressModelImplFromJson(Map<String, dynamic> json) =>
       state: json['state'] as String?,
       city: json['city'] as String?,
       zip: json['zip'] as String?,
+      country: json['country'] as String? ?? "DZ",
       location: const GeoFirePointConverter()
           .fromJson(json['location'] as Map<String, dynamic>?),
+      metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
     );
 
 Map<String, dynamic> _$$AddressModelImplToJson(_$AddressModelImpl instance) =>
@@ -22,5 +24,7 @@ Map<String, dynamic> _$$AddressModelImplToJson(_$AddressModelImpl instance) =>
       'state': instance.state,
       'city': instance.city,
       'zip': instance.zip,
+      'country': instance.country,
       'location': const GeoFirePointConverter().toJson(instance.location),
+      'metadata': instance.metadata,
     };

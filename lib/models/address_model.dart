@@ -11,12 +11,16 @@ class AddressModel with _$AddressModel {
 
   factory AddressModel({
     required String raw,
+    /// [state] is the wilaya
     String? state,
+    /// [city] is the baladiya
     String? city,
     // zip code
     String? zip,
+    @Default("DZ") String country,
     @GeoFirePointConverter()
     GeoFirePoint? location,
+    @Default({}) Map<String, dynamic> metadata,
   }) = _AddressModel;
 
   factory AddressModel.fromJson(Map<String, dynamic> json) => _$AddressModelFromJson(json);
