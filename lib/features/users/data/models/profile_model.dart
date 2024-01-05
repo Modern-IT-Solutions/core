@@ -166,3 +166,12 @@ extension FcmTokenExtension on ProfileModel {
     metadata['fcmTokens'] = tokens;
   }
 }
+
+
+/// roles extension to set and get the fcm tokens
+extension RolesExtensions on ProfileModel {
+  List<String> get rolesString => roles.map((e) => e.name).toList();
+  bool get isAdmin => roles.map((e) => e.name).contains("admin");
+  bool hasRoleString(String role) => roles.map((e) => e.name).contains(role);
+  bool hasRole(Role role) => hasRoleString(role.name);
+}

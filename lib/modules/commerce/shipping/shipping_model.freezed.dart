@@ -205,7 +205,7 @@ class __$$ShippingModelImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$ShippingModelImpl implements _ShippingModel {
-  _$ShippingModelImpl(
+  const _$ShippingModelImpl(
       {required this.address,
       this.profile,
       required this.name,
@@ -300,7 +300,7 @@ class _$ShippingModelImpl implements _ShippingModel {
 }
 
 abstract class _ShippingModel implements ShippingModel {
-  factory _ShippingModel(
+  const factory _ShippingModel(
       {required final AddressModel address,
       final ProfileModel? profile,
       required final String name,

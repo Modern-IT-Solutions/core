@@ -13,6 +13,9 @@ enum AppTextFormFieldMode {
   /// [AppTextFormFieldMode.text] is the normal mode
   text,
 
+  /// [AppTextFormFieldMode.longText] is the normal mode
+  longText,
+
   /// [AppTextFormFieldMode.upload] is the upload mode
   upload,
 
@@ -165,6 +168,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
   }
 
   bool uploading = false;
+  double? uploadingProgress;
 
   @override
   Widget build(BuildContext context) {
@@ -229,12 +233,12 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
             autovalidateMode: AutovalidateMode.onUserInteraction,
             controller: widget.controller,
             cursorHeight: 30,
-            maxLines: 1,
+            maxLines: widget.mode == AppTextFormFieldMode.longText? null: 1,
             scrollPadding: const EdgeInsets.all(0),
             // expands: true,
             decoration: widget.decoration.copyWith(
               isDense: true,
-              constraints: BoxConstraints(
+              constraints: const BoxConstraints(
                   // maxHeight: 30,
                   ),
               alignLabelWithHint: true,
@@ -247,20 +251,22 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
                   OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
+              helperText: uploadingProgress != null
+                  ? '${(uploadingProgress! * 100).toStringAsFixed(0)}%'
+                  : null,
               suffixIcon: widget.mode == AppTextFormFieldMode.upload
                   ? uploading
-                      ? Align(
-                          alignment: Alignment.center,
-                          child: const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          ),
-                        )
+                      ?  Container(
+                        padding: const EdgeInsets.all(8),
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          value: uploadingProgress,
+                        ),
+                      )
                       : TextButton.icon(
-                          label: Text('UPLOAD',),
+                          label: const Text('UPLOAD',),
                           onPressed: _trigerUpload,
                           icon: const Icon(FluentIcons.arrow_upload_24_regular),
                         )
@@ -315,7 +321,18 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
     } else {
       uploadTask = ref.putData(await File(file.path!).readAsBytes());
     }
-    final snapshot = await uploadTask.whenComplete(() {});
+    uploadTask.snapshotEvents.listen((event) {
+      if (event.totalBytes != 0) { 
+        setState(() {
+          uploadingProgress = event.bytesTransferred / event.totalBytes;
+        });
+      }
+    });
+    final snapshot = await uploadTask.whenComplete(() {
+      setState(() {
+        uploadingProgress = null;
+      });
+    });
     if (snapshot.state == TaskState.success) {
       final url = await snapshot.ref.getDownloadURL();
       return url;
@@ -415,7 +432,7 @@ class _AppNumberTextFormFieldState extends State<AppNumberTextFormField> {
             // expands: true,
             decoration: widget.decoration.copyWith(
               isDense: true,
-              constraints: BoxConstraints(
+              constraints: const BoxConstraints(
                   // maxHeight: 30,
                   ),
               alignLabelWithHint: true,

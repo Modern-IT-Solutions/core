@@ -73,7 +73,7 @@ class RoleSerializer implements JsonConverter<Role, String> {
 
   @override
   Role fromJson(String role) {
-    return Role(role);
+    return Role(role, permissions: []);
   }
 
   @override

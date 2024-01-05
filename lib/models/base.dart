@@ -21,6 +21,10 @@ extension ModelExtension on Model {
 
   /// [collection] getter.
   String get collection => ref.collection;
+
+  /// [shortId] getter
+  /// its just the first 8 characters of the id
+  String get shortId => id.substring(0, 8);
 } 
 
 

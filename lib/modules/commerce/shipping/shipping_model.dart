@@ -7,7 +7,7 @@ part 'shipping_model.g.dart';
 @freezed
 class ShippingModel with _$ShippingModel {
 
-  factory ShippingModel({
+  const factory ShippingModel({
     required AddressModel address,
     ProfileModel? profile,
     required String name,
@@ -18,4 +18,11 @@ class ShippingModel with _$ShippingModel {
   }) = _ShippingModel;
 
   factory ShippingModel.fromJson(Map<String, dynamic> json) => _$ShippingModelFromJson(json);
+  /// [empty] returns an empty [ShippingModel]
+  static const empty = ShippingModel(
+    address: AddressModel.empty,
+    name: "",
+    phoneNumbers: [],
+    emails: [],
+  );
 }

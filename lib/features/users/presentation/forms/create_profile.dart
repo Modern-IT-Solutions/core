@@ -453,7 +453,7 @@ Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool
             IndexViewFilter(
               name: role.name.titleCase,
               active: false,
-              local: (model) => model.roles.contains(role),
+              local: (model) => model.hasRoleString(role.name),
               remote: (query) => query.where("roles", arrayContains: role.name),
               strict: false,
               fixed: true,

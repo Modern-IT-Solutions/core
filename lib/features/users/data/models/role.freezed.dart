@@ -21,6 +21,7 @@ Role _$RoleFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Role {
   String get name => throw _privateConstructorUsedError;
+  List<Permission> get permissions => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -32,7 +33,7 @@ abstract class $RoleCopyWith<$Res> {
   factory $RoleCopyWith(Role value, $Res Function(Role) then) =
       _$RoleCopyWithImpl<$Res, Role>;
   @useResult
-  $Res call({String name});
+  $Res call({String name, List<Permission> permissions});
 }
 
 /// @nodoc
@@ -49,12 +50,17 @@ class _$RoleCopyWithImpl<$Res, $Val extends Role>
   @override
   $Res call({
     Object? name = null,
+    Object? permissions = null,
   }) {
     return _then(_value.copyWith(
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      permissions: null == permissions
+          ? _value.permissions
+          : permissions // ignore: cast_nullable_to_non_nullable
+              as List<Permission>,
     ) as $Val);
   }
 }
@@ -66,7 +72,7 @@ abstract class _$$RoleImplCopyWith<$Res> implements $RoleCopyWith<$Res> {
       __$$RoleImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String name});
+  $Res call({String name, List<Permission> permissions});
 }
 
 /// @nodoc
@@ -80,12 +86,17 @@ class __$$RoleImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? name = null,
+    Object? permissions = null,
   }) {
     return _then(_$RoleImpl(
       null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      permissions: null == permissions
+          ? _value._permissions
+          : permissions // ignore: cast_nullable_to_non_nullable
+              as List<Permission>,
     ));
   }
 }
@@ -93,17 +104,25 @@ class __$$RoleImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$RoleImpl implements _Role {
-  _$RoleImpl(this.name);
+  const _$RoleImpl(this.name, {required final List<Permission> permissions})
+      : _permissions = permissions;
 
   factory _$RoleImpl.fromJson(Map<String, dynamic> json) =>
       _$$RoleImplFromJson(json);
 
   @override
   final String name;
+  final List<Permission> _permissions;
+  @override
+  List<Permission> get permissions {
+    if (_permissions is EqualUnmodifiableListView) return _permissions;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_permissions);
+  }
 
   @override
   String toString() {
-    return 'Role(name: $name)';
+    return 'Role(name: $name, permissions: $permissions)';
   }
 
   @override
@@ -111,12 +130,15 @@ class _$RoleImpl implements _Role {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$RoleImpl &&
-            (identical(other.name, name) || other.name == name));
+            (identical(other.name, name) || other.name == name) &&
+            const DeepCollectionEquality()
+                .equals(other._permissions, _permissions));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, name);
+  int get hashCode => Object.hash(
+      runtimeType, name, const DeepCollectionEquality().hash(_permissions));
 
   @JsonKey(ignore: true)
   @override
@@ -133,12 +155,15 @@ class _$RoleImpl implements _Role {
 }
 
 abstract class _Role implements Role {
-  factory _Role(final String name) = _$RoleImpl;
+  const factory _Role(final String name,
+      {required final List<Permission> permissions}) = _$RoleImpl;
 
   factory _Role.fromJson(Map<String, dynamic> json) = _$RoleImpl.fromJson;
 
   @override
   String get name;
+  @override
+  List<Permission> get permissions;
   @override
   @JsonKey(ignore: true)
   _$$RoleImplCopyWith<_$RoleImpl> get copyWith =>

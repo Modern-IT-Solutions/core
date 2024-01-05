@@ -182,7 +182,7 @@ class __$$AddressModelImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$AddressModelImpl implements _AddressModel {
-  _$AddressModelImpl(
+  const _$AddressModelImpl(
       {required this.raw,
       this.state,
       this.city,
@@ -263,7 +263,7 @@ class _$AddressModelImpl implements _AddressModel {
 }
 
 abstract class _AddressModel implements AddressModel {
-  factory _AddressModel(
+  const factory _AddressModel(
       {required final String raw,
       final String? state,
       final String? city,

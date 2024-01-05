@@ -60,7 +60,7 @@ extension NullIfEmpty on String {
 
 
 class DynamicConfigs {
-  static Set<Role> _roles = {Role("admin"),Role("user")};
+  static Set<Role> _roles = {Role("admin", permissions: []),Role("user",permissions: [])};
   // set roles
   static void setRoles(Set<Role> roles) {
     _roles = roles;
