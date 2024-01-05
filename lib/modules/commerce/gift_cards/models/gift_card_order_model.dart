@@ -192,8 +192,11 @@ class GiftCardOrderModel with _$GiftCardOrderModel implements Model {
                         children: [
                           Text('are you sure you want to mark ${models.length} orders as ${status.name}?'),
                           const SizedBox(height: 8),
-                          LinearProgressIndicator(
-                            value: progress,
+                          SizedBox(
+                            height: 2,
+                            child: LinearProgressIndicator(
+                              value: progress,
+                            ),
                           ),
                         ],
                       ),
