@@ -165,6 +165,7 @@ class _GiftCardOrderFormState extends State<GiftCardOrderForm> {
           createdAt: request.createdAt!,
           updatedAt: request.updatedAt!,
           deletedAt: request.deletedAt,
+
           ///
           amount: request.amount!,
           status: request.status!,
@@ -172,7 +173,6 @@ class _GiftCardOrderFormState extends State<GiftCardOrderForm> {
           note: request.note,
           shipping: request.shipping!,
           metadata: request.metadata!,
-
         );
         if (widget.model == null) {
           await setDocument(
@@ -216,67 +216,7 @@ class _GiftCardOrderFormState extends State<GiftCardOrderForm> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-              Divider(),
-              const ListTile(
-                leading: Icon(FluentIcons.status_24_regular),
-                visualDensity: VisualDensity(vertical: -3),
-                title: Text("Current status"),
-                enabled: false,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: MenuAnchor(
-                  menuChildren: <Widget>[
-                    for (final item in AssistanceStatus.values)
-                      MenuItemButton(
-                        leadingIcon: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: item.color,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        child: Text(item.name.titleCase),
-                        onPressed: request.status == item
-                            ? null
-                            : () => setState(
-                                  () {
-                                    request.status = item;
-                                    _submit();
-                                  },
-                                ),
-                      ),
-                  ],
-                  builder: (BuildContext context, MenuController controller, Widget? child) {
-                    return ListTile(
-                      leading: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: request.status?.color,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      contentPadding: EdgeInsets.only(left: 12),
-                      visualDensity: VisualDensity(vertical: -3),
-                      title: Text(request.status!.name.titleCase),
-                      subtitle: Text("Select Status"),
-                      trailing: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: const Icon(FluentIcons.chevron_down_24_regular),
-                      ),
-                      onTap: () {
-                        if (controller.isOpen) {
-                          controller.close();
-                        } else {
-                          controller.open();
-                        }
-                      },
-                    );
-                  },
-                ),
-              ),
+
             // show error if not null, in box with red background rounded corners and icon and dismiss button
             if (_error != null)
               Container(
@@ -321,7 +261,68 @@ class _GiftCardOrderFormState extends State<GiftCardOrderForm> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const SizedBox(height: 24),
+
+                      const SizedBox(height: 10),
+            const ListTile(
+              leading: Icon(FluentIcons.status_24_regular),
+              visualDensity: VisualDensity(vertical: -3),
+              title: Text("Current status"),
+              enabled: false,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: MenuAnchor(
+                menuChildren: <Widget>[
+                  for (final item in OrderStatus.values)
+                    MenuItemButton(
+                      leadingIcon: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: item.color,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      child: Text(item.name.titleCase),
+                      onPressed: request.status == item
+                          ? null
+                          : () => setState(
+                                () {
+                                  request = request.copyWith(status: item);
+                                },
+                              ),
+                    ),
+                ],
+                builder: (BuildContext context, MenuController controller, Widget? child) {
+                  return ListTile(
+                    leading: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: request.status?.color,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.only(left: 12),
+                    visualDensity: VisualDensity(vertical: -3),
+                    title: Text(request.status!.name.titleCase),
+                    subtitle: Text("Select Status"),
+                    trailing: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: const Icon(FluentIcons.chevron_down_24_regular),
+                    ),
+                    onTap: () {
+                      if (controller.isOpen) {
+                        controller.close();
+                      } else {
+                        controller.open();
+                      }
+                    },
+                  );
+                },
+              ),
+            ),
+            Divider(),
                       const ListTile(
                         leading: Icon(FluentIcons.settings_20_regular),
                         contentPadding: EdgeInsets.symmetric(horizontal: 24),
@@ -329,6 +330,7 @@ class _GiftCardOrderFormState extends State<GiftCardOrderForm> {
                         title: Text("basics"),
                         enabled: false,
                       ),
+
                       /// email
                       AppTextFormField(
                         initialValue: request.amount?.toString(),
@@ -432,9 +434,7 @@ class _GiftCardOrderFormState extends State<GiftCardOrderForm> {
                                   );
                                   _phoneTmpController.clear();
                                 }
-                                setState(() {
-                                  
-                                });
+                                setState(() {});
                               },
                               label: const Text('Add'),
                               icon: const Icon(FluentIcons.add_24_regular),
