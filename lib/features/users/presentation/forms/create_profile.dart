@@ -527,7 +527,7 @@ Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool
                                   Navigator.pop(context, controller.value?.selectedModels.toList());
                                 }
                               : null,
-                          icon: const Icon(FluentIcons.select_object_24_regular),
+                          icon: const Icon(FluentIcons.check_24_regular),
                           label: const Text('Select'),
                         );
                       }),
@@ -551,12 +551,7 @@ Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool
                     header: const SizedBox(),
                     config: const FlexTableItemConfig.square(40),
                     builder: (model) {
-                      var firstLetters = (model.displayName.nullIfEmpty ?? "?")[0].toUpperCase();
-                      return CircleAvatar(
-                        backgroundColor: Theme.of(context).colorScheme.background,
-                        backgroundImage: model.photoUrl.nullIfEmpty == null ? null : NetworkImage(model.photoUrl),
-                        child: model.photoUrl.nullIfEmpty != null ? null : Text(firstLetters),
-                      );
+                      return ProfileAvatar(profile: model);
                     }
                   ),
                   (

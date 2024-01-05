@@ -3424,7 +3424,15 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
 
                                   ),
 
-                                  child: Text('Nothing to show'),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        FluentIcons.search_info_24_regular,
+                                        size: 54,
+                                      ),
+                                      Text('Nothing to show'),
+                                    ],
+                                  ),
 
                                 ),
 
