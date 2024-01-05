@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:lib/lib.dart';
 import 'package:muskey/muskey.dart';
+import 'package:recase/recase.dart';
 
 import '../../shipping/shipping_model.dart';
 import '../models/gift_card_order_request.dart';
@@ -215,6 +216,67 @@ class _GiftCardOrderFormState extends State<GiftCardOrderForm> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+              Divider(),
+              const ListTile(
+                leading: Icon(FluentIcons.status_24_regular),
+                visualDensity: VisualDensity(vertical: -3),
+                title: Text("Current status"),
+                enabled: false,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: MenuAnchor(
+                  menuChildren: <Widget>[
+                    for (final item in AssistanceStatus.values)
+                      MenuItemButton(
+                        leadingIcon: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: item.color,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        child: Text(item.name.titleCase),
+                        onPressed: request.status == item
+                            ? null
+                            : () => setState(
+                                  () {
+                                    request.status = item;
+                                    _submit();
+                                  },
+                                ),
+                      ),
+                  ],
+                  builder: (BuildContext context, MenuController controller, Widget? child) {
+                    return ListTile(
+                      leading: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: request.status?.color,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      contentPadding: EdgeInsets.only(left: 12),
+                      visualDensity: VisualDensity(vertical: -3),
+                      title: Text(request.status!.name.titleCase),
+                      subtitle: Text("Select Status"),
+                      trailing: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: const Icon(FluentIcons.chevron_down_24_regular),
+                      ),
+                      onTap: () {
+                        if (controller.isOpen) {
+                          controller.close();
+                        } else {
+                          controller.open();
+                        }
+                      },
+                    );
+                  },
+                ),
+              ),
             // show error if not null, in box with red background rounded corners and icon and dismiss button
             if (_error != null)
               Container(
