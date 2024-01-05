@@ -614,7 +614,7 @@ class DatabaseService extends Service {
         _count = CachedCount(
           ref: path,
           query: queryString,
-          count: response.count,
+          count: response.count!,
           cachedAt: DateTime.now(),
           expiresAt: DateTime.now().add(minmumUpdateDuration),
         );
