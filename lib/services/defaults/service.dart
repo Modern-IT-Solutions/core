@@ -12,6 +12,7 @@ abstract class Service extends ChangeNotifier {
   // must call super
   @mustCallSuper
   Future<void> init() async {
+    assert(!_initialized, 'Service already initialized');
     _initialized = true;
   }
 

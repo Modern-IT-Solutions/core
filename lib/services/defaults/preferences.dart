@@ -74,8 +74,16 @@ class PreferencesService extends Service {
     if (value is T) {
       return value;
     }
-      print("PreferencesService.get<$T>($key) => $value");
+    // print("PreferencesService.get<$T>($key) => $value");
     return null;
   }
+
+  // Future<void> setOption<T>(String key, T value) async {
+  //   // save to local storage
+  //   _preferences[key] = {
+  //     'value': value,
+  //     'updatedAt': DateTime.now(),
+  //   };
+  // }
 }
 

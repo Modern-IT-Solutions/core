@@ -125,10 +125,12 @@ Future<CachedDocument> createDocument({
 Future<CachedDocument> setDocument({
   required String path,
   required Map<String, dynamic> data,
+  bool merge = false,
 }) async {
   return await Services.instance.get<DatabaseService>()!.setDocument(
         path: path,
         data: data,
+        merge: merge,
       );
 }
 

@@ -127,13 +127,21 @@ class DatabaseService extends Service {
   }
 
   Future<void> _saveCache() async {
-    final cachedDocuments = _cachedDocuments.map((e) => jsonEncode(e.toJson())).toList();
+    dateToJson(e) {
+        if (e is DateTime) {
+          return e.toIso8601String();
+        } else if (e is Timestamp) {
+          return e.toDate().toIso8601String();
+        }
+        return e;
+      };
+    final cachedDocuments = _cachedDocuments.map((e) => jsonEncode(e.toJson(),toEncodable: dateToJson,)).toList();
     await prefs.setStringList('cached_documents', cachedDocuments);
 
-    final cachedCollections = _cachedCollections.map((e) => jsonEncode(e.toJson())).toList();
+    final cachedCollections = _cachedCollections.map((e) => jsonEncode(e.toJson(),toEncodable: dateToJson)).toList();
     await prefs.setStringList('cached_collections', cachedCollections);
 
-    final cachedCounts = _cachedCounts.map((e) => jsonEncode(e.toJson())).toList();
+    final cachedCounts = _cachedCounts.map((e) => jsonEncode(e.toJson(),toEncodable: dateToJson)).toList();
     await prefs.setStringList('cached_counts', cachedCounts);
   }
 
@@ -265,9 +273,16 @@ class DatabaseService extends Service {
   Future<CachedDocument> setDocument({
     required String path,
     required Map<String, dynamic> data,
+    bool merge = false,
   }) async {
     var doc = FirebaseFirestore.instance.doc(path);
-    final document = await doc.set(data);
+    final document = await doc.set({
+      'updatedAt': FieldValue.serverTimestamp(),
+      'createdAt': FieldValue.serverTimestamp(),
+      'deletedAt': null,
+      'ref': path,
+      ...data,
+    }, SetOptions(merge: merge));
     final cachedDocument = CachedDocument(
       ref: doc.path,
       data: data,
