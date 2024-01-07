@@ -25,7 +25,7 @@ class SettingsServiceConfigs<L extends SettingsLoaderModel> extends ServiceConfi
   const SettingsServiceConfigs({
     this.path = 'settings/DEFAULT',
     // this.loader,
-    this.expireAfter = const Duration(minutes: 20),
+    this.expireAfter = const Duration(minutes: 1),
   });
 }
 
@@ -70,9 +70,13 @@ class SettingsService<L extends SettingsLoaderModel> extends Service {
 
   /// Loads the settings from the server
   Future<void> _loadServerSettings() async {
-    var settings = await getDocument(path: configs.path);
+    var settings = await getDocument(
+      path: configs.path,
+      behavior: FetchBehavior.serverFirst,
+    );
     if (settings != null) {
       _settings = settings.data;
+      _lastFetch = DateTime.now();
       notifyListeners();
     }
   }
@@ -85,17 +89,40 @@ class SettingsService<L extends SettingsLoaderModel> extends Service {
       merge: true,
     );
   }
+  /// Saves the settings to the local storage
+  Future<void> _updateSettings() async {
+    try {
+      await updateDocument(
+        path: configs.path,
+        data: _settings,
+      );
+    }
+    // if the document does not exist create it
+    on FirebaseException catch (e) {
+      if (e.code == 'not-found') {
+        await setDocument(
+          path: configs.path,
+          data: _settings,
+          merge: true,
+        );
+      }
+    } catch (e) {
+      // reportError(e);
+      print(e);
+    }
+  }
 
   /// [setOption] sets a setting option
   Future<void> setOption<T>(String key, T value) async {
     _settings["options"] ??= {};
     _settings["options"][key] = value;
     notifyListeners();
-    await _setSettings();
+    await _updateSettings();
   }
 
   // [_shouldFetch] checks if the settings should be fetched from the server
   bool _shouldFetch() {
+    // return true;
     return _lastFetch == null || _lastFetch!.isBefore(DateTime.now().subtract(configs.expireAfter));
   }
 
@@ -111,6 +138,4 @@ class SettingsService<L extends SettingsLoaderModel> extends Service {
     await _fetchIfShould();
     return settings["options"]?[key] as T?;
   }
-
-
 }
