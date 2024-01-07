@@ -25,7 +25,7 @@ class SettingsServiceConfigs<L extends SettingsLoaderModel> extends ServiceConfi
   const SettingsServiceConfigs({
     this.path = 'settings/DEFAULT',
     // this.loader,
-    this.expireAfter = const Duration(days: 1),
+    this.expireAfter = const Duration(minutes: 20),
   });
 }
 
@@ -94,8 +94,21 @@ class SettingsService<L extends SettingsLoaderModel> extends Service {
     await _setSettings();
   }
 
+  // [_shouldFetch] checks if the settings should be fetched from the server
+  bool _shouldFetch() {
+    return _lastFetch == null || _lastFetch!.isBefore(DateTime.now().subtract(configs.expireAfter));
+  }
+
+  // [_fetchIfShould] fetches the settings from the server if it should
+  Future<void> _fetchIfShould() async {
+    if (_shouldFetch()) {
+      await _loadServerSettings();
+    }
+  }
+
   /// getOption
   FutureOr<T?> getOption<T>(String key) async {
+    await _fetchIfShould();
     return settings["options"]?[key] as T?;
   }
 
