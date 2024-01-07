@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 /// [ThemeService] responsible for database of the app content and users
 class ThemeService extends Service {
@@ -96,6 +97,10 @@ class ThemeService extends Service {
 
   @override
   Future<void> init() async {
+    // in web desible blurEnabled
+    if (kIsWeb) {
+      _blurEnabled = false;
+    }
     prefs = await SharedPreferences.getInstance();
     // SystemUiOverlayStyle
 
