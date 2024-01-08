@@ -19,7 +19,7 @@ Future<GiftCardOrderModel?> showUpdateGiftCardOrderModelDailog(BuildContext cont
     child: Center(
       child: GiftCardOrderForm.update(
         model: model,
-        onUpdated: (model) {
+        onUpdated: (context, model) {
           ScaffoldMessenger.maybeOf(context)?.showSnackBar(
             SnackBar(
               behavior: SnackBarBehavior.floating,
@@ -62,7 +62,7 @@ Future<GiftCardOrderModel?> showCreateGiftCardOrderModelDailog(BuildContext cont
   var child = Container(
     constraints: const BoxConstraints(maxWidth: 500),
     child: GiftCardOrderForm.create(
-      onCreated: (model) {
+      onCreated: (context, model) {
         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
@@ -102,8 +102,8 @@ Future<GiftCardOrderModel?> showCreateGiftCardOrderModelDailog(BuildContext cont
 /// [UpdateGiftCardOrderForm] is a form to update a new user
 class GiftCardOrderForm extends StatefulWidget {
   final VoidCallback? onCancel;
-  final Null Function(GiftCardOrderModel model)? onUpdated;
-  final Null Function(GiftCardOrderModel model)? onCreated;
+  final Null Function(BuildContext context, GiftCardOrderModel model)? onUpdated;
+  final Null Function(BuildContext context, GiftCardOrderModel model)? onCreated;
   final GiftCardOrderModel? model;
   // create
   const GiftCardOrderForm.create({Key? key, this.onCreated, this.onCancel})
@@ -179,13 +179,13 @@ class _GiftCardOrderFormState extends State<GiftCardOrderForm> {
             path: '${GiftCardOrderModel.description.path}/${newModel.ref.id}',
             data: newModel.toJson(),
           );
-          widget.onCreated?.call(newModel);
+          widget.onCreated?.call(context,newModel);
         } else {
           await updateDocument(
             path: '${GiftCardOrderModel.description.path}/${newModel.ref.id}',
             data: newModel.toJson(),
           );
-          widget.onUpdated?.call(newModel);
+          widget.onUpdated?.call(context,newModel);
         }
       }
       // FirebaseFunctionsException
