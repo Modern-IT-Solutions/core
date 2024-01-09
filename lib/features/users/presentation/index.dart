@@ -20,10 +20,12 @@ import 'package:core/services/defaults/helpers.dart';
 import 'find.dart';
 import 'forms/create_profile.dart';
 import 'forms/update_profile.dart';
+
 /// [ProfilesSearchType] is a class to build a query to search
 enum ProfilesSearchType implements SearchType {
   name,
   email;
+
   IconData get icon {
     switch (this) {
       case ProfilesSearchType.name:
@@ -32,6 +34,7 @@ enum ProfilesSearchType implements SearchType {
         return FeatherIcons.mail;
     }
   }
+
   String get field {
     if (this == ProfilesSearchType.name) {
       return "displayName";
@@ -40,6 +43,7 @@ enum ProfilesSearchType implements SearchType {
     }
   }
 }
+
 /// [ManageProfilesView] is a tab for stations
 class ManageProfilesView<M extends ProfileModel> extends ModelMnanagerView<M> {
   final ProfileRepositoryInterface<M> repository;
@@ -61,6 +65,7 @@ class ManageProfilesView<M extends ProfileModel> extends ModelMnanagerView<M> {
     }
     return map;
   }
+
   ManageProfilesView({
     super.key,
     this.filters = const {},
@@ -69,6 +74,7 @@ class ManageProfilesView<M extends ProfileModel> extends ModelMnanagerView<M> {
   @override
   State<ManageProfilesView> createState() => ManageProfilesViewState<M>();
 }
+
 class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfilesView> with ModelMnanagerViewMixin<M> {
   var searchType = ValueNotifier(ProfilesSearchType.email);
   Map<String, QueryFilterInterface<M>> filters = {};
@@ -96,9 +102,11 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       load();
     });
   }
+
   List<QueryFilterInterface<M>> get activeFilters {
     return filters.values.where((element) => element.active).toList();
   }
+
   Map<DateTime, bool> history = {};
   DateTime? get currentStartAt => history.keys.lastOrNull;
   bool get hasNext => filteredModels.isNotEmpty && nextStartAt != null && nextStartAt != currentStartAt;
@@ -112,11 +120,13 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
     }
     return null;
   }
+
   bool get hasPrev => prevStartAt != null && prevStartAt != currentStartAt;
   @override
   Future<void> load() async {
     return search();
   }
+
   /// [search] is a function to search for profiles
   /// it takes a [query] and a [type] to search by
   Future<void> search({String? query, SearchType? type, Iterable<Timestamp>? startAfter}) async {
@@ -163,6 +173,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
     }
     loading.value = false;
   }
+
   List<ProfileModel> get filteredModels {
     if (models.value == null) {
       return [];
@@ -177,6 +188,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       }
       return true;
     }
+
     if (searchController.text.isEmpty) {
       return models.value!.items.where(_filters).toList();
     }
@@ -189,6 +201,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       return profile.toString().toLowerCase().contains(query);
     }).toList();
   }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -557,6 +570,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       },
     );
   }
+
   // update station
   Future<void> showCreateModelDailog(BuildContext context) async {
     var child = Container(
@@ -598,6 +612,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       },
     );
   }
+
   // update station
   Future<void> showUpdateModelDailog(BuildContext context, ProfileModel model) async {
     var child = Container(
@@ -642,6 +657,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       },
     );
   }
+
   // // delete station, a simple dialog with a text and two buttons
   // Future<void> showDeleteModelDailog(BuildContext context, ProfileModel model) async {
   //   bool _loading = false;
@@ -732,6 +748,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
     );
   }
 }
+
 class ModelListView<M extends Model> extends StatefulWidget {
   final ModelListViewController<M> controller;
   final bool enableSelectOnTap;
@@ -773,6 +790,7 @@ class ModelListView<M extends Model> extends StatefulWidget {
   @override
   State<ModelListView<M>> createState() => _ModelListViewState<M>();
 }
+
 class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
   /// [_allowMultipleFilters]
   /// its good tool but in maney cases it requires creating a new index in firestore
@@ -785,6 +803,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
     });
     super.initState();
   }
+
   Future<String?> _exportModels(Set<M> selectedModels) async {
     var models = selectedModels.toList();
     var raw = "[${models.map((e) => jsonEncode(e.toJson(),
@@ -813,6 +832,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
     }
     return dir;
   }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTextStyle(
@@ -972,276 +992,13 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                     ]),
                   ),
                 ),
+
                 // /// filters chips
                 SliverToBoxAdapter(
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 40,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        SizedBox(
-                          width: widget.gap,
-                        ),
-                        if (widget.controller.value!.selectedModels.isNotEmpty)
-                          Center(
-                            child: Container(
-                              margin: EdgeInsetsDirectional.only(end: widget.gap / 2),
-                              clipBehavior: Clip.antiAlias,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(30),
-                                border: GradientBoxBorder(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Theme.of(context).colorScheme.primary,
-                                      Theme.of(context).colorScheme.inversePrimary,
-                                      Theme.of(context).colorScheme.secondary,
-                                    ],
-                                    begin: const Alignment(-1.0, 0.0),
-                                    end: const Alignment(1.0, 0.0),
-                                    transform: const GradientRotation(pi / 4),
-                                  ),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const SizedBox(width: 10),
-                                  Text("${widget.controller.value!.selectedModels.length}"),
-                                  const SizedBox(width: 10),
-                                  Container(
-                                    height: 30,
-                                    padding: EdgeInsets.symmetric(vertical: 5),
-                                    child: VerticalDivider(width: 1),
-                                  ),
-                                  TextButton.icon(
-                                    style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
-                                    onPressed: () => widget.controller.unselectAll(),
-                                    label: const Text("unselect"),
-                                    icon: const Icon(
-                                      FluentIcons.dismiss_24_regular,
-                                      size: 18,
-                                    ),
-                                  ),
-                                  Container(
-                                    height: 30,
-                                    padding: EdgeInsets.symmetric(vertical: 5),
-                                    child: VerticalDivider(width: 1),
-                                  ),
-                                  TextButton.icon(
-                                    style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
-                                    onPressed: () {
-                                      // _exportModels(widget.controller.value!.selectedModels);
-                                      showModelExportDialog(context, widget.controller, widget.controller.value!.selectedModels.toList());
-                                    },
-                                    label: const Text("export"),
-                                    icon: const Icon(
-                                      FluentIcons.archive_32_regular,
-                                      size: 18,
-                                    ),
-                                  ),
-                                  Container(
-                                    height: 30,
-                                    padding: EdgeInsets.symmetric(vertical: 5),
-                                    child: VerticalDivider(width: 1),
-                                  ),
-                                  TextButton.icon(
-                                    style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
-                                    onPressed: () {
-                                      showDeleteModelsDailog(context, widget.controller.value!.selectedModels.toList());
-                                    },
-                                    label: const Text("delete"),
-                                    icon: const Icon(
-                                      FluentIcons.delete_16_regular,
-                                      size: 18,
-                                    ),
-                                  ),
-                                  for (var action in widget.controller.description.actions.where((e) => e.multiple != null)) ...[
-                                    const Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 5),
-                                      child: VerticalDivider(width: 1),
-                                    ),
-                                    TextButton(
-                                      style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
-                                      onPressed: () async {
-                                        await action.multiple!(context, widget.controller.value!.selectedModels.toList());
-                                        // TODO: refresh after done
-                                        // widget.controller.load();
-                                      },
-                                      child: Text(action.label),
-                                      // icon: action.icon == null? SizedBox() : Icon(
-                                      //   action.icon!,
-                                      //   size: 18,
-                                      // ),
-                                    ),
-                                  ]
-                                ],
-                              ),
-                            ),
-                          ),
-                        Container(
-                          width: 300,
-                          height: 40,
-                          // max with is view port -50
-                          constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 50),
-                          child: Center(
-                            child: AppTextFormField.min(
-                              controller: searchController,
-                              // enabled: !loading.value,
-                              onSubmitted: (String value) {
-                                widget.controller.value = widget.controller.value!.copyWith(
-                                  searchQuery: SearchQuery(
-                                    field: widget.controller.value!.searchQuery?.field ?? widget.controller.description.fields.firstOrNull?.name ?? "",
-                                    value: value,
-                                  ),
-                                );
-                                widget.controller.search();
-                              },
-                              onChanged: (String value) async {
-                                widget.controller.setSearchQueryValue(value);
-                              },
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(FluentIcons.search_24_regular),
-                                label: Text(
-                                  'Search${value!.searchQuery!.field.isNotEmpty == true ? " (${value.searchQuery!.field})" : ""}',
-                                  maxLines: 1,
-                                  softWrap: false,
-                                ),
-                                alignLabelWithHint: true,
-                                // select search field
-                                suffixIcon: value?.searchQuery == null
-                                    ? null
-                                    : MenuAnchor(
-                                        builder: (context, controller, child) {
-                                          return IconButton(
-                                            icon: const Icon(
-                                              FluentIcons.filter_24_regular,
-                                            ),
-                                            onPressed: () => controller.open(),
-                                            // label: Text(value!.searchQuery!.field),
-                                          );
-                                        },
-                                        menuChildren: [
-                                          for (var field in widget.controller.description.fields)
-                                            MenuItemButton(
-                                              leadingIcon: const Icon(FeatherIcons.user),
-                                              trailingIcon: value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
-                                              onPressed: value.searchQuery!.field == field
-                                                  ? null
-                                                  : () {
-                                                      widget.controller.setSearchQueryField(field.name);
-                                                    },
-                                              child: Text(field.name.titleCase),
-                                            ),
-                                        ],
-                                      ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: widget.gap / 2,
-                        ),
-                        for (var filter in widget.controller.value!.filters)
-                          Padding(
-                            padding: EdgeInsets.only(right: widget.gap / 2),
-                            child: SizedBox(
-                              height: 40,
-                              child: Builder(
-                                builder: (context) {
-                                  bool isActive = filter.active ?? false;
-                                  bool isFixed = filter.fixed ?? false;
-                                  return GestureDetector(
-                                    onTap: () {
-                                      widget.controller.updateFilter(filter.copyWith(active: !filter.active), _allowMultipleFilters);
-                                    },
-                                    child: Chip(
-                                      label: Text(filter.name.titleCase),
-                                      backgroundColor: isActive == true ? Theme.of(context).colorScheme.primary : null,
-                                      side: isActive == true ? const BorderSide(color: Colors.transparent) : BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
-                                      labelStyle: TextStyle(color: isActive == true ? Theme.of(context).colorScheme.onPrimary : null),
-                                      deleteIcon: isFixed == true
-                                          ? null
-                                          : const Icon(
-                                              FluentIcons.dismiss_24_regular,
-                                              size: 15,
-                                            ),
-                                      deleteIconColor: isActive == true ? Theme.of(context).colorScheme.onPrimary : null,
-                                      onDeleted: isFixed == true
-                                          ? null
-                                          : () {
-                                              widget.controller.removeFilter(filter);
-                                            },
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        Padding(
-                          padding: EdgeInsets.only(right: widget.gap / 2),
-                          child: SizedBox(
-                            height: 40,
-                            child: MenuAnchor(
-                              builder: (context, controller, _) {
-                                return ActionChip(
-                                  label: const Icon(
-                                    FluentIcons.add_28_regular,
-                                    size: 20,
-                                  ),
-                                  onPressed: () async {
-                                    if (controller.isOpen) {
-                                      controller.close();
-                                    } else {
-                                      controller.open();
-                                    }
-                                  },
-                                );
-                              },
-                              menuChildren: [
-                                MenuItemButton(
-                                  leadingIcon: const Icon(
-                                    FluentIcons.add_28_regular,
-                                    size: 20,
-                                  ),
-                                  onPressed: () async {
-                                    var filter = await showFilterWizard(context, widget.controller.description);
-                                    if (filter != null) {
-                                      widget.controller.value = widget.controller.value!.copyWith(filters: [
-                                        ...widget.controller.value!.filters,
-                                        filter
-                                      ]);
-                                    }
-                                  },
-                                  child: const Text('Custom filter'),
-                                ),
-                                // datetime range
-                                MenuItemButton(
-                                  leadingIcon: const Icon(
-                                    FluentIcons.calendar_28_regular,
-                                    size: 20,
-                                  ),
-                                  onPressed: () async {
-                                    var filter = await showDateRangeFilterWizard(context, widget.controller.description);
-                                    if (filter != null) {
-                                      widget.controller.value = widget.controller.value!.copyWith(filters: [
-                                        ...widget.controller.value!.filters,
-                                        filter
-                                      ]);
-                                    }
-                                  },
-                                  child: const Text('Date range'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: widget.gap,
-                        ),
-                      ],
-                    ),
+                  child: ModelViewFiltersChips<M>(
+                    searchController: searchController,
+                    controller: widget.controller,
+                    allowMultipleFilters: _allowMultipleFilters,
                   ),
                 ),
                 // put the past widget here, but un sliver
@@ -1357,7 +1114,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                 ],
                               ),
                         ),
-                        value.loading == true ? const LinearProgressIndicator(minHeight: 2) : Divider(height: 2, color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
+                        value?.loading == true ? const LinearProgressIndicator(minHeight: 2) : Divider(height: 2, color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
                       ],
                     ),
                   ),
@@ -1809,6 +1566,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
     );
   }
 }
+
 class ModelTile extends StatelessWidget {
   const ModelTile({
     super.key,
@@ -1854,9 +1612,11 @@ class ModelTile extends StatelessWidget {
     );
   }
 }
+
 typedef LocalFilterBuilder<T extends Model> = bool Function(T model);
 typedef RemoteFilterBuilder<T extends Model> = Query<T> Function(Query<T> query);
 typedef RemoteJsonFilterBuilder = Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> query);
+
 /// [IndexViewFilter] is a class to hold the state of the filter
 class IndexViewFilter<T extends Model> {
   final String name;
@@ -1876,9 +1636,11 @@ class IndexViewFilter<T extends Model> {
   static bool _defaultLocalFilter(model) {
     return true;
   }
+
   static Query<Map<String, dynamic>> _defaultRemoteFilter(Query<Map<String, dynamic>> query) {
     return query;
   }
+
   IndexViewFilter<T> copyWith({
     String? name,
     LocalFilterBuilder<T>? local,
@@ -1896,10 +1658,12 @@ class IndexViewFilter<T extends Model> {
       strict: strict ?? this.strict,
     );
   }
+
   IndexViewFilter<T> toggle() {
     return copyWith(active: !active);
   }
 }
+
 // typedef IndexViewFilter<M extends Model> = ({
 //   bool? active,
 //   bool? fixed,
@@ -1911,6 +1675,7 @@ typedef ModelIndexType<M extends Model> = (
   M,
   int
 );
+
 /// [ModelListViewValue] is a class to hold the state of the view
 class ModelListViewValue<M extends Model> {
   final bool loading;
@@ -1924,6 +1689,7 @@ class ModelListViewValue<M extends Model> {
   final List<ModelIndexType<M>> history;
   final Map<String, dynamic> metadata;
   final String? error;
+
   /// [limit] (max items loaded each time)
   final int limit;
   const ModelListViewValue({
@@ -1970,6 +1736,7 @@ class ModelListViewValue<M extends Model> {
     );
   }
 }
+
 /// [ModelListViewController] just like other controllers in flutter
 class ModelListViewController<M extends Model> extends ValueNotifier<ModelListViewValue<M>?> {
   final ModelDescription<M> description;
@@ -1983,11 +1750,13 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
                 value: "",
               ),
         ));
+
   /// need index error
   ({
     String name,
     String url
   })? needIndexError;
+
   /// [setLimit] is a function to set the limit
   void setLimit(int limit) {
     value = value?.copyWith(
@@ -1995,6 +1764,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     );
     notifyListeners();
   }
+
   /// [search] is a function to search for models
   Future<void> search({Iterable<Object?>? startAfter, bool concat = false, int? limit}) async {
     needIndexError = null;
@@ -2032,7 +1802,14 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         path: description.path,
         fromJson: description.fromJson,
         behavior: true ? FetchBehavior.serverOnly : FetchBehavior.serverFirst,
-        startAfter: startAfter,
+        startAfter:startAfter == null? null: [
+          // if (
+          //   value?.searchQuery?.value?.isNotEmpty == true
+          //   &&
+          //   value?.searchQuery?.field.isNotEmpty == true
+          // ) null,
+          ...startAfter ?? [],
+        ],
         builder: (query) {
           var strict = false;
           if (value?.filters.isEmpty == false) {
@@ -2046,6 +1823,25 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
                 query = d;
               }
             }
+          }
+          // apply search query
+          if (
+            value?.searchQuery?.value?.isNotEmpty == true
+            &&
+            value?.searchQuery?.field.isNotEmpty == true
+          ) {
+            // text search example:
+            // .where('name', '>=', queryText)
+            // .where('name', '<=', queryText+ '\uf8ff')
+            // try {
+            //   query = query.where(
+            //     value!.searchQuery!.field,
+            //     isGreaterThanOrEqualTo: value!.searchQuery!.value,
+            //     isLessThanOrEqualTo: value!.searchQuery!.value! + '\uf8ff',
+            //   );
+            // } catch (e) {
+            //   print(e);
+            // }
           }
           return query;
         },
@@ -2101,35 +1897,41 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         loading: false,
       );
     }
+
     /// sync selected models
     syncSelectedModels();
   }
+
   /// remove selected items that are not in the list
   void syncSelectedModels() {
     value = value?.copyWith(
       selectedModels: value!.selectedModels.where((e) => value!.models!.contains(e)).toSet(),
     );
   }
+
   /// [load] is a function to load models
   Future<void> load() async {
     return search();
   }
+
   /// [more] is a function to load more models
   Future<void> more() async {
     return search(startAfter: [
       // deleted at
-       (value?.models?.last.deletedAt != null)? Timestamp.fromDate(value!.models!.last.deletedAt!) : null,
+      (value?.models?.last.deletedAt != null) ? Timestamp.fromDate(value!.models!.last.deletedAt!) : null,
       // updated at
-       (value?.models?.last.updatedAt != null)? Timestamp.fromDate(value!.models!.last.updatedAt!) : null,
+      (value?.models?.last.updatedAt != null) ? Timestamp.fromDate(value!.models!.last.updatedAt!) : null,
       // ref
-       (value?.models?.last.ref.path != null)? value!.models!.last.ref.path : null,
+      (value?.models?.last.ref.path != null) ? value!.models!.last.ref.path : null,
       //// if (value?.models?.last.ref.path != null) value!.models!.last.ref.path
       // why 3 seconds? because we are not really sure about the date are the same
       // Timestamp.fromDate((value?.models?.last.updatedAt ?? DateTime.now()).add(const Duration(seconds: 3)))
     ], concat: true);
   }
+
   /// [models] getter to get the models
   List<M>? get models => value?.models;
+
   /// [filtered] is a function to get the filtered models
   List<M>? get filtered {
     print(where);
@@ -2147,6 +1949,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       }
       return where?.call(model) ?? true;
     }
+
     if (value?.searchQuery?.value?.isEmpty == true) {
       return models!.where(_filters).toList() ?? [];
     }
@@ -2157,12 +1960,17 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       }
       var query = value?.searchQuery?.value?.toLowerCase();
       if (query != null) {
-        return model.toString().toLowerCase().contains(query);
+        if (value?.searchQuery?.field == null || value!.searchQuery!.field.isEmpty) {
+          return model.toString().contains(query);
+        }
+        var jsonData = model.toJson();
+        return jsonData[value!.searchQuery!.field] != null && jsonData[value!.searchQuery!.field].toString().toLowerCase().contains(query.toLowerCase());
       } else {
         return true;
       }
     }).toList();
   }
+
   /// [activateFilter]
   Future<void> updateFilter(IndexViewFilter<M> filter, bool allowMultipleFilters) async {
     // check filter if extst, take the index and activat it
@@ -2189,6 +1997,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     // );
     await search();
   }
+
   /// remove filter
   Future<void> removeFilter(IndexViewFilter<M> filter) async {
     if (value?.forceFilter == true) {
@@ -2202,12 +2011,14 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     );
     await search();
   }
+
   /// replaceModel
   void replaceModel(M oldModel, M newModel) {
     value = value?.copyWith(
       models: value!.models?.map((e) => e.ref.path == oldModel.ref.path ? newModel : e).toList(),
     );
   }
+
   /// [addModel]
   void addModel(M model) {
     value = value?.copyWith(
@@ -2217,6 +2028,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       ],
     );
   }
+
   /// [clearFilters]
   Future<void> clearFilters({bool refresh = true}) async {
     value = value?.copyWith(
@@ -2224,6 +2036,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     );
     if (refresh) await search();
   }
+
   /// [clearSearch]
   Future<void> clearSearch({bool refresh = true}) async {
     value = value?.copyWith(
@@ -2234,14 +2047,17 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     );
     await search();
   }
+
   /// [history]
   Map<M, bool> history = {};
+
   /// to make sure that the controller is mounted on the view
   var _mounted = false;
   bool get mounted => _mounted;
   void setSearchQuery(SearchQuery query) {
     value = value?.copyWith(searchQuery: query);
   }
+
   void setSearchQueryField(String field) {
     value = value?.copyWith(
       searchQuery: SearchQuery(
@@ -2250,6 +2066,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       ),
     );
   }
+
   void setSearchQueryValue(String _value) {
     value = value?.copyWith(
         searchQuery: SearchQuery(
@@ -2257,6 +2074,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       value: _value,
     ));
   }
+
   /// [mounted] is a function to mount the controller on the view and bind it to the view
   /// selectAll
   void selectAll() {
@@ -2264,6 +2082,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       selectedModels: value!.models!.toSet(),
     );
   }
+
   /// unselectAll
   void unselectAll() {
     value = value?.copyWith(
@@ -2271,12 +2090,14 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     );
   }
 }
+
 enum FieldGroup {
   primary,
   secondary,
   metadata,
   hidden,
 }
+
 enum FieldType {
   number,
   text,
@@ -2305,6 +2126,7 @@ enum FieldType {
   listBoolean,
   listReference,
 }
+
 /// FieldDescription
 class FieldDescription<M> {
   final String name;
@@ -2329,6 +2151,7 @@ class FieldDescription<M> {
     this.builder,
     this.header,
   });
+
   /// copyWith
   FieldDescription<M> copyWith({
     String? name,
@@ -2353,20 +2176,24 @@ class FieldDescription<M> {
       header: header ?? this.header,
     );
   }
+
   @override
   String toString() {
     return name;
   }
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is FieldDescription<M> && other.name == name;
   }
+
   @override
   int get hashCode {
     return name.hashCode;
   }
 }
+
 /// [ModelDescription] is a class to describe a model
 class ModelDescription<T extends Model> {
   // fields to search in
@@ -2379,6 +2206,7 @@ class ModelDescription<T extends Model> {
   final T Function(Map<String, dynamic> data) fromJson;
   // semantics (general title, description, icon, etc..)
   final ModelGeneralData Function(T model) tileBuilder;
+
   /// actions
   final List<ModelAction<T>> actions;
   const ModelDescription({
@@ -2405,6 +2233,7 @@ class ModelDescription<T extends Model> {
     }
     return map;
   }
+
   // copyWith
   ModelDescription<T> copyWith({
     Set<FieldDescription<T>>? fields,
@@ -2424,6 +2253,7 @@ class ModelDescription<T extends Model> {
     );
   }
 }
+
 class ModelGeneralData {
   final String? title;
   final String? subtitle;
@@ -2436,6 +2266,7 @@ class ModelGeneralData {
     this.trailing,
   });
 }
+
 /// [showDateRangeFilterWizard] show a date range filter wizard
 /// it contains [startAt] and [endAt] fields, both are nullable
 /// but must at least one of them is not null
@@ -2556,8 +2387,15 @@ Future<IndexViewFilter<M>?> showDateRangeFilterWizard<M extends Model>(BuildCont
                 }
                 Navigator.of(context).pop(
                   IndexViewFilter<M>(
-                    name: 
-                      "${formatDate(DateTime.parse(startAtController.text), [mm, '/', dd])}⇢${formatDate(DateTime.parse(endAtController.text), [mm, '/', dd])}",
+                    name: "${formatDate(DateTime.parse(startAtController.text), [
+                          mm,
+                          '/',
+                          dd
+                        ])}⇢${formatDate(DateTime.parse(endAtController.text), [
+                          mm,
+                          '/',
+                          dd
+                        ])}",
                     remote: (query) {
                       if (startAtController.text.isNotEmpty) {
                         query = query.where(field, isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime.parse(startAtController.text)));
@@ -2810,10 +2648,12 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
     },
   );
 }
+
 class SearchFilter {
   final List<dynamic> query;
   const SearchFilter({required this.query});
 }
+
 /// [showModelExportDialog]
 /// [showModelExportDialog] is a function to show a model export dialog
 /// it takes a [context] and a [controller]
@@ -2827,6 +2667,7 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
     // just in case the user used arabic comma i added the replaceAll
     return selectedFieldsController.text.replaceAll("،", ",").split(",");
   }
+
   var limit = 100;
   await showDialog(
     context: context,
@@ -2973,4 +2814,300 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
       });
     },
   );
+}
+
+/// [ModelViewFiltersChips]
+class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
+  /// [controller] is the controller of the view
+  final ModelListViewController<M> controller;
+
+  /// [allowMultipleFilters] is a bool to allow multiple filters
+  final bool allowMultipleFilters;
+
+  /// [searchController] is a controller to control the search field
+  final TextEditingController? searchController;
+  const ModelViewFiltersChips({
+    super.key,
+    required this.controller,
+    this.allowMultipleFilters = false,
+    this.searchController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    double gap = 20.0;
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ListenableBuilder(
+          listenable: controller,
+          builder: (context, snapshot) {
+            return ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                SizedBox(
+                  width: gap,
+                ),
+                if (controller.value!.selectedModels.isNotEmpty)
+                  Center(
+                    child: Container(
+                      margin: EdgeInsetsDirectional.only(end: gap / 2),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        border: GradientBoxBorder(
+                          gradient: LinearGradient(
+                            colors: [
+                              Theme.of(context).colorScheme.primary,
+                              Theme.of(context).colorScheme.inversePrimary,
+                              Theme.of(context).colorScheme.secondary,
+                            ],
+                            begin: const Alignment(-1.0, 0.0),
+                            end: const Alignment(1.0, 0.0),
+                            transform: const GradientRotation(pi / 4),
+                          ),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(width: 10),
+                          Text("${controller.value!.selectedModels.length}"),
+                          const SizedBox(width: 10),
+                          Container(
+                            height: 30,
+                            padding: EdgeInsets.symmetric(vertical: 5),
+                            child: VerticalDivider(width: 1),
+                          ),
+                          TextButton.icon(
+                            style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
+                            onPressed: () => controller.unselectAll(),
+                            label: const Text("unselect"),
+                            icon: const Icon(
+                              FluentIcons.dismiss_24_regular,
+                              size: 18,
+                            ),
+                          ),
+                          Container(
+                            height: 30,
+                            padding: EdgeInsets.symmetric(vertical: 5),
+                            child: VerticalDivider(width: 1),
+                          ),
+                          TextButton.icon(
+                            style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
+                            onPressed: () {
+                              // _exportModels(widget.controller.value!.selectedModels);
+                              showModelExportDialog(context, controller, controller.value!.selectedModels.toList());
+                            },
+                            label: const Text("export"),
+                            icon: const Icon(
+                              FluentIcons.archive_32_regular,
+                              size: 18,
+                            ),
+                          ),
+                          Container(
+                            height: 30,
+                            padding: EdgeInsets.symmetric(vertical: 5),
+                            child: VerticalDivider(width: 1),
+                          ),
+                          TextButton.icon(
+                            style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
+                            onPressed: () {
+                              showDeleteModelsDailog(context, controller.value!.selectedModels.toList());
+                            },
+                            label: const Text("delete"),
+                            icon: const Icon(
+                              FluentIcons.delete_16_regular,
+                              size: 18,
+                            ),
+                          ),
+                          for (var action in controller.description.actions.where((e) => e.multiple != null)) ...[
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 5),
+                              child: VerticalDivider(width: 1),
+                            ),
+                            TextButton(
+                              style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
+                              onPressed: () async {
+                                await action.multiple!(context, controller.value!.selectedModels.toList());
+                                // TODO: refresh after done
+                                // widget.controller.load();
+                              },
+                              child: Text(action.label),
+                              // icon: action.icon == null? SizedBox() : Icon(
+                              //   action.icon!,
+                              //   size: 18,
+                              // ),
+                            ),
+                          ]
+                        ],
+                      ),
+                    ),
+                  ),
+                Container(
+                  width: 300,
+                  height: 40,
+                  // max with is view port -50
+                  constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 50),
+                  child: Center(
+                    child: AppTextFormField.min(
+                      controller: searchController,
+                      // enabled: !loading.value,
+                      onSubmitted: (String value) {
+                        controller.value = controller.value!.copyWith(
+                          searchQuery: SearchQuery(
+                            field: controller.value!.searchQuery?.field ?? controller.description.fields.firstOrNull?.name ?? "",
+                            value: value,
+                          ),
+                        );
+                        controller.search();
+                      },
+                      onChanged: (String value) async {
+                        controller.setSearchQueryValue(value);
+                      },
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(FluentIcons.search_24_regular),
+                        label: Text(
+                          'Search${controller.value!.searchQuery!.field.isNotEmpty == true ? " (${controller.value!.searchQuery!.field})" : ""}',
+                          maxLines: 1,
+                          softWrap: false,
+                        ),
+                        alignLabelWithHint: true,
+                        // select search field
+                        suffixIcon: controller.value?.searchQuery == null
+                            ? null
+                            : MenuAnchor(
+                                builder: (context, controller, child) {
+                                  return IconButton(
+                                    icon: const Icon(
+                                      FluentIcons.filter_24_regular,
+                                    ),
+                                    onPressed: () => controller.open(),
+                                    // label: Text(value!.searchQuery!.field),
+                                  );
+                                },
+                                menuChildren: [
+                                  for (var field in controller.description.fields)
+                                    MenuItemButton(
+                                      leadingIcon: const Icon(FeatherIcons.user),
+                                      trailingIcon: controller.value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                                      onPressed: controller.value!.searchQuery!.field == field
+                                          ? null
+                                          : () {
+                                              controller.setSearchQueryField(field.name);
+                                            },
+                                      child: Text(field.name.titleCase),
+                                    ),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: gap / 2,
+                ),
+                for (var filter in controller.value!.filters)
+                  Padding(
+                    padding: EdgeInsets.only(right: gap / 2),
+                    child: SizedBox(
+                      height: 40,
+                      child: Builder(
+                        builder: (context) {
+                          bool isActive = filter.active ?? false;
+                          bool isFixed = filter.fixed ?? false;
+                          return GestureDetector(
+                            onTap: () {
+                              controller.updateFilter(filter.copyWith(active: !filter.active), allowMultipleFilters);
+                            },
+                            child: Chip(
+                              label: Text(filter.name.titleCase),
+                              backgroundColor: isActive == true ? Theme.of(context).colorScheme.primary : null,
+                              side: isActive == true ? const BorderSide(color: Colors.transparent) : BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
+                              labelStyle: TextStyle(color: isActive == true ? Theme.of(context).colorScheme.onPrimary : null),
+                              deleteIcon: isFixed == true
+                                  ? null
+                                  : const Icon(
+                                      FluentIcons.dismiss_24_regular,
+                                      size: 15,
+                                    ),
+                              deleteIconColor: isActive == true ? Theme.of(context).colorScheme.onPrimary : null,
+                              onDeleted: isFixed == true
+                                  ? null
+                                  : () {
+                                      controller.removeFilter(filter);
+                                    },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                Padding(
+                  padding: EdgeInsets.only(right: gap / 2),
+                  child: SizedBox(
+                    height: 40,
+                    child: MenuAnchor(
+                      builder: (context, controller, _) {
+                        return ActionChip(
+                          label: const Icon(
+                            FluentIcons.add_28_regular,
+                            size: 20,
+                          ),
+                          onPressed: () async {
+                            if (controller.isOpen) {
+                              controller.close();
+                            } else {
+                              controller.open();
+                            }
+                          },
+                        );
+                      },
+                      menuChildren: [
+                        MenuItemButton(
+                          leadingIcon: const Icon(
+                            FluentIcons.add_28_regular,
+                            size: 20,
+                          ),
+                          onPressed: () async {
+                            var filter = await showFilterWizard(context, controller.description);
+                            if (filter != null) {
+                              controller.value = controller.value!.copyWith(filters: [
+                                ...controller.value!.filters,
+                                filter
+                              ]);
+                            }
+                          },
+                          child: const Text('Custom filter'),
+                        ),
+                        // datetime range
+                        MenuItemButton(
+                          leadingIcon: const Icon(
+                            FluentIcons.calendar_28_regular,
+                            size: 20,
+                          ),
+                          onPressed: () async {
+                            var filter = await showDateRangeFilterWizard(context, controller.description);
+                            if (filter != null) {
+                              controller.value = controller.value!.copyWith(filters: [
+                                ...controller.value!.filters,
+                                filter
+                              ]);
+                            }
+                          },
+                          child: const Text('Date range'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: gap,
+                ),
+              ],
+            );
+          }),
+    );
+  }
 }
