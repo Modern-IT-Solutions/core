@@ -1,62 +1,37 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-
 import 'dart:convert';
-
 import 'dart:math';
-
+import 'package:date_format/date_format.dart';
 import 'package:flutter/services.dart';
-
 import 'package:feather_icons/feather_icons.dart';
-
 import 'package:file_saver/file_saver.dart';
-
 import 'package:intl/intl.dart';
-
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-
 import 'package:flutter/material.dart';
-
 import 'package:muskey/muskey.dart';
-
 import 'package:url_launcher/url_launcher.dart';
-
 import 'package:lib/lib.dart';
-
 import 'package:recase/recase.dart';
-
 import 'package:timeago/timeago.dart' as timeago;
-
 import 'package:visibility_detector/visibility_detector.dart';
-
 import 'package:gradient_borders/gradient_borders.dart';
-
 import 'package:core/core.dart';
-
 import 'package:core/services/defaults/helpers.dart';
-
 import 'find.dart';
-
 import 'forms/create_profile.dart';
-
 import 'forms/update_profile.dart';
-
 /// [ProfilesSearchType] is a class to build a query to search
-
 enum ProfilesSearchType implements SearchType {
   name,
-
   email;
-
   IconData get icon {
     switch (this) {
       case ProfilesSearchType.name:
         return FeatherIcons.user;
-
       case ProfilesSearchType.email:
         return FeatherIcons.mail;
     }
   }
-
   String get field {
     if (this == ProfilesSearchType.name) {
       return "displayName";
@@ -65,24 +40,17 @@ enum ProfilesSearchType implements SearchType {
     }
   }
 }
-
 /// [ManageProfilesView] is a tab for stations
-
 class ManageProfilesView<M extends ProfileModel> extends ModelMnanagerView<M> {
   final ProfileRepositoryInterface<M> repository;
-
   final Map<String, QueryFilterInterface<M>> filters;
-
   final List<ModelAction<M>> actions;
-
   Map<String, List<ModelAction<M>>> get groupedActions {
     var map = <String, List<ModelAction<M>>>{};
-
     for (var action in actions) {
       if (action.group == null) {
         continue;
       }
-
       if (map.containsKey(action.group)) {
         map[action.group]!.add(action);
       } else {
@@ -91,29 +59,22 @@ class ManageProfilesView<M extends ProfileModel> extends ModelMnanagerView<M> {
         ];
       }
     }
-
     return map;
   }
-
   ManageProfilesView({
     super.key,
     this.filters = const {},
     this.actions = const [],
   }) : repository = ProfileRepository.instance as ProfileRepositoryInterface<M>;
-
   @override
   State<ManageProfilesView> createState() => ManageProfilesViewState<M>();
 }
-
 class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfilesView> with ModelMnanagerViewMixin<M> {
   var searchType = ValueNotifier(ProfilesSearchType.email);
-
   Map<String, QueryFilterInterface<M>> filters = {};
-
   @override
   void initState() {
     super.initState();
-
     filters['All'] = QueryFilter(
       name: 'All',
       fields: [],
@@ -126,73 +87,49 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       },
       fixed: true,
     );
-
     // filters = widget.filters;
-
     filters.addAll(widget.filters as Map<String, QueryFilterInterface<M>>);
-
     for (var filter in activeFilters) {
       filter.onSelect?.call(filters);
     }
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       load();
     });
   }
-
   List<QueryFilterInterface<M>> get activeFilters {
     return filters.values.where((element) => element.active).toList();
   }
-
   Map<DateTime, bool> history = {};
-
   DateTime? get currentStartAt => history.keys.lastOrNull;
-
   bool get hasNext => filteredModels.isNotEmpty && nextStartAt != null && nextStartAt != currentStartAt;
-
   DateTime? get nextStartAt => models.value?.items.lastOrNull?.updatedAt;
-
   // prevStartAt
-
   DateTime? get prevStartAt {
     // index of latest item
-
     var index = models.value?.items.indexWhere((element) => element.updatedAt == currentStartAt);
-
     if (index != null && index > 0) {
       return models.value?.items[index - 1].updatedAt;
     }
-
     return null;
   }
-
   bool get hasPrev => prevStartAt != null && prevStartAt != currentStartAt;
-
   @override
   Future<void> load() async {
     return search();
   }
-
   /// [search] is a function to search for profiles
-
   /// it takes a [query] and a [type] to search by
-
   Future<void> search({String? query, SearchType? type, Iterable<Timestamp>? startAfter}) async {
     if (loading.value) {
       return;
     }
-
     loading.value = true;
-
     var concat = false;
-
     try {
       if (startAfter != null && startAfter.isNotEmpty == true) {
         history[startAfter.first.toDate()] = true;
-
         concat = true;
       }
-
       ListResult<M> data = (await widget.repository.list(
         ListRequest(
             searchQuery: query != null && query.isNotEmpty && type != null ? SearchQuery(field: type.name, value: query) : null,
@@ -200,13 +137,10 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
               for (QueryFilterInterface<M> filter in activeFilters) {
                 query = filter.server(query as Query<M>);
               }
-
               query = query.orderBy("updatedAt", descending: false);
-
               if (startAfter != null) {
                 query = query.startAfter(startAfter);
               }
-
               return query;
             },
             limit: 10,
@@ -214,7 +148,6 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
               source: Source.server,
             )),
       )) as ListResult<M>;
-
       if (concat) {
         models.value = ListResult(
           items: [
@@ -228,15 +161,12 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
     } catch (e) {
       print(e);
     }
-
     loading.value = false;
   }
-
   List<ProfileModel> get filteredModels {
     if (models.value == null) {
       return [];
     }
-
     bool _filters(ProfileModel model) {
       for (var filter in activeFilters) {
         if (filter.local != null) {
@@ -245,27 +175,20 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
           }
         }
       }
-
       return true;
     }
-
     if (searchController.text.isEmpty) {
       return models.value!.items.where(_filters).toList();
     }
-
     // search in display name and email and phone number and uid
-
     return models.value!.items.where((profile) {
       var query = searchController.text.toLowerCase();
-
       if (!_filters(profile)) {
         return false;
       }
-
       return profile.toString().toLowerCase().contains(query);
     }).toList();
   }
-
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -290,13 +213,10 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                 Expanded(
                   child: AppTextFormField.min(
                     // enabled: !loading.value,
-
                     onSubmitted: (String value) {
                       search(query: value, type: searchType.value);
                     },
-
                     controller: searchController,
-
                     decoration: InputDecoration(
                       prefixIcon: const Icon(FluentIcons.search_24_regular),
                       label: const Text('Search'),
@@ -334,11 +254,8 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                 ),
               ],
             ),
-
             // row of filters using chips, each chip is a filter can be remove
-
             // if no filters, hide this row
-
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: SizedBox(
@@ -351,9 +268,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                         onTap: () {
                           setState(() {
                             filters[filter.name]?.active = !(filters[filter.name]?.active ?? false);
-
                             filters[filter.name]!.onSelect?.call(filters);
-
                             search();
                           });
                         },
@@ -374,7 +289,6 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                               : () {
                                   setState(() {
                                     filters.remove(filter.name);
-
                                     search();
                                   });
                                 },
@@ -384,18 +298,12 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                 ),
               ),
             ),
-
             // table of profiles, profile is the same as firebase
-
             // use ListTile for each profile
-
             FlexTable(
               selectable: false,
-
               scrollable: false,
-
               // the space bitween each item called gap
-
               configs: const [
                 FlexTableItemConfig.square(30),
                 FlexTableItemConfig.flex(2),
@@ -403,7 +311,6 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                 FlexTableItemConfig.flex(2),
                 FlexTableItemConfig.square(40),
               ],
-
               child: ListenableBuilder(
                 listenable: searchController,
                 builder: (context, child) {
@@ -415,30 +322,25 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                         child: FlexTableItem(
                           children: [
                             SizedBox(),
-
                             Text(
                               'Name',
                               style: TextStyle(fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                             ),
-
                             // create at
-
                             Text(
                               'Last Update',
                               style: TextStyle(fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                             ),
-
                             Text(
                               'Roles',
                               style: TextStyle(fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                             ),
-
                             SizedBox(),
                           ],
                         ),
@@ -454,17 +356,13 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                               itemCount: filteredModels.length,
                               itemBuilder: (context, index) {
                                 var model = filteredModels[index];
-
                                 return InkWell(
                                   highlightColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                   focusColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                   hoverColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                   borderRadius:
-
                                       //  BorderRadius.circular(8),
-
                                       // in first
-
                                       index == 0
                                           ? const BorderRadius.only(
                                               bottomLeft: Radius.circular(8),
@@ -488,21 +386,17 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                                 )
                                               : null,
                                         ),
-
                                         Text(
                                           model.displayName.isNotEmpty ? model.displayName : "(No name)",
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
-
                                         // roles
-
                                         Text(
                                           timeago.format(model.updatedAt.toLocal()),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
-
                                         SizedBox(
                                           width: 70,
                                           child: Wrap(
@@ -512,7 +406,6 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                             ],
                                           ),
                                         ),
-
                                         MenuAnchor(
                                           builder: (context, controller, child) {
                                             return IconButton(
@@ -536,7 +429,6 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                                   MenuItemButton(
                                                     onPressed: () async {
                                                       var updatedModel = await action.single?.call(context, model);
-
                                                       if (updatedModel != null) {
                                                         // con
                                                       }
@@ -611,9 +503,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                             ),
                                             child: Text('Nothing to show'),
                                           ),
-
                                           // refresh
-
                                           OutlinedButton(
                                             onPressed: load,
                                             child: const Text("Refresh"),
@@ -641,9 +531,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                         ),
                                       )
                                     else
-
                                     // you reached the end text
-
                                     if (models.value != null && models.value!.items.isNotEmpty)
                                       const Padding(
                                         padding: EdgeInsets.symmetric(
@@ -669,9 +557,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       },
     );
   }
-
   // update station
-
   Future<void> showCreateModelDailog(BuildContext context) async {
     var child = Container(
       constraints: const BoxConstraints(maxWidth: 500),
@@ -686,20 +572,16 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                 label: 'Show',
                 onPressed: () {
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
                   showUpdateModelDailog(context, model);
                 },
               ),
             ),
           );
-
           Navigator.of(context).pop();
-
           // load();
         },
       ),
     );
-
     await showDialog(
       context: context,
       builder: (context) {
@@ -716,9 +598,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       },
     );
   }
-
   // update station
-
   Future<void> showUpdateModelDailog(BuildContext context, ProfileModel model) async {
     var child = Container(
       constraints: const BoxConstraints(maxWidth: 500),
@@ -735,21 +615,17 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                   label: 'Show',
                   onPressed: () {
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
                     showUpdateModelDailog(context, model as M);
                   },
                 ),
               ),
             );
-
             Navigator.of(context).pop();
-
             // load();
           },
         ),
       ),
     );
-
     await showDialog(
       context: context,
       builder: (context) {
@@ -766,109 +642,57 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       },
     );
   }
-
   // // delete station, a simple dialog with a text and two buttons
-
   // Future<void> showDeleteModelDailog(BuildContext context, ProfileModel model) async {
-
   //   bool _loading = false;
-
   //   await showDialog(
-
   //     context: context,
-
   //     builder: (context) => AlertDialog(
-
   //       title: const Text('Confirm delete'),
-
   //       content: const Text('this action cannot be undone, are you sure you want to continue?'),
-
   //       actions: [
-
   //         TextButton(
-
   //           onPressed: () {
-
   //             Navigator.of(context).pop();
-
   //           },
-
   //           child: const Text('Cancel'),
-
   //         ),
-
   //         StatefulBuilder(builder: (context, setState) {
-
   //           return TextButton(
-
   //             onPressed: _loading
-
   //                 ? null
-
   //                 : () async {
-
   //                     setState(() {
-
   //                       _loading = true;
-
   //                     });
-
   //                     try {
-
   //                       await widget.repository.delete(DeleteRequest(model.ref.id));
-
   //                       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-
   //                         SnackBar(
-
   //                             behavior: SnackBarBehavior.floating,
-
   //                             width: 400.0,
-
   //                             content: Text('${model.ref.id} deleted'),
-
   //                             action: SnackBarAction(
-
   //                               label: 'Close',
-
   //                               onPressed: () {
-
   //                                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
   //                               },
-
   //                             )),
-
   //                       );
-
   //                       Navigator.of(context).pop();
-
   //                       load();
-
   //                     } catch (e) {}
-
   //                     setState(() {
-
   //                       _loading = false;
-
   //                     });
-
   //                   },
-
   //             child: _loading ? const CircularProgressIndicator.adaptive() : const Text('Delete'),
-
   //           );
-
   //         }),
-
   //       ],
-
   //     ),
-
   //   );
-
   // }
-
   @override
   Future<void> showDetailsModelDailog(BuildContext context, ProfileModel model) async {
     var child = Container(
@@ -878,23 +702,19 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
         model: model,
         actions: [
           // edit
-
           IconButton(
             onPressed: () {
               Navigator.of(context).pop();
-
               showUpdateModelDailog(context, model);
             },
             icon: const Icon(FluentIcons.edit_16_regular),
           ),
-
           const SizedBox(
             width: 8,
           ),
         ],
       ),
     );
-
     await showDialog(
       context: context,
       builder: (context) {
@@ -912,45 +732,30 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
     );
   }
 }
-
 class ModelListView<M extends Model> extends StatefulWidget {
   final ModelListViewController<M> controller;
-
   final bool enableSelectOnTap;
-
   final Widget? header;
-
   final double gap;
-
   final Widget Function(M model)? itemBuilder;
-
   final List<
       ({
         FlexTableItemConfig config,
         Widget header,
         Widget Function(M model) builder
       })>? flexTableItemBuilders;
-
   final bool useFlexTable;
-
   final List<FlexTableItemConfig> flexTableConfigs;
-
   final Widget? flexTableHeader;
-
   final void Function(M model)? onModelTap;
-
   final void Function()? onAddPressed;
-
   // final List<({Icon icon, String label, Future<Null> Function() onTap})>? addOptions;
-
   const ModelListView({
     super.key,
     this.enableSelectOnTap = false,
     required this.controller,
     this.header,
-
     // this.addOptions,
-
     this.gap = 14,
     this.itemBuilder,
     this.useFlexTable = true,
@@ -965,46 +770,32 @@ class ModelListView<M extends Model> extends StatefulWidget {
     this.onModelTap,
     this.onAddPressed,
   }) : assert(itemBuilder == null || flexTableItemBuilders == null, "you can't use both itemBuilder and flexTableItemBuilder");
-
   @override
   State<ModelListView<M>> createState() => _ModelListViewState<M>();
 }
-
 class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
   /// [_allowMultipleFilters]
-
   /// its good tool but in maney cases it requires creating a new index in firestore
-
   bool _allowMultipleFilters = false;
-
   var searchController = TextEditingController();
-
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.controller.load();
     });
-
     super.initState();
   }
-
   Future<String?> _exportModels(Set<M> selectedModels) async {
     var models = selectedModels.toList();
-
     var raw = "[${models.map((e) => jsonEncode(e.toJson(),
-
             // in case of time stamp
-
             toEncodable: (object) {
           if (object is Timestamp) {
             return object.toDate().toIso8601String();
           }
         })).join(",")}]";
-
     var rawAsBytes = const Utf8Codec(allowMalformed: true).encode(raw);
-
     String? dir;
-
     if (Platforms.isWeb) {
       dir = await FileSaver.instance.saveFile(
         bytes: rawAsBytes,
@@ -1020,10 +811,8 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
         ext: 'csv',
       );
     }
-
     return dir;
   }
-
   @override
   Widget build(BuildContext context) {
     return DefaultTextStyle(
@@ -1069,9 +858,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                     ),
                                     child: Text(
                                       // n/ infinty symbol
-
                                       "${value?.models?.length}/${value?.count ?? "∞"}",
-
                                       style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
                                     ),
                                   ),
@@ -1080,7 +867,6 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                           ],
                         ),
                       ),
-
                       if (widget.onAddPressed != null)
                         SizedBox(
                           child: FilledButton.icon(
@@ -1089,48 +875,32 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                             icon: const Icon(FeatherIcons.plus),
                           ),
                         ),
-
                       // export/import
-
                       const SizedBox(
                         width: 10,
                       ),
-
                       // TextButton.icon(
-
                       //   onPressed: () {
-
                       //     showModelExportDialog(context, widget.controller);
-
                       //   },
-
                       //   label: const Text('Export'),
-
                       //   icon: const Icon(
-
                       //     FluentIcons.archive_32_regular,
-
                       //     size: 18,
-
                       //   ),
-
                       // ),
-
                       MenuAnchor(
                         builder: (context, controller, child) {
                           return IconButton(
                             icon: const Icon(
                               FluentIcons.more_vertical_24_regular,
                             ),
-
                             onPressed: () => controller.isOpen ? controller.close() : controller.open(),
-
                             // label: Text(value!.searchQuery!.field),
                           );
                         },
                         menuChildren: [
                           const SizedBox(height: 8),
-
                           MenuItemButton(
                             leadingIcon: const Icon(
                               FluentIcons.archive_32_regular,
@@ -1141,36 +911,21 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                             },
                             child: const Text('Export'),
                           ),
-
                           // MenuItemButton(
-
                           //   leadingIcon: const Icon(
-
                           //     FluentIcons.archive_arrow_back_16_regular,
-
                           //     size: 18,
-
                           //   ),
-
                           //   onPressed: () {
-
                           //     // showModelImportDialog(context, widget.controller);
-
                           //   },
-
                           //   child: const Text('Import'),
-
                           // ),
-
                           const Divider(),
-
                           Container(
                             // min width is 300
-
                             constraints: const BoxConstraints(minWidth: 250),
-
                             padding: const EdgeInsets.all(12),
-
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -1201,9 +956,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                               ],
                             ),
                           ),
-
                           // alow multiple filter combinations
-
                           SwitchListTile(
                             value: _allowMultipleFilters,
                             onChanged: (value) {
@@ -1213,16 +966,13 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                             },
                             title: const Text('Allow multiple filters'),
                           ),
-
                           const SizedBox(height: 8),
                         ],
                       ),
                     ]),
                   ),
                 ),
-
                 // /// filters chips
-
                 SliverToBoxAdapter(
                   child: SizedBox(
                     width: double.infinity,
@@ -1283,7 +1033,6 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                     style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
                                     onPressed: () {
                                       // _exportModels(widget.controller.value!.selectedModels);
-
                                       showModelExportDialog(context, widget.controller, widget.controller.value!.selectedModels.toList());
                                     },
                                     label: const Text("export"),
@@ -1315,23 +1064,15 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                     ),
                                     TextButton(
                                       style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
-
                                       onPressed: () async {
                                         await action.multiple!(context, widget.controller.value!.selectedModels.toList());
-
                                         // TODO: refresh after done
-
                                         // widget.controller.load();
                                       },
-
                                       child: Text(action.label),
-
                                       // icon: action.icon == null? SizedBox() : Icon(
-
                                       //   action.icon!,
-
                                       //   size: 18,
-
                                       // ),
                                     ),
                                   ]
@@ -1341,19 +1082,13 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                           ),
                         Container(
                           width: 300,
-
                           height: 40,
-
                           // max with is view port -50
-
                           constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 50),
-
                           child: Center(
                             child: AppTextFormField.min(
                               controller: searchController,
-
                               // enabled: !loading.value,
-
                               onSubmitted: (String value) {
                                 widget.controller.value = widget.controller.value!.copyWith(
                                   searchQuery: SearchQuery(
@@ -1361,27 +1096,20 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                     value: value,
                                   ),
                                 );
-
                                 widget.controller.search();
                               },
-
                               onChanged: (String value) async {
                                 widget.controller.setSearchQueryValue(value);
                               },
-
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(FluentIcons.search_24_regular),
-
                                 label: Text(
                                   'Search${value!.searchQuery!.field.isNotEmpty == true ? " (${value.searchQuery!.field})" : ""}',
                                   maxLines: 1,
                                   softWrap: false,
                                 ),
-
                                 alignLabelWithHint: true,
-
                                 // select search field
-
                                 suffixIcon: value?.searchQuery == null
                                     ? null
                                     : MenuAnchor(
@@ -1390,9 +1118,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                             icon: const Icon(
                                               FluentIcons.filter_24_regular,
                                             ),
-
                                             onPressed: () => controller.open(),
-
                                             // label: Text(value!.searchQuery!.field),
                                           );
                                         },
@@ -1425,9 +1151,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                               child: Builder(
                                 builder: (context) {
                                   bool isActive = filter.active ?? false;
-
                                   bool isFixed = filter.fixed ?? false;
-
                                   return GestureDetector(
                                     onTap: () {
                                       widget.controller.updateFilter(filter.copyWith(active: !filter.active), _allowMultipleFilters);
@@ -1459,23 +1183,57 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                           padding: EdgeInsets.only(right: widget.gap / 2),
                           child: SizedBox(
                             height: 40,
-                            child: ActionChip(
-                              label: const Icon(
-                                FluentIcons.add_28_regular,
-                                size: 20,
-                              ),
-                              onPressed: () async {
-                                var filter = await showFilterWizard(context, widget.controller.description);
-
-                                print(filter);
-
-                                if (filter != null) {
-                                  widget.controller.value = widget.controller.value!.copyWith(filters: [
-                                    ...widget.controller.value!.filters,
-                                    filter
-                                  ]);
-                                }
+                            child: MenuAnchor(
+                              builder: (context, controller, _) {
+                                return ActionChip(
+                                  label: const Icon(
+                                    FluentIcons.add_28_regular,
+                                    size: 20,
+                                  ),
+                                  onPressed: () async {
+                                    if (controller.isOpen) {
+                                      controller.close();
+                                    } else {
+                                      controller.open();
+                                    }
+                                  },
+                                );
                               },
+                              menuChildren: [
+                                MenuItemButton(
+                                  leadingIcon: const Icon(
+                                    FluentIcons.add_28_regular,
+                                    size: 20,
+                                  ),
+                                  onPressed: () async {
+                                    var filter = await showFilterWizard(context, widget.controller.description);
+                                    if (filter != null) {
+                                      widget.controller.value = widget.controller.value!.copyWith(filters: [
+                                        ...widget.controller.value!.filters,
+                                        filter
+                                      ]);
+                                    }
+                                  },
+                                  child: const Text('Custom filter'),
+                                ),
+                                // datetime range
+                                MenuItemButton(
+                                  leadingIcon: const Icon(
+                                    FluentIcons.calendar_28_regular,
+                                    size: 20,
+                                  ),
+                                  onPressed: () async {
+                                    var filter = await showDateRangeFilterWizard(context, widget.controller.description);
+                                    if (filter != null) {
+                                      widget.controller.value = widget.controller.value!.copyWith(filters: [
+                                        ...widget.controller.value!.filters,
+                                        filter
+                                      ]);
+                                    }
+                                  },
+                                  child: const Text('Date range'),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -1486,129 +1244,67 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                     ),
                   ),
                 ),
-
                 // put the past widget here, but un sliver
-
                 // SliverToBoxAdapter(
-
                 //   child: Padding(
-
                 //     padding: EdgeInsets.only( left: widget.gap, right: widget.gap),
-
                 //     child: Row(
-
                 //       children: [
-
                 //         Expanded(
-
                 //           child: AppTextFormField.min(
-
                 //             controller: searchController,
-
                 //             // enabled: !loading.value,
-
                 //             onSubmitted: (String value) {
-
                 //               widget.controller.value = widget.controller.value!.copyWith(
-
                 //                 searchQuery: SearchQuery(
-
                 //                   field: widget.controller.value!.searchQuery?.field ?? widget.controller.description.fields.firstOrNull?.name ?? "",
-
                 //                   value: value,
-
                 //                 ),
-
                 //               );
-
                 //               widget.controller.search();
-
                 //             },
-
                 //             onChanged: (String value) async {
-
                 //               widget.controller.setSearchQueryValue(value);
-
                 //             },
-
                 //             decoration: InputDecoration(
-
                 //               prefixIcon: const Icon(FluentIcons.search_24_regular),
-
                 //               label: const Text('Search'),
-
                 //               alignLabelWithHint: true,
-
                 //               // select search field
-
                 //               suffixIcon: value?.searchQuery == null
-
                 //                   ? null
-
                 //                   : MenuAnchor(
-
                 //                       builder: (context, controller, child) {
-
                 //                         return TextButton.icon(
-
                 //                           icon: const Icon(
-
                 //                             FluentIcons.filter_24_regular,
-
                 //                           ),
-
                 //                           onPressed: () => controller.open(),
-
                 //                           label: Text(value!.searchQuery!.field),
-
                 //                         );
-
                 //                       },
-
                 //                       menuChildren: [
-
                 //                         for (var field in widget.controller.description.fields)
-
                 //                           MenuItemButton(
-
                 //                             leadingIcon: const Icon(FeatherIcons.user),
-
                 //                             trailingIcon: value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
-
                 //                             onPressed: value.searchQuery!.field == field
-
                 //                                 ? null
-
                 //                                 : () {
-
                 //                                     widget.controller.setSearchQueryField(field.name);
-
                 //                                   },
-
                 //                             child: Text(field.name.titleCase),
-
                 //                           ),
-
                 //                       ],
-
                 //                     ),
-
                 //             ),
-
                 //           ),
-
                 //         ),
-
                 //       ],
-
                 //     ),
-
                 //   ),
-
                 // ),
-
                 // SizedBox(height: widget.gap),
-
                 if (widget.useFlexTable)
                   SliverToBoxAdapter(
                     child: Column(
@@ -1665,18 +1361,13 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                       ],
                     ),
                   ),
-
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       M? prevModel = index == 0 ? null : widget.controller.filtered![index - 1];
-
                       M? nextModel = index == widget.controller.filtered!.length - 1 ? null : widget.controller.filtered![index + 1];
-
                       var model = widget.controller.filtered![index];
-
                       var tile = widget.controller.description.tileBuilder(model);
-
                       return Padding(
                         padding: EdgeInsets.symmetric(horizontal: widget.gap),
                         child: widget.itemBuilder?.call(model) ??
@@ -1720,21 +1411,17 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                     for (var item in widget.flexTableItemBuilders!) item.builder(model),
                                   ] else ...[
                                     if (tile.leading != null) tile.leading! else const SizedBox(),
-
                                     Text(
                                       tile.title ?? "(No title)",
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-
                                     Text(
                                       tile.subtitle ?? "(No subtitle)",
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-
                                     // create at
-
                                     Text(
                                       timeago.format(model.updatedAt.toLocal()),
                                       style: const TextStyle(fontWeight: FontWeight.bold),
@@ -1762,16 +1449,13 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                         const SizedBox(
                                           height: 8,
                                         ),
-
                                         // copy ref button
-
                                         if (widget.controller.description.groupedActions.keys.isNotEmpty) ...[
                                           for (var group in widget.controller.description.groupedActions.keys) ...[
                                             for (var action in widget.controller.description.groupedActions[group]!)
                                               MenuItemButton(
                                                 onPressed: () async {
                                                   var updatedModel = await action.single?.call(context, model);
-
                                                   if (updatedModel != null) {
                                                     widget.controller.replaceModel(model, updatedModel);
                                                   }
@@ -1782,11 +1466,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                             const Divider()
                                           ]
                                         ],
-
                                         MenuItemButton(
                                           onPressed: () async {
                                             await Clipboard.setData(ClipboardData(text: model.ref.path));
-
                                             ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                                               const SnackBar(
                                                 behavior: SnackBarBehavior.floating,
@@ -1798,7 +1480,6 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                           leadingIcon: const Icon(FluentIcons.copy_24_regular),
                                           child: const Text("Copy ref"),
                                         ),
-
                                         const SizedBox(
                                           height: 8,
                                         ),
@@ -1812,7 +1493,6 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                     childCount: widget.controller.filtered?.length ?? 0,
                   ),
                 ),
-
                 SliverToBoxAdapter(
                   child: Center(
                     child: Container(
@@ -1840,28 +1520,22 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                   runSpacing: 12.0,
                                   children: [
                                     // refresh
-
                                     OutlinedButton(
                                       onPressed: () async {
                                         await launchUrl(Uri.parse(widget.controller.needIndexError!.url));
                                       },
                                       child: const Text("Create index"),
                                     ),
-
                                     // clear search
-
                                     if (widget.controller.value!.searchQuery != null)
                                       TextButton(
                                         onPressed: () async {
                                           searchController.clear();
-
                                           await widget.controller.clearSearch();
                                         },
                                         child: const Text("Clear search"),
                                       ),
-
                                     // un select filters
-
                                     if (widget.controller.value!.filters.isNotEmpty)
                                       TextButton(
                                         onPressed: () {
@@ -1881,9 +1555,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                               width: 15,
                               child: const CircularProgressIndicator.adaptive(strokeWidth: 2, strokeCap: StrokeCap.round),
                             ))
-
                           // if controller.filtered is empty but controller.value is not empty suggest to clear searchQuery
-
                           else if (widget.controller.value?.models != null && widget.controller.value!.models!.isEmpty && widget.controller.value!.searchQuery != null)
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -1903,14 +1575,11 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                     ],
                                   ),
                                 ),
-
                                 // refresh
-
                                 if (searchController.text.isNotEmpty)
                                   OutlinedButton(
                                     onPressed: () async {
                                       searchController.clear();
-
                                       await widget.controller.clearSearch();
                                     },
                                     child: const Text("Clear search"),
@@ -1928,9 +1597,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                   ),
                                   child: Text('Nothing to show'),
                                 ),
-
                                 // refresh
-
                                 OutlinedButton(
                                   onPressed: widget.controller.load,
                                   child: const Text("Refresh"),
@@ -1938,27 +1605,16 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                               ],
                             )
                           else if (widget.controller.value?.hasNext == true)
-
                             // VisibilityDetector(
-
                             //   key: Key(controller..toString()),
-
                             //   onVisibilityChanged: (info) {
-
                             //     if (info.visibleFraction > 0) {
-
                             //       search(startAfter: [
-
                             //         Timestamp.fromDate(nextStartAt!)
-
                             //       ]);
-
                             //     }
-
                             //   },
-
                             //   child:
-
                             OutlinedButton.icon(
                               onPressed: () async {
                                 await widget.controller.more();
@@ -1966,13 +1622,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                               label: const Text("LOAD MORE"),
                               icon: const Icon(FluentIcons.chevron_down_24_regular),
                             )
-
                           // )
-
                           else
-
                           // you reached the end text
-
                           if (widget.controller.value?.models != null && widget.controller.value!.models!.isNotEmpty)
                             const Padding(
                               padding: EdgeInsets.symmetric(
@@ -1986,308 +1638,158 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                     ),
                   ),
                 ),
-
                 // Expanded(
-
                 //   child: RefreshIndicator.adaptive(
-
                 //     triggerMode: RefreshIndicatorTriggerMode.anywhere,
-
                 //     onRefresh: widget.controller.load,
-
                 //     child: Stack(
-
                 //       children: [
-
                 //         Positioned.fill(
-
                 //           child: Padding(
-
                 //             padding: EdgeInsets.symmetric(horizontal: widget.gap),
-
                 //             child: Column(
-
                 //               mainAxisSize: MainAxisSize.min,
-
                 //               mainAxisAlignment: MainAxisAlignment.center,
-
                 //               children: [
-
                 //                 if (widget.controller.filtered != null)
-
                 //                   Expanded(
-
                 //                     child: ListView.builder(
-
                 //                       // physics: const NeverScrollableScrollPhysics(),
-
                 //                       // shrinkWrap: true,
-
                 //                       itemCount: widget.controller.filtered!.length,
-
                 //                       itemBuilder: (context, index) {
-
                 //                         var model = widget.controller.filtered![index];
-
                 //                         var tile = widget.controller.description.tileBuilder(model);
-
                 //                         return widget.itemBuilder?.call(model) ??
-
                 //                             ModelTile(
-
                 //                               selected: widget.controller.value!.selectedModels.contains(model),
-
                 //                               onTap: () {
-
                 //                                 widget.onModelTap?.call(model);
-
                 //                               },
-
                 //                               child: FlexTableItem(
-
                 //                                 selected: widget.controller.value!.selectedModels.contains(model),
-
                 //                                 onSelectChanged: (val) {
-
                 //                                   if (val == true) {
-
                 //                                     widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
-
                 //                                       ...widget.controller.value!.selectedModels,
-
                 //                                       model
-
                 //                                     });
-
                 //                                   } else {
-
                 //                                     widget.controller.value = widget.controller.value!.copyWith(selectedModels: {
-
                 //                                       ...widget.controller.value!.selectedModels..remove(model),
-
                 //                                     });
-
                 //                                   }
-
                 //                                 },
-
                 //                                 children: [
-
                 //                                   if (widget.flexTableItemBuilders != null) ...[
-
                 //                                     for (var item in widget.flexTableItemBuilders!) item.builder(model),
-
                 //                                   ] else ...[
-
                 //                                     if (tile.leading != null) tile.leading! else const SizedBox(),
-
                 //                                     Text(
-
                 //                                       tile.title ?? "(No title)",
-
                 //                                       maxLines: 1,
-
                 //                                       overflow: TextOverflow.ellipsis,
-
                 //                                     ),
-
                 //                                     Text(
-
                 //                                       tile.subtitle ?? "(No subtitle)",
-
                 //                                       maxLines: 1,
-
                 //                                       overflow: TextOverflow.ellipsis,
-
                 //                                     ),
-
                 //                                     // create at
-
                 //                                     Text(
-
                 //                                       timeago.format(model.updatedAt.toLocal()),
-
                 //                                       style: const TextStyle(fontWeight: FontWeight.bold),
-
                 //                                       overflow: TextOverflow.ellipsis,
-
                 //                                       maxLines: 1,
-
                 //                                     ),
-
                 //                                   ],
-
                 //                                   if (tile.trailing != null)
-
                 //                                     tile.trailing!
-
                 //                                   else
-
                 //                                     MenuAnchor(
-
                 //                                       builder: (context, controller, child) {
-
                 //                                         return IconButton(
-
                 //                                           onPressed: () {
-
                 //                                             if (controller.isOpen) {
-
                 //                                               controller.close();
-
                 //                                             } else {
-
                 //                                               controller.open();
-
                 //                                             }
-
                 //                                           },
-
                 //                                           icon: const Icon(Icons.more_vert),
-
                 //                                         );
-
                 //                                       },
-
                 //                                       menuChildren: [
-
                 //                                         const SizedBox(
-
                 //                                           height: 8,
-
                 //                                         ),
-
                 //                                         if (widget.controller.description.groupedActions.keys.isNotEmpty) ...[
-
                 //                                           for (var group in widget.controller.description.groupedActions.keys) ...[
-
                 //                                             for (var action in widget.controller.description.groupedActions[group]!)
-
                 //                                               MenuItemButton(
-
                 //                                                 onPressed: () => action.single?.call(model),
-
                 //                                                 leadingIcon: action.icon,
-
                 //                                                 child: Text(action.label),
-
                 //                                               ),
-
                 //                                             const Divider()
-
                 //                                           ]
-
                 //                                         ],
-
                 //                                         const SizedBox(
-
                 //                                           height: 8,
-
                 //                                         ),
-
                 //                                       ],
-
                 //                                     )
-
                 //                                 ],
-
                 //                               ),
-
                 //                             );
-
                 //                       },
-
                 //                     ),
-
                 //                   ),
-
                 //               ],
-
                 //             ),
-
                 //           ),
-
                 //         ),
-
                 //         if (widget.controller.value?.selectedModels.isNotEmpty == true)
-
                 //           Positioned(
-
                 //             left: 0,
-
                 //             right: 0,
-
                 //             bottom: 0,
-
                 //             child: Center(
-
                 //               child: Container(
-
                 //                 // constraints: BoxConstraints(maxWidth: 600),
-
                 //                 margin: EdgeInsets.all(12),
-
                 //                 // height: 50,
-
                 //                 child: Material(
-
                 //                   // color: Theme.of(context).colorScheme.primary,
-
                 //                   borderRadius: BorderRadius.circular(50),
-
                 //                   child: Padding(
-
                 //                     padding: const EdgeInsets.all(8.0),
-
                 //                     child: Row(
-
                 //                       children: [
-
                 //                         IconButton(onPressed: () {}, icon: Icon(Icons.close)),
-
                 //                         for (var action in widget.controller.description.actions.where((e) => e.multiple != null))
-
                 //                           TextButton.icon(
-
                 //                             onPressed: () {
-
                 //                               // action.multiple?.call(controller.value!.selectedModels);
-
                 //                             },
-
                 //                             icon: action.icon ?? const SizedBox(),
-
                 //                             label: Text(action.label),
-
                 //                           ),
-
                 //                       ],
-
                 //                     ),
-
                 //                   ),
-
                 //                 ),
-
                 //               ),
-
                 //             ),
-
                 //           ),
-
                 //       ],
-
                 //     ),
-
                 //   ),
-
                 // ),
               ],
             ),
           );
-
           if (!widget.useFlexTable) return child;
-
           return FlexTable(
             selectable: true,
             scrollable: false,
@@ -2307,7 +1809,6 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
     );
   }
 }
-
 class ModelTile extends StatelessWidget {
   const ModelTile({
     super.key,
@@ -2318,19 +1819,12 @@ class ModelTile extends StatelessWidget {
     this.nextSelected = false,
     this.isOdd = false,
   });
-
   final Widget child;
-
   final VoidCallback? onTap;
-
   final bool selected;
-
   final bool prevSelected;
-
   final bool nextSelected;
-
   final bool isOdd;
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -2344,13 +1838,9 @@ class ModelTile extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
-
         // child: Text("${prevSelected}/${nextSelected}"),
-
         child: child,
-
         // when selected
-
         decoration: selected
             ? BoxDecoration(
                 borderRadius: BorderRadius.vertical(
@@ -2364,28 +1854,17 @@ class ModelTile extends StatelessWidget {
     );
   }
 }
-
 typedef LocalFilterBuilder<T extends Model> = bool Function(T model);
-
 typedef RemoteFilterBuilder<T extends Model> = Query<T> Function(Query<T> query);
-
 typedef RemoteJsonFilterBuilder = Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> query);
-
 /// [IndexViewFilter] is a class to hold the state of the filter
-
 class IndexViewFilter<T extends Model> {
   final String name;
-
   final LocalFilterBuilder<T> local;
-
   final RemoteJsonFilterBuilder remote;
-
   final bool active;
-
   final bool fixed;
-
   final bool strict;
-
   const IndexViewFilter({
     required this.name,
     this.local = _defaultLocalFilter,
@@ -2394,15 +1873,12 @@ class IndexViewFilter<T extends Model> {
     this.fixed = false,
     this.strict = true,
   });
-
   static bool _defaultLocalFilter(model) {
     return true;
   }
-
   static Query<Map<String, dynamic>> _defaultRemoteFilter(Query<Map<String, dynamic>> query) {
     return query;
   }
-
   IndexViewFilter<T> copyWith({
     String? name,
     LocalFilterBuilder<T>? local,
@@ -2420,60 +1896,36 @@ class IndexViewFilter<T extends Model> {
       strict: strict ?? this.strict,
     );
   }
-
   IndexViewFilter<T> toggle() {
     return copyWith(active: !active);
   }
 }
-
 // typedef IndexViewFilter<M extends Model> = ({
-
 //   bool? active,
-
 //   bool? fixed,
-
 //   bool Function(M)? local,
-
 //   Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>>)? remote,
-
 //   String name,
-
 // });
-
 typedef ModelIndexType<M extends Model> = (
   M,
   int
 );
-
 /// [ModelListViewValue] is a class to hold the state of the view
-
 class ModelListViewValue<M extends Model> {
   final bool loading;
-
   final bool forceFilter;
-
   final bool hasNext;
-
   final int? count;
-
   final List<M>? models;
-
   final SearchQuery? searchQuery;
-
   final List<IndexViewFilter<M>> filters;
-
   final Set<M> selectedModels;
-
   final List<ModelIndexType<M>> history;
-
   final Map<String, dynamic> metadata;
-
   final String? error;
-
   /// [limit] (max items loaded each time)
-
   final int limit;
-
   const ModelListViewValue({
     this.count,
     this.forceFilter = false,
@@ -2488,7 +1940,6 @@ class ModelListViewValue<M extends Model> {
     this.error,
     this.limit = 50,
   });
-
   ModelListViewValue<M> copyWith({
     int? count,
     bool? loading,
@@ -2519,16 +1970,11 @@ class ModelListViewValue<M extends Model> {
     );
   }
 }
-
 /// [ModelListViewController] just like other controllers in flutter
-
 class ModelListViewController<M extends Model> extends ValueNotifier<ModelListViewValue<M>?> {
   final ModelDescription<M> description;
-
   // where
-
   final bool Function(M model)? where;
-
   ModelListViewController({ModelListViewValue<M>? value, required this.description, this.where})
       : super(value?.copyWith(
           searchQuery: value.searchQuery ??
@@ -2537,36 +1983,26 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
                 value: "",
               ),
         ));
-
   /// need index error
-
   ({
     String name,
     String url
   })? needIndexError;
-
   /// [setLimit] is a function to set the limit
-
   void setLimit(int limit) {
     value = value?.copyWith(
       limit: limit,
     );
-
     notifyListeners();
   }
-
   /// [search] is a function to search for models
-
-  Future<void> search({Iterable<String>? startAfter, bool concat = false, int? limit}) async {
+  Future<void> search({Iterable<Object?>? startAfter, bool concat = false, int? limit}) async {
     needIndexError = null;
-
     value = (value ?? ModelListViewValue<M>()).copyWith(
       loading: true,
       hasNext: true,
     );
-
     limit = limit ?? value!.limit;
-
     try {
       value = value!.copyWith(
         models: concat ? value!.models : null,
@@ -2574,31 +2010,24 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
           path: description.path,
           builder: (query) {
             var strict = false;
-
             if (value?.filters.isEmpty == false) {
               for (var filter in value!.filters) {
                 if (!filter.active) continue;
-
                 if (filter.strict) {
                   strict = true;
                 }
-
                 var d = filter.remote.call(query);
-
                 if (d != null) {
                   query = d;
                 }
               }
             }
-
             return query;
           },
         ))
             ?.count,
       );
-
       notifyListeners();
-
       var _models = await getModelCollection(
         path: description.path,
         fromJson: description.fromJson,
@@ -2606,41 +2035,31 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         startAfter: startAfter,
         builder: (query) {
           var strict = false;
-
           if (value?.filters.isEmpty == false) {
             for (var filter in value!.filters) {
               if (!filter.active) continue;
-
               if (filter.strict) {
                 strict = true;
               }
-
               var d = filter.remote.call(query);
-
               if (d != null) {
                 query = d;
               }
             }
           }
-
           return query;
         },
         limit: limit,
       );
-
       if (_models.length < limit) {
         value = value!.copyWith(hasNext: false);
       }
-
       if (concat) {
         // check if the first item equal to the last item in the current models
-
         if (value?.models?.lastOrNull != null && value!.models!.lastOrNull!.ref.path == _models.firstOrNull?.ref.path) {
           // delete the last item
-
           value!.models!.removeAt(value!.models!.length - 1);
         }
-
         value = value!.copyWith(
           models: [
             ...(value!.models ?? []),
@@ -2655,22 +2074,16 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         );
       }
     }
-
     // need index error from firebase
-
     on FirebaseException catch (e) {
       if (e.code == "failed-precondition") {
         var data = e.message!.split("https");
-
         var message = data[0];
-
         var url = "https${data[1]}";
-
         needIndexError = (
           name: message,
           url: url,
         );
-
         value = value?.copyWith(
           error: e.toString(),
           loading: false,
@@ -2688,78 +2101,61 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         loading: false,
       );
     }
-
     /// sync selected models
-
     syncSelectedModels();
   }
-
   /// remove selected items that are not in the list
-
   void syncSelectedModels() {
     value = value?.copyWith(
       selectedModels: value!.selectedModels.where((e) => value!.models!.contains(e)).toSet(),
     );
   }
-
   /// [load] is a function to load models
-
   Future<void> load() async {
     return search();
   }
-
   /// [more] is a function to load more models
-
   Future<void> more() async {
     return search(startAfter: [
-      if (value?.models?.last.ref.path != null) value!.models!.last.ref.path
-
+      // deleted at
+       (value?.models?.last.deletedAt != null)? Timestamp.fromDate(value!.models!.last.deletedAt!) : null,
+      // updated at
+       (value?.models?.last.updatedAt != null)? Timestamp.fromDate(value!.models!.last.updatedAt!) : null,
+      // ref
+       (value?.models?.last.ref.path != null)? value!.models!.last.ref.path : null,
+      //// if (value?.models?.last.ref.path != null) value!.models!.last.ref.path
       // why 3 seconds? because we are not really sure about the date are the same
-
       // Timestamp.fromDate((value?.models?.last.updatedAt ?? DateTime.now()).add(const Duration(seconds: 3)))
     ], concat: true);
   }
-
   /// [models] getter to get the models
-
   List<M>? get models => value?.models;
-
   /// [filtered] is a function to get the filtered models
-
   List<M>? get filtered {
     print(where);
-
     if (models == null) {
       return null;
     }
-
     bool _filters(M model) {
       for (var filter in value?.filters ?? <IndexViewFilter<M>>[]) {
         if (!filter.active) continue;
-
         if (filter.local != null) {
           if (filter.local!(model) == false) {
             return false;
           }
         }
       }
-
       return where?.call(model) ?? true;
     }
-
     if (value?.searchQuery?.value?.isEmpty == true) {
       return models!.where(_filters).toList() ?? [];
     }
-
     // search in display name and email and phone number and uid
-
     return models!.where((model) {
       if (!_filters(model)) {
         return false;
       }
-
       var query = value?.searchQuery?.value?.toLowerCase();
-
       if (query != null) {
         return model.toString().toLowerCase().contains(query);
       } else {
@@ -2767,73 +2163,52 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       }
     }).toList();
   }
-
   /// [activateFilter]
-
   Future<void> updateFilter(IndexViewFilter<M> filter, bool allowMultipleFilters) async {
     // check filter if extst, take the index and activat it
-
     var index = value!.filters.indexWhere((f) => f.name == filter.name);
-
     if (index >= 0) {
       if (value?.forceFilter == true) {
         var currentActive = value!.filters.where((e) => e.active).firstOrNull;
-
         if (currentActive != null && currentActive.name == filter.name && filter.active == false) {
           return;
         }
       }
-
       value!.filters[index] = filter;
     } else {
       value!.filters.add(filter);
     }
-
     if (!allowMultipleFilters) {
       value = value?.copyWith(
         filters: value!.filters.map((e) => e.copyWith(active: e.name == filter.name && filter.active)).toList(),
       );
     }
-
     // value = value?.copyWith(
-
     //   // disable all filters except the one we want to activate and add it to the list
-
     //   filters: value!.filters.map((e) => e.copyWith(active: e.name == filter.name && filter.active)).toList(),
-
     // );
-
     await search();
   }
-
   /// remove filter
-
   Future<void> removeFilter(IndexViewFilter<M> filter) async {
     if (value?.forceFilter == true) {
       // if no active filters prevent from removing
-
       if (value!.filters.where((e) => e.active).length <= 1) {
         return;
       }
     }
-
     value = value?.copyWith(
       filters: value!.filters.where((e) => e.name != filter.name).toList(),
     );
-
     await search();
   }
-
   /// replaceModel
-
   void replaceModel(M oldModel, M newModel) {
     value = value?.copyWith(
       models: value!.models?.map((e) => e.ref.path == oldModel.ref.path ? newModel : e).toList(),
     );
   }
-
   /// [addModel]
-
   void addModel(M model) {
     value = value?.copyWith(
       models: [
@@ -2842,19 +2217,14 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       ],
     );
   }
-
   /// [clearFilters]
-
   Future<void> clearFilters({bool refresh = true}) async {
     value = value?.copyWith(
       filters: value!.filters.map((e) => e.copyWith(active: false)).toList(),
     );
-
     if (refresh) await search();
   }
-
   /// [clearSearch]
-
   Future<void> clearSearch({bool refresh = true}) async {
     value = value?.copyWith(
       searchQuery: SearchQuery(
@@ -2862,24 +2232,16 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         value: "",
       ),
     );
-
     await search();
   }
-
   /// [history]
-
   Map<M, bool> history = {};
-
   /// to make sure that the controller is mounted on the view
-
   var _mounted = false;
-
   bool get mounted => _mounted;
-
   void setSearchQuery(SearchQuery query) {
     value = value?.copyWith(searchQuery: query);
   }
-
   void setSearchQueryField(String field) {
     value = value?.copyWith(
       searchQuery: SearchQuery(
@@ -2888,7 +2250,6 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       ),
     );
   }
-
   void setSearchQueryValue(String _value) {
     value = value?.copyWith(
         searchQuery: SearchQuery(
@@ -2896,115 +2257,67 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       value: _value,
     ));
   }
-
   /// [mounted] is a function to mount the controller on the view and bind it to the view
-
   /// selectAll
-
   void selectAll() {
     value = value?.copyWith(
       selectedModels: value!.models!.toSet(),
     );
   }
-
   /// unselectAll
-
   void unselectAll() {
     value = value?.copyWith(
       selectedModels: const {},
     );
   }
 }
-
 enum FieldGroup {
   primary,
-
   secondary,
-
   metadata,
-
   hidden,
 }
-
 enum FieldType {
   number,
-
   text,
-
   date,
-
   time,
-
   datetime,
-
   email,
-
   phone,
-
   url,
-
   image,
-
   file,
-
   color,
-
   boolean,
-
   reference,
-
   listNumber,
-
   listText,
-
   listDate,
-
   listTime,
-
   listDatetime,
-
   listEmail,
-
   listPhone,
-
   listUrl,
-
   listImage,
-
   listFile,
-
   listColor,
-
   listBoolean,
-
   listReference,
 }
-
 /// FieldDescription
-
 class FieldDescription<M> {
   final String name;
-
   final String path;
-
   final bool nullable;
-
   final String? details;
-
   final FieldGroup group;
-
   // type
-
   final FieldType type;
-
   // mapping
-
   final Object? Function(M model) map;
-
   final Widget Function(M model)? builder;
-
   final Widget Function(M model)? header;
-
   const FieldDescription({
     required this.name,
     required this.path,
@@ -3016,9 +2329,7 @@ class FieldDescription<M> {
     this.builder,
     this.header,
   });
-
   /// copyWith
-
   FieldDescription<M> copyWith({
     String? name,
     String? path,
@@ -3042,52 +2353,34 @@ class FieldDescription<M> {
       header: header ?? this.header,
     );
   }
-
   @override
   String toString() {
     return name;
   }
-
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-
     return other is FieldDescription<M> && other.name == name;
   }
-
   @override
   int get hashCode {
     return name.hashCode;
   }
 }
-
 /// [ModelDescription] is a class to describe a model
-
 class ModelDescription<T extends Model> {
   // fields to search in
-
   final Set<FieldDescription<T>> fields;
-
   // name of the collection
-
   final String name;
-
   // path to collection
-
   final String path;
-
   // fromJson
-
   final T Function(Map<String, dynamic> data) fromJson;
-
   // semantics (general title, description, icon, etc..)
-
   final ModelGeneralData Function(T model) tileBuilder;
-
   /// actions
-
   final List<ModelAction<T>> actions;
-
   const ModelDescription({
     required this.fields,
     required this.name,
@@ -3096,15 +2389,12 @@ class ModelDescription<T extends Model> {
     required this.tileBuilder,
     required this.actions,
   });
-
   Map<String, List<ModelAction<T>>> get groupedActions {
     var map = <String, List<ModelAction<T>>>{};
-
     for (var action in actions) {
       if (action.group == null) {
         continue;
       }
-
       if (map.containsKey(action.group)) {
         map[action.group]!.add(action);
       } else {
@@ -3113,12 +2403,9 @@ class ModelDescription<T extends Model> {
         ];
       }
     }
-
     return map;
   }
-
   // copyWith
-
   ModelDescription<T> copyWith({
     Set<FieldDescription<T>>? fields,
     String? name,
@@ -3137,16 +2424,11 @@ class ModelDescription<T extends Model> {
     );
   }
 }
-
 class ModelGeneralData {
   final String? title;
-
   final String? subtitle;
-
   final Widget? leading;
-
   final Widget? trailing;
-
   ModelGeneralData({
     this.title,
     this.subtitle,
@@ -3154,38 +2436,15 @@ class ModelGeneralData {
     this.trailing,
   });
 }
-
-/// [showFilterWizard] is a function to show a filter wizard dailog
-
-/// it is very useful to create a filter
-
-/// it contains a list of fields and a list of operators
-
-/// the operation dropdown will change based on the field selected
-
-/// the value field will change based on the operator selected
-
-Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext context, ModelDescription<M> description) async {
+/// [showDateRangeFilterWizard] show a date range filter wizard
+/// it contains [startAt] and [endAt] fields, both are nullable
+/// but must at least one of them is not null
+Future<IndexViewFilter<M>?> showDateRangeFilterWizard<M extends Model>(BuildContext context, ModelDescription<M> description) async {
   // var _operator = QueryOperations.equal;
-
   dynamic value;
-
-  TextEditingController fieldController = TextEditingController();
-
-  TextEditingController operatorController = TextEditingController();
-
-  TextEditingController valueController = TextEditingController();
-
-  FieldType fieldType = FieldType.text;
-
-  FieldType? _fieldType() => description.fields.where((e) => e.name == fieldController.text).firstOrNull?.type;
-
-  FieldDescription? _field() => description.fields.where((e) => e.name == fieldController.text).firstOrNull;
-
-  QueryOperations? _operator() => QueryOperations.values.where((e) => e.symbol == operatorController.text).firstOrNull;
-
-  String? _value() => valueController.text;
-
+  String field = "createdAt";
+  TextEditingController startAtController = TextEditingController();
+  TextEditingController endAtController = TextEditingController();
   return await showDialog<IndexViewFilter<M>?>(
     context: context,
     builder: (context) {
@@ -3196,7 +2455,157 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
             mainAxisSize: MainAxisSize.min,
             children: [
               // field
+              MenuAnchor(
+                builder: (context, controller, child) {
+                  return AppTextFormField(
+                    key: Key(field),
+                    controller: TextEditingController(text: field),
+                    onTap: (v) => controller.open(),
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(FluentIcons.filter_24_regular),
+                      label: Text('Field path{$field}'),
+                      alignLabelWithHint: true,
+                    ),
+                  );
+                  // return TextButton.icon(
+                  //   icon: const Icon(FluentIcons.filter_24_regular),
+                  //   onPressed: () => controller.open(),
+                  //   label: Text(_field?.name.titleCase ?? "Select field"),
+                  // );
+                },
+                menuChildren: [
+                  for (var _field in description.fields
+                  .where((e) => e.type == FieldType.date || e.type == FieldType.datetime || e.type == FieldType.time)
+                  )
+                    MenuItemButton(
+                      leadingIcon: const Icon(FluentIcons.filter_24_regular),
+                      trailingIcon: _field.name == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                      onPressed: _field.name == field
+                          ? null
+                          : () {
+                              setState(() {
+                                field = _field.name;
+                              });
+                            },
+                      child: Text(_field.name.titleCase),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // startAt
+              AppTextFormField(
+                controller: startAtController,
+                onTap: (v) async {
+                  var date = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime(2100),
+                  );
+                  if (date != null) {
+                    startAtController.text = date.toIso8601String();
+                  }
+                },
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(FluentIcons.calendar_ltr_24_regular),
+                  label: Text('Start at'),
+                  alignLabelWithHint: true,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // endAt
+              AppTextFormField(
+                controller: endAtController,
+                onTap: (v) async {
+                  var date = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime(2100),
+                  );
+                  if (date != null) {
+                    endAtController.text = date.toIso8601String();
+                  }
+                },
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(FluentIcons.calendar_ltr_24_regular),
+                  label: Text('End at'),
+                  alignLabelWithHint: true,
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                if (startAtController.text.isEmpty && endAtController.text.isEmpty) {
+                  ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                    const SnackBar(
+                      behavior: SnackBarBehavior.floating,
+                      width: 400.0,
+                      content: Text("At least one of the fields must be filled"),
+                    ),
+                  );
+                  return;
+                }
+                Navigator.of(context).pop(
+                  IndexViewFilter<M>(
+                    name: 
+                      "${formatDate(DateTime.parse(startAtController.text), [mm, '/', dd])}⇢${formatDate(DateTime.parse(endAtController.text), [mm, '/', dd])}",
+                    remote: (query) {
+                      if (startAtController.text.isNotEmpty) {
+                        query = query.where(field, isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime.parse(startAtController.text)));
+                      }
+                      if (endAtController.text.isNotEmpty) {
+                        query = query.where(field, isLessThanOrEqualTo: Timestamp.fromDate(DateTime.parse(endAtController.text)));
+                      }
+                      return query.orderBy(field, descending: true);
+                    },
+                  ),
+                );
+              },
+              child: const Text("Add"),
+            ),
+          ],
+        );
+      });
+    },
+  );
+}
 
+/// [showFilterWizard] is a function to show a filter wizard dailog
+/// it is very useful to create a filter
+/// it contains a list of fields and a list of operators
+/// the operation dropdown will change based on the field selected
+/// the value field will change based on the operator selected
+Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext context, ModelDescription<M> description) async {
+  // var _operator = QueryOperations.equal;
+  dynamic value;
+  TextEditingController fieldController = TextEditingController();
+  TextEditingController operatorController = TextEditingController();
+  TextEditingController valueController = TextEditingController();
+  FieldType fieldType = FieldType.text;
+  FieldType? _fieldType() => description.fields.where((e) => e.name == fieldController.text).firstOrNull?.type;
+  FieldDescription? _field() => description.fields.where((e) => e.name == fieldController.text).firstOrNull;
+  QueryOperations? _operator() => QueryOperations.values.where((e) => e.symbol == operatorController.text).firstOrNull;
+  String? _value() => valueController.text;
+  return await showDialog<IndexViewFilter<M>?>(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: const Text('Add filter'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // field
               MenuAnchor(
                 builder: (context, controller, child) {
                   return AppTextFormField(
@@ -3209,15 +2618,10 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                       alignLabelWithHint: true,
                     ),
                   );
-
                   // return TextButton.icon(
-
                   //   icon: const Icon(FluentIcons.filter_24_regular),
-
                   //   onPressed: () => controller.open(),
-
                   //   label: Text(_field?.name.titleCase ?? "Select field"),
-
                   // );
                 },
                 menuChildren: [
@@ -3230,7 +2634,6 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                           : () {
                               setState(() {
                                 fieldController.text = field.path;
-
                                 fieldType = _fieldType() ?? fieldType;
                               });
                             },
@@ -3238,11 +2641,8 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                     ),
                 ],
               ),
-
               const SizedBox(height: 8),
-
               // operator
-
               MenuAnchor(
                 builder: (context, controller, child) {
                   return AppTextFormField(
@@ -3271,15 +2671,10 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                     ),
                 ],
               ),
-
               const SizedBox(height: 8),
-
               // value type, depending on this it may show things to help
-
               // use filter chips
-
               // operator
-
               MenuAnchor(
                 builder: (context, controller, child) {
                   return AppTextFormField(
@@ -3316,11 +2711,8 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                     ),
                 ],
               ),
-
               const SizedBox(height: 8),
-
               // value
-
               if (fieldType == FieldType.text || fieldType == FieldType.number)
                 AppTextFormField(
                   onChanged: (String v) async {
@@ -3337,7 +2729,6 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                   value: value == true,
                   onChanged: (v) {
                     value = v;
-
                     setState(() {});
                   },
                   title: const Text('Activate'),
@@ -3348,7 +2739,6 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                   initialValue: value?.toString(),
                   onTap: (v) async {
                     DateTime? date;
-
                     if (fieldType == FieldType.date || fieldType == FieldType.datetime) {
                       date = await showDatePicker(
                         context: context,
@@ -3357,15 +2747,12 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                         lastDate: DateTime(2050),
                       );
                     }
-
                     if (fieldType == FieldType.time || fieldType == FieldType.datetime) {
                       var time = await showTimePicker(
                         context: context,
                         initialTime: TimeOfDay.now(),
                       );
-
                       if (time == null) return null;
-
                       date = DateTime(
                         date?.year ?? DateTime.now().year,
                         date?.month ?? DateTime.now().month,
@@ -3374,7 +2761,6 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                         time!.minute,
                       );
                     }
-
                     setState(() {
                       value = date;
                     });
@@ -3404,7 +2790,6 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                         name: "${fieldController.text}${operatorController.text}${value}",
                         remote: (query) {
                           if (_fieldType() == FieldType.number) value = num.tryParse(value) ?? value;
-
                           return _operator()!.remote(query: query, field: _field()?.name ?? fieldController.text, value: value);
                         },
                         local: (model) {
@@ -3415,9 +2800,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                           );
                         },
                       );
-
                       print(filter);
-
                       Navigator.of(context).pop<IndexViewFilter<M>>(filter);
                     },
               child: const Text('Add'),
@@ -3428,38 +2811,24 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
     },
   );
 }
-
 class SearchFilter {
   final List<dynamic> query;
-
   const SearchFilter({required this.query});
 }
-
 /// [showModelExportDialog]
-
 /// [showModelExportDialog] is a function to show a model export dialog
-
 /// it takes a [context] and a [controller]
-
 /// it will show a dialog with a list of fields to export
-
 /// it will export the data as a csv file
-
 Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelListViewController<M> controller, [List<M>? selectedModels]) async {
   var fields = controller.description.fields.toList();
-
   var selectedFields = fields.where((e) => e.group != FieldGroup.hidden).toList();
-
   var selectedFieldsController = TextEditingController(text: selectedFields.map((e) => e.path).join(","));
-
   getGelectedFields() {
     // just in case the user used arabic comma i added the replaceAll
-
     return selectedFieldsController.text.replaceAll("،", ",").split(",");
   }
-
   var limit = 100;
-
   await showDialog(
     context: context,
     builder: (context) {
@@ -3470,7 +2839,6 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
             mainAxisSize: MainAxisSize.min,
             children: [
               // fields
-
               MenuAnchor(
                 builder: (context, controller, child) {
                   return AppTextFormField(
@@ -3483,7 +2851,6 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
                     ),
                     onChanged: (v) {
                       selectedFieldsController.text = v;
-
                       selectedFields = fields.where((e) => getGelectedFields().contains(e.path)).toList();
                     },
                   );
@@ -3506,11 +2873,8 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
                     ),
                 ],
               ),
-
               const SizedBox(height: 8),
-
               // limit
-
               if (selectedModels == null)
                 AppTextFormField(
                   controller: TextEditingController(text: limit.toString()),
@@ -3535,51 +2899,33 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
             TextButton(
               onPressed: () async {
                 var models = selectedModels;
-
                 if (models == null) {
                   await controller.search(limit: limit);
-
                   models = controller.value!.models;
                 }
-
                 // download directly
-
                 // var dir = await getExternalStorageDirectory();
-
                 var rawFields = selectedFieldsController.text.replaceAll("،", ",").split(",");
-
                 var raw = "${rawFields.join(";")}\n${models!.map((e) {
                   var data = <String>[];
-
                   for (var field in rawFields) {
                     // field coud be "name" or "name.first"
-
                     // use while loop to get the value and add it to the data
-
                     Map? map = e.toJson();
-
                     while (field.contains(".")) {
                       var key = field.split(".").first;
-
                       field = field.split(".").sublist(1).join(".");
-
                       if (map == null) {
                         break;
                       }
-
                       map = map[key];
                     }
-
                     data.add(map?[field]?.toString() ?? "");
                   }
-
                   return data.join(";");
                 }).join("\n")}";
-
                 var rawAsBytes = const Utf8Codec(allowMalformed: true).encode(raw);
-
                 String? dir;
-
                 if (Platforms.isWeb) {
                   dir = await FileSaver.instance.saveFile(
                     bytes: rawAsBytes,
@@ -3595,11 +2941,8 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
                     ext: 'csv',
                   );
                 }
-
                 // show dailog with path
-
                 // ignore: use_build_context_synchronously
-
                 await showDialog(
                   context: context,
                   builder: (context) {
@@ -3622,7 +2965,6 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
                     );
                   },
                 );
-
                 Navigator.of(context).pop();
               },
               child: const Text('Export'),

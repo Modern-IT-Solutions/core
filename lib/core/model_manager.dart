@@ -177,18 +177,19 @@ enum QueryOperations {
   whereIn;
 
   Query<Map<String, dynamic>> remote({required Query<Map<String, dynamic>> query, required String field, required dynamic value}) {
+    if (value is DateTime) value = Timestamp.fromDate(value);
     if (this == QueryOperations.equal) {
       query = query.where(field, isEqualTo: value);
     } else if (this == QueryOperations.notEqual) {
-      query = query.where(field, isNotEqualTo: value);
+      query = query.where(field, isNotEqualTo: value).orderBy(field, descending: true);
     } else if (this == QueryOperations.lessThan) {
-      query = query.where(field, isLessThan: value).orderBy(field);
+      query = query.where(field, isLessThan: value).orderBy(field, descending: true);
     } else if (this == QueryOperations.lessThanOrEqual) {
-      query = query.where(field, isLessThanOrEqualTo: value).orderBy(field);
+      query = query.where(field, isLessThanOrEqualTo: value).orderBy(field, descending: true);
     } else if (this == QueryOperations.greaterThan) {
-      query = query.where(field, isGreaterThan: value).orderBy(field);
+      query = query.where(field, isGreaterThan: value).orderBy(field, descending: true);
     } else if (this == QueryOperations.greaterThanOrEqual) {
-      query = query.where(field, isGreaterThanOrEqualTo: value).orderBy(field);
+      query = query.where(field, isGreaterThanOrEqualTo: value).orderBy(field, descending: true);
     } else if (this == QueryOperations.arrayContainsAny) {
       query = query.where(field, arrayContainsAny: value.toString().split("|"));
     } else if (this == QueryOperations.arrayContains) {

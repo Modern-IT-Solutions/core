@@ -428,7 +428,88 @@ class DatabaseService extends Service {
   /// path: the path of the collection in firestore
   ///  withExpired: if true, bypass the expired check
   ///  behavior: it can be: cacheOnly, serverOnly, cacheFirst, serverFirst
+  /// 
+  /// 
+  /// 
   Future<CachedCollection?> getCollection({
+    String? cacheId,
+    OrderBy? orderBy,
+    required String path,
+    bool withExpired = false,
+    bool useRef = true,
+    bool useDeletedAt = true,
+    // withTrashed
+    bool withTrashed = false,
+    FetchBehavior behavior = FetchBehavior.serverFirst,
+    int limit = 100,
+    Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> collection)? builder,
+
+    /// time between each update, within this time will return the cached collection instead of going to server if behavior is serverFirst
+    Duration minmumUpdateDuration = const Duration(seconds: 5),
+
+    // startAfterRef
+    Iterable<Object?>? startAfter,
+  }) async {
+    late Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection(path);
+    if (builder != null) {
+      query = builder(query);
+    }
+
+    bool hasOrderBy(String field) {
+      var list = <dynamic>[];
+      if (query.parameters.containsKey("orderBy")) {
+        list = [...query.parameters["orderBy"]];
+      }
+      for (var item in list) {
+        if (item.toString().contains(field)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    
+    if (!hasOrderBy("deletedAt")) {
+      query = query.orderBy("deletedAt", descending: false);
+    }
+    if (!hasOrderBy("updatedAt")) {
+      query = query.orderBy("updatedAt", descending: true);
+    }
+
+    if (startAfter != null) {
+      query = query.orderBy("ref");
+      query = query.startAfter(startAfter);
+    }
+    query = query.limit(limit);
+
+    final collection = await query.get();
+    print("collection.docs.length ${collection.docs.length}");
+    if (collection.docs.isNotEmpty) {
+      final cachedCollection = CachedCollection(
+        ref: path,
+        query: UniqueKey().toString(),
+        documents: collection.docs
+            .map(
+              (e) => CachedDocument(
+                ref: e.reference.path,
+                data: e.data(),
+                cachedAt: DateTime.now(),
+              ),
+            )
+            .toList(),
+        cachedAt: DateTime.now(),
+      );
+      _cachedCollections.removeWhere((e) => e.ref == path);
+      _cachedCollections.add(cachedCollection);
+      // await
+      // _saveCache();
+      var data = cachedCollection.filter(withTrashed: withTrashed);
+      return data;
+    }
+    return null;
+  }
+
+
+  Future<CachedCollection?> getCollectionX({
     String? cacheId,
     OrderBy? orderBy,
     required String path,
