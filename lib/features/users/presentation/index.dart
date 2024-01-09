@@ -2441,8 +2441,9 @@ class ModelGeneralData {
 /// but must at least one of them is not null
 Future<IndexViewFilter<M>?> showDateRangeFilterWizard<M extends Model>(BuildContext context, ModelDescription<M> description) async {
   // var _operator = QueryOperations.equal;
+  var _dateFields = description.fields.where((e) => e.type == FieldType.date || e.type == FieldType.datetime || e.type == FieldType.time);
   dynamic value;
-  String field = "createdAt";
+  String field = _dateFields.firstOrNull?.path ?? "";
   TextEditingController startAtController = TextEditingController();
   TextEditingController endAtController = TextEditingController();
   return await showDialog<IndexViewFilter<M>?>(
@@ -2474,9 +2475,7 @@ Future<IndexViewFilter<M>?> showDateRangeFilterWizard<M extends Model>(BuildCont
                   // );
                 },
                 menuChildren: [
-                  for (var _field in description.fields
-                  .where((e) => e.type == FieldType.date || e.type == FieldType.datetime || e.type == FieldType.time)
-                  )
+                  for (var _field in _dateFields)
                     MenuItemButton(
                       leadingIcon: const Icon(FluentIcons.filter_24_regular),
                       trailingIcon: _field.name == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
@@ -2484,7 +2483,7 @@ Future<IndexViewFilter<M>?> showDateRangeFilterWizard<M extends Model>(BuildCont
                           ? null
                           : () {
                               setState(() {
-                                field = _field.name;
+                                field = _field.path;
                               });
                             },
                       child: Text(_field.name.titleCase),
