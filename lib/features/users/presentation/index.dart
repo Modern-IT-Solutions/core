@@ -2836,21 +2836,19 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double gap = 20.0;
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
       child: ListenableBuilder(
           listenable: controller,
           builder: (context, snapshot) {
-            return ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                SizedBox(
-                  width: gap,
-                ),
-                if (controller.value!.selectedModels.isNotEmpty)
-                  Center(
-                    child: Container(
+            return IntrinsicHeight(
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: gap,
+                  ),
+                  if (controller.value!.selectedModels.isNotEmpty)
+                    Container(
                       margin: EdgeInsetsDirectional.only(end: gap / 2),
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
@@ -2872,21 +2870,21 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const SizedBox(width: 10),
-                          Text("${controller.value!.selectedModels.length}"),
-                          const SizedBox(width: 10),
-                          Container(
-                            height: 30,
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: VerticalDivider(width: 1),
-                          ),
                           TextButton.icon(
                             style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
                             onPressed: () => controller.unselectAll(),
-                            label: const Text("unselect"),
                             icon: const Icon(
                               FluentIcons.dismiss_24_regular,
                               size: 18,
+                            ),
+                            label: Row(
+                              children: [
+                                Text("unselect"),
+                                const SizedBox(width: 5),
+                                Badge(
+                              label: Text("${controller.value!.selectedModels.length}"),
+                            ),
+                              ],
                             ),
                           ),
                           Container(
@@ -2923,7 +2921,8 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                             ),
                           ),
                           for (var action in controller.description.actions.where((e) => e.multiple != null)) ...[
-                            const Padding(
+                            Container(
+                              height: 30,
                               padding: EdgeInsets.symmetric(vertical: 5),
                               child: VerticalDivider(width: 1),
                             ),
@@ -2944,168 +2943,169 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                         ],
                       ),
                     ),
-                  ),
-                Container(
-                  width: 300,
-                  height: 40,
-                  // max with is view port -50
-                  constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 50),
-                  child: Center(
-                    child: AppTextFormField.min(
-                      controller: searchController,
-                      // enabled: !loading.value,
-                      onSubmitted: (String value) {
-                        controller.value = controller.value!.copyWith(
-                          searchQuery: SearchQuery(
-                            field: controller.value!.searchQuery?.field ?? controller.description.fields.firstOrNull?.name ?? "",
-                            value: value,
+                  Container(
+                    width: 300,
+                    height: 40,
+                    // max with is view port -50
+                    constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 50),
+                    child: Center(
+                      child: AppTextFormField(
+                        useButtonHeight: true,
+                        controller: searchController,
+                        // enabled: !loading.value,
+                        onSubmitted: (String value) {
+                          controller.value = controller.value!.copyWith(
+                            searchQuery: SearchQuery(
+                              field: controller.value!.searchQuery?.field ?? controller.description.fields.firstOrNull?.name ?? "",
+                              value: value,
+                            ),
+                          );
+                          controller.search();
+                        },
+                        onChanged: (String value) async {
+                          controller.setSearchQueryValue(value);
+                        },
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(FluentIcons.search_24_regular),
+                          label: Text(
+                            'Search${controller.value!.searchQuery!.field.isNotEmpty == true ? " (${controller.value!.searchQuery!.field})" : ""}',
+                            maxLines: 1,
+                            softWrap: false,
                           ),
-                        );
-                        controller.search();
-                      },
-                      onChanged: (String value) async {
-                        controller.setSearchQueryValue(value);
-                      },
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(FluentIcons.search_24_regular),
-                        label: Text(
-                          'Search${controller.value!.searchQuery!.field.isNotEmpty == true ? " (${controller.value!.searchQuery!.field})" : ""}',
-                          maxLines: 1,
-                          softWrap: false,
+                          alignLabelWithHint: true,
+                          // select search field
+                          suffixIcon: controller.value?.searchQuery == null
+                              ? null
+                              : MenuAnchor(
+                                  builder: (context, controller, child) {
+                                    return IconButton(
+                                      icon: const Icon(
+                                        FluentIcons.filter_24_regular,
+                                      ),
+                                      onPressed: () => controller.open(),
+                                      // label: Text(value!.searchQuery!.field),
+                                    );
+                                  },
+                                  menuChildren: [
+                                    for (var field in controller.description.fields)
+                                      MenuItemButton(
+                                        leadingIcon: const Icon(FeatherIcons.user),
+                                        trailingIcon: controller.value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                                        onPressed: controller.value!.searchQuery!.field == field
+                                            ? null
+                                            : () {
+                                                controller.setSearchQueryField(field.name);
+                                              },
+                                        child: Text(field.name.titleCase),
+                                      ),
+                                  ],
+                                ),
                         ),
-                        alignLabelWithHint: true,
-                        // select search field
-                        suffixIcon: controller.value?.searchQuery == null
-                            ? null
-                            : MenuAnchor(
-                                builder: (context, controller, child) {
-                                  return IconButton(
-                                    icon: const Icon(
-                                      FluentIcons.filter_24_regular,
-                                    ),
-                                    onPressed: () => controller.open(),
-                                    // label: Text(value!.searchQuery!.field),
-                                  );
-                                },
-                                menuChildren: [
-                                  for (var field in controller.description.fields)
-                                    MenuItemButton(
-                                      leadingIcon: const Icon(FeatherIcons.user),
-                                      trailingIcon: controller.value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
-                                      onPressed: controller.value!.searchQuery!.field == field
-                                          ? null
-                                          : () {
-                                              controller.setSearchQueryField(field.name);
-                                            },
-                                      child: Text(field.name.titleCase),
-                                    ),
-                                ],
-                              ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(
-                  width: gap / 2,
-                ),
-                for (var filter in controller.value!.filters)
+                  SizedBox(
+                    width: gap / 2,
+                  ),
+                  for (var filter in controller.value!.filters)
+                    Padding(
+                      padding: EdgeInsets.only(right: gap / 2),
+                      child: SizedBox(
+                        height: 40,
+                        child: Builder(
+                          builder: (context) {
+                            bool isActive = filter.active ?? false;
+                            bool isFixed = filter.fixed ?? false;
+                            return GestureDetector(
+                              onTap: () {
+                                controller.updateFilter(filter.copyWith(active: !filter.active), allowMultipleFilters);
+                              },
+                              child: Chip(
+                                label: Text(filter.name.titleCase),
+                                backgroundColor: isActive == true ? Theme.of(context).colorScheme.primary : null,
+                                side: isActive == true ? const BorderSide(color: Colors.transparent) : BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
+                                labelStyle: TextStyle(color: isActive == true ? Theme.of(context).colorScheme.onPrimary : null),
+                                deleteIcon: isFixed == true
+                                    ? null
+                                    : const Icon(
+                                        FluentIcons.dismiss_24_regular,
+                                        size: 15,
+                                      ),
+                                deleteIconColor: isActive == true ? Theme.of(context).colorScheme.onPrimary : null,
+                                onDeleted: isFixed == true
+                                    ? null
+                                    : () {
+                                        controller.removeFilter(filter);
+                                      },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
                   Padding(
                     padding: EdgeInsets.only(right: gap / 2),
                     child: SizedBox(
                       height: 40,
-                      child: Builder(
-                        builder: (context) {
-                          bool isActive = filter.active ?? false;
-                          bool isFixed = filter.fixed ?? false;
-                          return GestureDetector(
-                            onTap: () {
-                              controller.updateFilter(filter.copyWith(active: !filter.active), allowMultipleFilters);
-                            },
-                            child: Chip(
-                              label: Text(filter.name.titleCase),
-                              backgroundColor: isActive == true ? Theme.of(context).colorScheme.primary : null,
-                              side: isActive == true ? const BorderSide(color: Colors.transparent) : BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
-                              labelStyle: TextStyle(color: isActive == true ? Theme.of(context).colorScheme.onPrimary : null),
-                              deleteIcon: isFixed == true
-                                  ? null
-                                  : const Icon(
-                                      FluentIcons.dismiss_24_regular,
-                                      size: 15,
-                                    ),
-                              deleteIconColor: isActive == true ? Theme.of(context).colorScheme.onPrimary : null,
-                              onDeleted: isFixed == true
-                                  ? null
-                                  : () {
-                                      controller.removeFilter(filter);
-                                    },
+                      child: MenuAnchor(
+                        builder: (context, controller, _) {
+                          return ActionChip(
+                            label: const Icon(
+                              FluentIcons.add_28_regular,
+                              size: 20,
                             ),
+                            onPressed: () async {
+                              if (controller.isOpen) {
+                                controller.close();
+                              } else {
+                                controller.open();
+                              }
+                            },
                           );
                         },
+                        menuChildren: [
+                          MenuItemButton(
+                            leadingIcon: const Icon(
+                              FluentIcons.add_28_regular,
+                              size: 20,
+                            ),
+                            onPressed: () async {
+                              var filter = await showFilterWizard(context, controller.description);
+                              if (filter != null) {
+                                controller.value = controller.value!.copyWith(filters: [
+                                  ...controller.value!.filters,
+                                  filter
+                                ]);
+                              }
+                            },
+                            child: const Text('Custom filter'),
+                          ),
+                          // datetime range
+                          MenuItemButton(
+                            leadingIcon: const Icon(
+                              FluentIcons.calendar_28_regular,
+                              size: 20,
+                            ),
+                            onPressed: () async {
+                              var filter = await showDateRangeFilterWizard(context, controller.description);
+                              if (filter != null) {
+                                controller.value = controller.value!.copyWith(filters: [
+                                  ...controller.value!.filters,
+                                  filter
+                                ]);
+                              }
+                            },
+                            child: const Text('Date range'),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                Padding(
-                  padding: EdgeInsets.only(right: gap / 2),
-                  child: SizedBox(
-                    height: 40,
-                    child: MenuAnchor(
-                      builder: (context, controller, _) {
-                        return ActionChip(
-                          label: const Icon(
-                            FluentIcons.add_28_regular,
-                            size: 20,
-                          ),
-                          onPressed: () async {
-                            if (controller.isOpen) {
-                              controller.close();
-                            } else {
-                              controller.open();
-                            }
-                          },
-                        );
-                      },
-                      menuChildren: [
-                        MenuItemButton(
-                          leadingIcon: const Icon(
-                            FluentIcons.add_28_regular,
-                            size: 20,
-                          ),
-                          onPressed: () async {
-                            var filter = await showFilterWizard(context, controller.description);
-                            if (filter != null) {
-                              controller.value = controller.value!.copyWith(filters: [
-                                ...controller.value!.filters,
-                                filter
-                              ]);
-                            }
-                          },
-                          child: const Text('Custom filter'),
-                        ),
-                        // datetime range
-                        MenuItemButton(
-                          leadingIcon: const Icon(
-                            FluentIcons.calendar_28_regular,
-                            size: 20,
-                          ),
-                          onPressed: () async {
-                            var filter = await showDateRangeFilterWizard(context, controller.description);
-                            if (filter != null) {
-                              controller.value = controller.value!.copyWith(filters: [
-                                ...controller.value!.filters,
-                                filter
-                              ]);
-                            }
-                          },
-                          child: const Text('Date range'),
-                        ),
-                      ],
-                    ),
+                  SizedBox(
+                    width: gap,
                   ),
-                ),
-                SizedBox(
-                  width: gap,
-                ),
-              ],
+                ],
+              ),
             );
           }),
     );

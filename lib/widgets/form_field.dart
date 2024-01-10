@@ -41,6 +41,9 @@ class AppTextFormField extends StatefulWidget {
   /// [height] is the height of the text field, default is 30
   final double? height;
 
+  /// [useButtonHeight] is the useButtonHeight of the text field, default is false
+  final bool useButtonHeight;
+
   /// [validator] is the validator of the text field, its not required
   final String? Function(String?)? validator;
 
@@ -79,6 +82,7 @@ class AppTextFormField extends StatefulWidget {
 
   const AppTextFormField({
     super.key,
+    this.useButtonHeight = false,
     this.onChanged,
     this.initialValue,
     this.onTap,
@@ -100,6 +104,7 @@ class AppTextFormField extends StatefulWidget {
   /// min constracter
   const AppTextFormField.min({
     super.key,
+    this.useButtonHeight = false,
     this.initialValue,
     this.onChanged,
     this.onTap,
@@ -121,6 +126,7 @@ class AppTextFormField extends StatefulWidget {
   /// min constracter
   const AppTextFormField.upload({
     super.key,
+    this.useButtonHeight = false,
     this.onChanged,
     this.onTap,
     this.initialValue,
@@ -172,115 +178,112 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          margin: widget.margin,
-          height: widget.height,
-          child: TextFormField(
-            keyboardType: widget.keyboardType,
-            initialValue: widget.initialValue,
-            onTap: () async {
-              widget.onTap?.call(_controller.text);
-              if (widget.mode == AppTextFormFieldMode.date) {
-                var date = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                );
-                if (date != null) {
-                  _controller.text = date.toIso8601String().split('T').first;
-                }
-              } else if (widget.mode == AppTextFormFieldMode.time) {
-                var time = await showTimePicker(
-                  context: context,
-                  initialTime: TimeOfDay.now(),
-                );
-                if (time != null) {
-                  _controller.text = time.toString();
-                }
-              } else if (widget.mode == AppTextFormFieldMode.dateTime) {
-                var date = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                );
-                if (date != null) {
-                  var time = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.now(),
-                  );
-                  if (time != null) {
-                    _controller.text = DateTime(
-                      date.year,
-                      date.month,
-                      date.day,
-                      time.hour,
-                      time.minute,
-                    ).toString();
-                    widget.onChanged?.call(_controller.text);
-                  }
-                }
+    final BoxConstraints constraints;
+    final ThemeData theme = Theme.of(context);
+    final Offset densityAdjustment = theme.visualDensity.baseSizeAdjustment;
+    constraints = BoxConstraints(
+      minWidth: kMinInteractiveDimension + densityAdjustment.dx,
+      minHeight: kMinInteractiveDimension + (densityAdjustment.dx) - 8,
+      maxHeight: kMinInteractiveDimension + (densityAdjustment.dx) - 8,
+    );
+    print(densityAdjustment);
+    return Container(
+      margin: widget.margin,
+      height: widget.height,
+      constraints:widget.useButtonHeight? constraints: null,
+      child: TextFormField(
+        keyboardType: widget.keyboardType,
+        initialValue: widget.initialValue,
+        onTap: () async {
+          widget.onTap?.call(_controller.text);
+          if (widget.mode == AppTextFormFieldMode.date) {
+            var date = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime.now().subtract(const Duration(days: 365)),
+              lastDate: DateTime.now().add(const Duration(days: 365)),
+            );
+            if (date != null) {
+              _controller.text = date.toIso8601String().split('T').first;
+            }
+          } else if (widget.mode == AppTextFormFieldMode.time) {
+            var time = await showTimePicker(
+              context: context,
+              initialTime: TimeOfDay.now(),
+            );
+            if (time != null) {
+              _controller.text = time.toString();
+            }
+          } else if (widget.mode == AppTextFormFieldMode.dateTime) {
+            var date = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime.now().subtract(const Duration(days: 365)),
+              lastDate: DateTime.now().add(const Duration(days: 365)),
+            );
+            if (date != null) {
+              var time = await showTimePicker(
+                context: context,
+                initialTime: TimeOfDay.now(),
+              );
+              if (time != null) {
+                _controller.text = DateTime(
+                  date.year,
+                  date.month,
+                  date.day,
+                  time.hour,
+                  time.minute,
+                ).toString();
+                widget.onChanged?.call(_controller.text);
               }
-            },
-            onChanged: widget.onChanged,
-            onFieldSubmitted: widget.onSubmitted,
-            inputFormatters: widget.inputFormatters,
-            enabled: widget.enabled,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            controller: widget.controller,
-            cursorHeight: 30,
-            maxLines: widget.mode == AppTextFormFieldMode.longText? null: 1,
-            scrollPadding: const EdgeInsets.all(0),
-            // expands: true,
-            decoration: widget.decoration.copyWith(
-              isDense: true,
-              constraints: const BoxConstraints(
-                  // maxHeight: 30,
-                  ),
-              alignLabelWithHint: true,
-              contentPadding: widget.decoration.contentPadding ??
-                  const EdgeInsets.symmetric(horizontal: 10),
-              filled: widget.decoration.filled ?? true,
-              fillColor: widget.decoration.fillColor ??
-                  Theme.of(context).colorScheme.surfaceVariant,
-              border: widget.decoration.border ??
-                  OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-              helperText: uploadingProgress != null
-                  ? '${(uploadingProgress! * 100).toStringAsFixed(0)}%'
-                  : null,
-              suffixIcon: widget.mode == AppTextFormFieldMode.upload
-                  ? uploading
-                      ?  Container(
-                        padding: const EdgeInsets.all(8),
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          value: uploadingProgress,
-                        ),
-                      )
-                      : TextButton.icon(
-                          label: const Text('UPLOAD',),
-                          onPressed: _trigerUpload,
-                          icon: const Icon(FluentIcons.arrow_upload_24_regular),
-                        )
-                  : null,
-            ),
-            validator: widget.validator,
-          ),
+            }
+          }
+        },
+        onChanged: widget.onChanged,
+        onFieldSubmitted: widget.onSubmitted,
+        inputFormatters: widget.inputFormatters,
+        enabled: widget.enabled,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        controller: widget.controller,
+        cursorHeight: 30,
+        maxLines: widget.mode == AppTextFormFieldMode.longText? null: 1,
+        scrollPadding: const EdgeInsets.all(0),
+        // expands: true,
+        decoration: widget.decoration.copyWith(
+          isDense: true,
+          alignLabelWithHint: true,
+          contentPadding: widget.decoration.contentPadding ??
+              const EdgeInsets.symmetric(horizontal: 10),
+          filled: widget.decoration.filled ?? true,
+          fillColor: widget.decoration.fillColor ??
+              Theme.of(context).colorScheme.surfaceVariant,
+          border: widget.decoration.border ??
+              OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+          helperText: uploadingProgress != null
+              ? '${(uploadingProgress! * 100).toStringAsFixed(0)}%'
+              : null,
+          suffixIcon: widget.mode == AppTextFormFieldMode.upload
+              ? uploading
+                  ?  Container(
+                    padding: const EdgeInsets.all(8),
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      value: uploadingProgress,
+                    ),
+                  )
+                  : TextButton.icon(
+                      label: const Text('UPLOAD',),
+                      onPressed: _trigerUpload,
+                      icon: const Icon(FluentIcons.arrow_upload_24_regular),
+                    )
+              : null,
         ),
-        // if (this.widget.helper != null)
-        //   DefaultTextStyle(
-        //     style: Theme.of(context).textTheme.caption!,
-        //     child: widget.helper!,
-        //   ),
-      ],
+        validator: widget.validator,
+      ),
     );
   }
 

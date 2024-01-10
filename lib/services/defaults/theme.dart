@@ -122,6 +122,14 @@ class ThemeService extends Service {
     _themeData = themeData;
     notifyListeners();
   }
+  void setCurrentThemeData(ThemeData themeData) {
+    if (_themeMode == ThemeMode.light) {
+      _themeData = themeData;
+    } else {
+      _darkThemeData = themeData;
+    }
+    notifyListeners();
+  }
 
   void setDarkThemeData(ThemeData themeData) {
     _darkThemeData = themeData;
