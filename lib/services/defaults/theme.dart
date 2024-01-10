@@ -14,6 +14,13 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 /// [ThemeService] responsible for database of the app content and users
 class ThemeService extends Service {
+  /// [backgroundImage]
+  String? _backgroundImage;
+  set backgroundImage(String? value) {
+    _backgroundImage = value;
+    notifyListeners();
+  }
+  String? get backgroundImage => _backgroundImage;
   /// [mode]
   Color colorSeed;
   /// [_blurEnabled]
@@ -26,11 +33,15 @@ class ThemeService extends Service {
   ThemeService({
     super.id = 'DEFAULT',
     ThemeMode themeMode = ThemeMode.system,
-    this.colorSeed = Colors.yellow,
+    this.colorSeed = Colors.green,
     ThemeData? defaultTheme,
     ThemeData? defaultDarkTheme,
     bool blurEnabled = true,
-  })  : _themeMode = themeMode,
+    String? backgroundImage = "https://images2.alphacoders.com/130/1305211.png",
+              // "https://i.redd.it/jn2ear0ah9n91.jpg",
+  })  : 
+        _backgroundImage = backgroundImage,
+        _themeMode = themeMode,
         _blurEnabled = blurEnabled,
         _themeData = defaultTheme ??
             ThemeData(
