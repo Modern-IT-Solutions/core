@@ -45,6 +45,10 @@ class ThemeService extends Service {
         _blurEnabled = blurEnabled,
         _themeData = defaultTheme ??
             ThemeData(
+              badgeTheme: BadgeThemeData(
+                backgroundColor: colorSeed,
+                textColor: Colors.white
+              ),
               chipTheme: ChipThemeData(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(100),
