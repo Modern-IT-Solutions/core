@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_json_view/flutter_json_view.dart';
 import 'package:lib/lib.dart';
 import 'package:flutter/services.dart';
-import 'dart:convert';
 import 'dart:math';
 import 'package:photo_view/photo_view.dart';
 import 'package:url_launcher/url_launcher.dart';
