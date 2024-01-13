@@ -50,7 +50,7 @@ class ProfileAvatar extends StatelessWidget {
           padding: profile?.disabled == true ? const EdgeInsets.all(2) : const EdgeInsets.all(1),
           child: CircleAvatar(
             radius: radius,
-            backgroundImage: profile?.photoUrl.nullIfEmpty == null ? null : NetworkImage(profile!.photoUrl),
+            backgroundImage: profile?.photoUrl.nullIfEmpty == null ? null : CachedNetworkImageProvider(profile!.photoUrl),
             child:  
               profile?.photoUrl.nullIfEmpty != null ? null : 
                 Text((profile?.displayName.nullIfEmpty ?? "?")[0].toUpperCase(),

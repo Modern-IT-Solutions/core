@@ -2,6 +2,9 @@ library core;
 
 import 'package:core/features/users/data/models/role.dart';
 
+/// packages
+export 'package:cached_network_image/cached_network_image.dart';
+
 export 'core/data/datasource.dart';
 export 'core/data/model.dart';
 export 'core/data/requests.dart';
@@ -28,7 +31,6 @@ export './widgets/data_flag.dart';
 
 export './imports/firebase.dart';
 export './converters.dart';
-export './models/address_model.dart';
 export './features/users/data/models/role.dart';
 export './models/base.dart';
 
@@ -75,3 +77,7 @@ class DynamicConfigs {
 /// RECLEAN
 /// #modules
 /// #commerce
+
+
+
+

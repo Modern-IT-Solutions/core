@@ -144,7 +144,7 @@ class _FindProfileFormState extends State<FindProfileForm> {
                                   image: station?.photoUrl == null
                                       ? null
                                       : DecorationImage(
-                                          image: NetworkImage(
+                                          image: CachedNetworkImageProvider(
                                             station!.photoUrl!,
                                           ),
                                           fit: BoxFit.cover,
@@ -193,7 +193,7 @@ class _FindProfileFormState extends State<FindProfileForm> {
                                         backgroundImage: station?.photoUrl ==
                                                 null
                                             ? null
-                                            : NetworkImage(
+                                            : CachedNetworkImageProvider(
                                                 station!.photoUrl.toString(),
                                               ),
                                       ),
@@ -281,7 +281,7 @@ class _ProfileSummaryState extends State<ProfileSummary> {
                     fullscreenDialog: true,
                     builder: (context) {
                       return ImageViewer(image: 
-                      NetworkImage(
+                      CachedNetworkImageProvider(
                       profile!.photoUrl.replaceAll("=s96-c", "=w1600")
                       )
                       

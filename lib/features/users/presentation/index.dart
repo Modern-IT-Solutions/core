@@ -391,7 +391,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
                                       children: [
                                         CircleAvatar(
                                           radius: 15,
-                                          backgroundImage: NetworkImage(model.photoUrl),
+                                          backgroundImage: CachedNetworkImageProvider(model.photoUrl),
                                           child: model.photoUrl.isEmpty
                                               ? Text(
                                                   model.displayName.trim().isNotEmpty == true ? model.displayName.trim()[0].toUpperCase() : "?",

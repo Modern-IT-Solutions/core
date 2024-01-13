@@ -106,7 +106,7 @@ class NotificationModel with _$NotificationModel implements Model {
           title: model.title,
           subtitle: model.body,
           leading: model.photoUrl?.nullIfEmpty != null ? CircleAvatar(
-            backgroundImage: NetworkImage(model.photoUrl!),
+            backgroundImage: CachedNetworkImageProvider(model.photoUrl!),
           ) : null,
         ),
         actions: [],

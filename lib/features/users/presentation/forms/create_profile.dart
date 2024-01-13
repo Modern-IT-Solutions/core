@@ -181,7 +181,7 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
                           builder: (context, _) {
                             return CircleAvatar(
                               radius: 40,
-                              backgroundImage: NetworkImage(_photoUrlController.text),
+                              backgroundImage: CachedNetworkImageProvider(_photoUrlController.text),
                               child: const Center(
                                 child: Icon(FluentIcons.image_28_regular, size: 30),
                               ),
@@ -694,7 +694,7 @@ class _SelectTechniciansDialogState extends State<SelectTechniciansDialog> {
                           title: Text(technician.displayName ?? 'No name'),
                           subtitle: Text(technician.email ?? 'No email'),
                           secondary: CircleAvatar(
-                            backgroundImage: technician.photoUrl == null ? null : NetworkImage(technician.photoUrl!),
+                            backgroundImage: technician.photoUrl == null ? null : CachedNetworkImageProvider(technician.photoUrl!),
                             child: technician.photoUrl == null ? const Icon(FluentIcons.person_24_regular) : null,
                           ),
                         );
