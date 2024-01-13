@@ -2081,6 +2081,16 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     );
   }
 
+  /// [select] take list of models and select them
+  void select(Iterable<M> models) {
+    value = value?.copyWith(
+      selectedModels: {
+        ...value!.selectedModels,
+        ...models,
+      },
+    );
+  }
+
   /// unselectAll
   void unselectAll() {
     value = value?.copyWith(
@@ -2822,6 +2832,15 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
   /// [allowMultipleFilters] is a bool to allow multiple filters
   final bool allowMultipleFilters;
 
+  /// [searchEnabled] is a bool to enable search
+  final bool searchEnabled;
+
+  /// [defaultFiltersEnabled] is a bool to enable default filters
+  final bool defaultFiltersEnabled;
+
+  /// [addFiltersEnabled] is a bool to enable add filter
+  final bool addFiltersEnabled;
+
   /// [searchController] is a controller to control the search field
   final TextEditingController? searchController;
   const ModelViewFiltersChips({
@@ -2829,6 +2848,9 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
     required this.controller,
     this.allowMultipleFilters = false,
     this.searchController,
+    this.searchEnabled = true,
+    this.defaultFiltersEnabled = true,
+    this.addFiltersEnabled = true,
   });
 
   @override
@@ -2943,6 +2965,8 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                         ],
                       ),
                     ),
+                  // show search field
+                  if (searchEnabled)
                   Container(
                     width: 300,
                     height: 40,
@@ -3007,6 +3031,7 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                   SizedBox(
                     width: gap / 2,
                   ),
+                  if (defaultFiltersEnabled)
                   for (var filter in controller.value!.filters)
                     Padding(
                       padding: EdgeInsets.only(right: gap / 2),
@@ -3043,6 +3068,7 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                         ),
                       ),
                     ),
+                  if (addFiltersEnabled)
                   Padding(
                     padding: EdgeInsets.only(right: gap / 2),
                     child: SizedBox(
