@@ -1802,14 +1802,16 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         path: description.path,
         fromJson: description.fromJson,
         behavior: true ? FetchBehavior.serverOnly : FetchBehavior.serverFirst,
-        startAfter:startAfter == null? null: [
-          // if (
-          //   value?.searchQuery?.value?.isNotEmpty == true
-          //   &&
-          //   value?.searchQuery?.field.isNotEmpty == true
-          // ) null,
-          ...startAfter ?? [],
-        ],
+        startAfter: startAfter == null
+            ? null
+            : [
+                // if (
+                //   value?.searchQuery?.value?.isNotEmpty == true
+                //   &&
+                //   value?.searchQuery?.field.isNotEmpty == true
+                // ) null,
+                ...startAfter ?? [],
+              ],
         builder: (query) {
           var strict = false;
           if (value?.filters.isEmpty == false) {
@@ -1825,11 +1827,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
             }
           }
           // apply search query
-          if (
-            value?.searchQuery?.value?.isNotEmpty == true
-            &&
-            value?.searchQuery?.field.isNotEmpty == true
-          ) {
+          if (value?.searchQuery?.value?.isNotEmpty == true && value?.searchQuery?.field.isNotEmpty == true) {
             // text search example:
             // .where('name', '>=', queryText)
             // .where('name', '<=', queryText+ '\uf8ff')
@@ -2879,18 +2877,20 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                             ),
                             label: Row(
                               children: [
-                                Text("unselect"),
+                                const Text("unselect"),
                                 const SizedBox(width: 5),
                                 Badge(
-                              label: Text("${controller.value!.selectedModels.length}"),
-                            ),
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                  textColor: Theme.of(context).colorScheme.onPrimary,
+                                  label: Text("${controller.value!.selectedModels.length}"),
+                                ),
                               ],
                             ),
                           ),
                           Container(
                             height: 30,
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: VerticalDivider(width: 1),
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            child: const VerticalDivider(width: 1),
                           ),
                           TextButton.icon(
                             style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
@@ -2906,8 +2906,8 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                           ),
                           Container(
                             height: 30,
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: VerticalDivider(width: 1),
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            child: const VerticalDivider(width: 1),
                           ),
                           TextButton.icon(
                             style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
@@ -2923,8 +2923,8 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                           for (var action in controller.description.actions.where((e) => e.multiple != null)) ...[
                             Container(
                               height: 30,
-                              padding: EdgeInsets.symmetric(vertical: 5),
-                              child: VerticalDivider(width: 1),
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              child: const VerticalDivider(width: 1),
                             ),
                             TextButton(
                               style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),

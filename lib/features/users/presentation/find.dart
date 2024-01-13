@@ -2,7 +2,13 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:core/core.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_json_view/flutter_json_view.dart';
 import 'package:lib/lib.dart';
+import 'package:flutter/services.dart';
+import 'dart:convert';
+import 'dart:math';
+import 'package:photo_view/photo_view.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/data/requests.dart';
 
@@ -215,113 +221,394 @@ class _FindProfileFormState extends State<FindProfileForm> {
                     ...widget.actions,
                   ],
                 ),
-                SliverFillRemaining(
+                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: Center(
-                    child: ConstrainedBox(
-                      /// max width is 600
-                      constraints: const BoxConstraints(maxWidth: 600),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const SizedBox(height: 20),
-                            ListTile(
-                              leading: const Icon(FluentIcons.gas_pump_24_regular),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              visualDensity: const VisualDensity(vertical: -3),
-                              title: station?.displayName == null
-                                  ? const TextPlaceholder()
-                                  : Text(station!.displayName),
-                              subtitle: const Text(
-                                'Name',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            ListTile(
-                              leading: const Icon(FluentIcons.location_24_regular),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              visualDensity: const VisualDensity(vertical: -3),
-                              title: station?.displayName == null
-                                  ? const TextPlaceholder()
-                                  : Text(station!.address?.raw ?? ''),
-                              subtitle: const Text(
-                                'Address',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            ListTile(
-                              leading: const Icon(FluentIcons.location_24_regular),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              visualDensity: const VisualDensity(vertical: -3),
-                              title: station?.displayName == null
-                                  ? const TextPlaceholder()
-                                  : Text(
-                                      "${station!.address?.location?.geopoint.latitude}, ${station!.address?.location?.geopoint.longitude}"),
-                              subtitle: const Text(
-                                'Location',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            ListTile(
-                              leading: const Icon(FluentIcons.phone_24_regular),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              visualDensity: const VisualDensity(vertical: -3),
-                              title: station?.displayName == null
-                                  ? const TextPlaceholder()
-                                  : Text(
-                                      station!.phoneNumber ?? '',
-                                    ),
-                              subtitle: const Text(
-                                'Phone Numbers',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            ListTile(
-                              leading: const Icon(FluentIcons.mail_24_regular),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              visualDensity: const VisualDensity(vertical: -3),
-                              title: station?.displayName == null
-                                  ? const TextPlaceholder()
-                                  : Text(station!.email.toString()),
-                              subtitle: const Text(
-                                'Email',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  child: ProfileSummary(model: station),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+
+/// [ProfileSummary]
+class ProfileSummary extends StatefulWidget {
+  const ProfileSummary({super.key, this.ref, this.model});
+
+  final String? ref;
+  final ProfileModel? model;
+
+  @override
+  State<ProfileSummary> createState() => _ProfileSummaryState();
+}
+
+class _ProfileSummaryState extends State<ProfileSummary> {
+  ProfileModel? profile;
+  @override
+  void initState() {
+    super.initState();
+    load();
+  }
+
+  Future<void> load() async {
+    if (widget.model != null) {
+      setState(() {
+        profile = widget.model;
+      });
+    } else if (widget.ref != null) {
+      var profile = await getModelDocument(path: widget.ref!, fromJson: ProfileModel.fromJson);
+      setState(() {
+        this.profile = profile;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ListTile(
+          leading: GestureDetector(
+            onTap: () async {
+              if (profile?.photoUrl.nullIfEmpty != null) {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    fullscreenDialog: true,
+                    builder: (context) {
+                      return ImageViewer(image: 
+                      NetworkImage(
+                      profile!.photoUrl.replaceAll("=s96-c", "=w1600")
+                      )
+                      
+                      );
+                    },
+                  ),
+                );
+              }
+            },
+            child: ProfileAvatar(profile: profile),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: const VisualDensity(vertical: -3),
+          title: profile == null ? const TextPlaceholder() : Text(profile!.displayName.nullIfEmpty ?? "(No name)"),
+          subtitle: const Text(
+            'Name',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          trailing: IconButton(
+            onPressed: () {
+              tryCopy(context, profile?.displayName);
+            },
+            icon: const Icon(FluentIcons.copy_24_regular),
+          ),
+        ),
+        const SizedBox(height: 10),
+        ListTile(
+          onTap: () async {
+            await launchUrl(Uri.parse('tel:${profile?.phoneNumber}'));
+          },
+          leading: const Icon(FluentIcons.phone_20_regular),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: const VisualDensity(vertical: -3),
+          title: profile == null ? const TextPlaceholder() : Text((profile!.phoneNumber ?? "").nullIfEmpty ?? "(No phone number)"),
+          subtitle: const Text(
+            'Phone',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          trailing: IconButton(
+            onPressed: () {
+              tryCopy(context, profile?.phoneNumber);
+            },
+            icon: const Icon(FluentIcons.copy_24_regular),
+          ),
+        ),
+        const SizedBox(height: 10),
+        ListTile(
+          leading: const Icon(FluentIcons.mail_24_regular),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: const VisualDensity(vertical: -3),
+          title: profile == null ? const TextPlaceholder() : Text(profile!.email.nullIfEmpty ?? "(No email)"),
+          subtitle: const Text(
+            'Email',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          trailing: IconButton(
+            onPressed: () {
+              tryCopy(context, profile?.email);
+            },
+            icon: const Icon(FluentIcons.copy_24_regular),
+          ),
+        ),
+        const SizedBox(height: 10),
+        ListTile(
+          leading: const Icon(FluentIcons.location_24_regular),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: const VisualDensity(vertical: -3),
+          title: profile == null ? const TextPlaceholder() : Text(profile!.address?.raw.nullIfEmpty ?? "(No address)"),
+          subtitle: const Text(
+            'Address',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          trailing: IconButton(
+            onPressed: () {
+              tryCopy(context, profile?.address?.raw);
+            },
+            icon: const Icon(FluentIcons.copy_24_regular),
+          ),
+        ),
+        const Divider(),
+        // wallet section
+        const ListTile(
+          enabled: false,
+          leading: Icon(FluentIcons.wallet_24_regular),
+          contentPadding: EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: VisualDensity(vertical: -3),
+          title: Text('Wallet'),
+        ),
+        // balance
+        ListTile(
+          leading: const Icon(FluentIcons.money_24_regular),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: const VisualDensity(vertical: -3),
+          title: profile == null ? const TextPlaceholder() : Text("${profile?.customClaims["wallet"]?["balance"] ?? 0} DZD"),
+          subtitle: const Text(
+            'Balance',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          trailing: IconButton(
+            onPressed: () {
+              tryCopy(context, profile?.customClaims["wallet"]?["balance"]?.toString());
+            },
+            icon: const Icon(FluentIcons.copy_24_regular),
+          ),
+        ),
+        const Divider(),
+        // metadata
+        const ListTile(
+          enabled: false,
+          leading: Icon(FluentIcons.info_20_regular),
+          contentPadding: EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: VisualDensity(vertical: -3),
+          title: Text('Metadata'),
+        ),
+        // uid
+        ListTile(
+          leading: const Icon(FluentIcons.person_24_regular),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: const VisualDensity(vertical: -3),
+          title: profile == null
+              ? const TextPlaceholder()
+              : Text(
+                  profile!.uid,
+                  overflow: TextOverflow.ellipsis,
+                ),
+          subtitle: const Text(
+            'UID',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          trailing: IconButton(
+            onPressed: () {
+              tryCopy(context, profile?.uid);
+            },
+            icon: const Icon(FluentIcons.copy_24_regular),
+          ),
+        ),
+        // createdAt
+        ListTile(
+          leading: const Icon(FluentIcons.calendar_20_regular),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: const VisualDensity(vertical: -3),
+          title: profile == null
+              ? const TextPlaceholder()
+              : Text(
+                  "${profile!.createdAt}",
+                  overflow: TextOverflow.ellipsis,
+                ),
+          subtitle: const Text(
+            'Created At',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          trailing: IconButton(
+            onPressed: () {
+              tryCopy(context, profile?.createdAt.toString());
+            },
+            icon: const Icon(FluentIcons.copy_24_regular),
+          ),
+        ),
+        // updated at
+        ListTile(
+          leading: const Icon(FluentIcons.calendar_20_regular),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: const VisualDensity(vertical: -3),
+          title: profile == null
+              ? const TextPlaceholder()
+              : Text(
+                  "${profile!.updatedAt}",
+                  overflow: TextOverflow.ellipsis,
+                ),
+          subtitle: const Text(
+            'Last Update at',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          trailing: IconButton(
+            onPressed: () {
+              tryCopy(context, profile?.updatedAt.toString());
+            },
+            icon: const Icon(FluentIcons.copy_24_regular),
+          ),
+        ),
+        // disabled
+        ListTile(
+          leading: const Icon(FluentIcons.circle_20_regular),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: const VisualDensity(vertical: -3),
+          title: profile == null
+              ? const TextPlaceholder()
+              : Text(
+                  profile!.disabled ? "Disabled" : "Not disabled",
+                ),
+          subtitle: const Text(
+            'Is Disabled',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          trailing: IconButton(
+            onPressed: () {
+              tryCopy(context, profile?.disabled.toString());
+            },
+            icon: const Icon(FluentIcons.copy_24_regular),
+          ),
+        ),
+        // email verified
+        ListTile(
+          leading: const Icon(FluentIcons.circle_20_regular),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: const VisualDensity(vertical: -3),
+          title: profile == null
+              ? const TextPlaceholder()
+              : Text(
+                  profile!.emailVerified ? "Verified" : "Not verified",
+                ),
+          subtitle: const Text(
+            'Is Email Verified',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          trailing: IconButton(
+            onPressed: () {
+              tryCopy(context, profile?.emailVerified.toString());
+            },
+            icon: const Icon(FluentIcons.copy_24_regular),
+          ),
+        ),
+        // advanced
+        const ListTile(
+          enabled: false,
+          leading: Icon(FluentIcons.settings_20_regular),
+          contentPadding: EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: VisualDensity(vertical: -3),
+          title: Text('Advanced'),
+        ),
+        JsonView.map(profile?.toJson() ?? {})
+      ],
+    );
+  }
+}
+
+
+
+// try copy
+Future<void> tryCopy(BuildContext context, String? text) async {
+  if (text != null) {
+    await Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Copied! ${text.substring(0, 20)}...'),
+      ),
+    );
+  }
+}
+
+
+
+class ImageViewer extends StatelessWidget {
+  ImageViewer({
+    super.key,
+    required this.image,
+  });
+
+  final ImageProvider image;
+  var controller = PhotoViewController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Attachment'),
+      ),
+      body: Stack(
+        children: [
+          PhotoView(
+              enableRotation: true,
+              controller: controller,
+              imageProvider: image,
+          ),
+          // toolbar
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Card(
+              margin: const EdgeInsets.only(bottom: 24),
+              color: Colors.black.withOpacity(0.5),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      controller.rotation -= pi / 2;
+                    },
+                    icon: const Icon(FluentIcons.arrow_rotate_counterclockwise_24_regular),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      controller.rotation += pi / 2;
+                    },
+                    icon: const Icon(FluentIcons.arrow_rotate_clockwise_16_regular),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

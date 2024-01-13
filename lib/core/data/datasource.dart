@@ -129,7 +129,7 @@ mixin FirestoreDataSourceMixin<T extends Model> implements CFLUDInterface<T> {
       'deletedAt': null,
       ...request.data,
     }; //.toFirebaseJson();
-    print(map);
+    // print(map);
     if (request.id != null) {
       await collectionMap.doc(request.id).set(map);
       return (await collection.doc(request.id).get()).data()!;
@@ -152,7 +152,7 @@ mixin FirestoreDataSourceMixin<T extends Model> implements CFLUDInterface<T> {
       dbquery = request.queryBuilder!(dbquery);
     }
     var ql = await dbquery.get(request.options);
-    print(dbquery.parameters);
+    // print(dbquery.parameters);
     return ql.toListResult();
   }
 

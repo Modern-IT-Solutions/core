@@ -186,7 +186,6 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       minHeight: kMinInteractiveDimension + (densityAdjustment.dx) - 8,
       maxHeight: kMinInteractiveDimension + (densityAdjustment.dx) - 8,
     );
-    print(densityAdjustment);
     return Container(
       margin: widget.margin,
       height: widget.height,
