@@ -6,7 +6,10 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:form_builder_phone_field/form_builder_phone_field.dart';
+import 'package:latlng_picker/latlng_picker.dart';
+import 'package:latlong2/latlong.dart';
 
 /// [AppTextFormFieldMode] enum for [AppTextFormField] mode
 enum AppTextFormFieldMode {
@@ -27,6 +30,8 @@ enum AppTextFormFieldMode {
 
   /// date and time
   dateTime,
+
+  location,
 }
 
 /// [AppTextFormField] is a text field for app
@@ -99,6 +104,7 @@ class AppTextFormField extends StatefulWidget {
     this.mode = AppTextFormFieldMode.text,
     this.fileUploadTriger,
     this.keyboardType,
+    this.onValueChanged,
   });
 
   /// min constracter
@@ -121,6 +127,7 @@ class AppTextFormField extends StatefulWidget {
     this.mode = AppTextFormFieldMode.text,
     this.fileUploadTriger,
     this.keyboardType,
+    this.onValueChanged,
   });
 
   /// min constracter
@@ -143,11 +150,13 @@ class AppTextFormField extends StatefulWidget {
     this.mode = AppTextFormFieldMode.upload,
     this.fileUploadTriger,
     this.keyboardType,
+    this.onValueChanged,
   });
-
 
   /// [mode]
   final AppTextFormFieldMode mode;
+
+  final void Function(dynamic)? onValueChanged;
 
   @override
   State<AppTextFormField> createState() => _AppTextFormFieldState();
@@ -189,7 +198,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
     return Container(
       margin: widget.margin,
       height: widget.height,
-      constraints:widget.useButtonHeight? constraints: null,
+      constraints: widget.useButtonHeight ? constraints : null,
       child: TextFormField(
         keyboardType: widget.keyboardType,
         initialValue: widget.initialValue,
@@ -236,6 +245,20 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
                 widget.onChanged?.call(_controller.text);
               }
             }
+          } else if (widget.mode == AppTextFormFieldMode.location) {
+            var v = widget.initialValue?.split(",");
+            var center = v?.length == 2? LatLng(double.tryParse(v!.first) ?? 0, double.tryParse(v!.last) ?? 0) : LatLng(0,0);
+            var latlng = await showLatLngPickerDialog(
+              context: context,
+              length: 1,
+              options: MapOptions(
+                center: center,
+                zoom: 14,
+              ),
+            );
+            if (latlng != null) {
+              widget.onValueChanged?.call(latlng);
+            }
           }
         },
         onChanged: widget.onChanged,
@@ -245,37 +268,35 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
         autovalidateMode: AutovalidateMode.onUserInteraction,
         controller: widget.controller,
         cursorHeight: 30,
-        maxLines: widget.mode == AppTextFormFieldMode.longText? null: 1,
+        maxLines: widget.mode == AppTextFormFieldMode.longText ? null : 1,
         scrollPadding: const EdgeInsets.all(0),
         // expands: true,
         decoration: widget.decoration.copyWith(
           isDense: true,
           alignLabelWithHint: true,
-          contentPadding: widget.decoration.contentPadding ??
-              const EdgeInsets.symmetric(horizontal: 10),
+          contentPadding: widget.decoration.contentPadding ?? const EdgeInsets.symmetric(horizontal: 10),
           filled: widget.decoration.filled ?? true,
-          fillColor: widget.decoration.fillColor ??
-              Theme.of(context).colorScheme.surfaceVariant,
+          fillColor: widget.decoration.fillColor ?? Theme.of(context).colorScheme.surfaceVariant,
           border: widget.decoration.border ??
               OutlineInputBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-          helperText: uploadingProgress != null
-              ? '${(uploadingProgress! * 100).toStringAsFixed(0)}%'
-              : null,
+          helperText: uploadingProgress != null ? '${(uploadingProgress! * 100).toStringAsFixed(0)}%' : null,
           suffixIcon: widget.mode == AppTextFormFieldMode.upload
               ? uploading
-                  ?  Container(
-                    padding: const EdgeInsets.all(8),
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      value: uploadingProgress,
-                    ),
-                  )
+                  ? Container(
+                      padding: const EdgeInsets.all(8),
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        value: uploadingProgress,
+                      ),
+                    )
                   : TextButton.icon(
-                      label: const Text('UPLOAD',),
+                      label: const Text(
+                        'UPLOAD',
+                      ),
                       onPressed: _trigerUpload,
                       icon: const Icon(FluentIcons.arrow_upload_24_regular),
                     )
@@ -313,10 +334,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
   }
 
   uploadFile(PlatformFile file) async {
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('uploads')
-        .child('${DateTime.now().millisecondsSinceEpoch}');
+    final ref = FirebaseStorage.instance.ref().child('uploads').child('${DateTime.now().millisecondsSinceEpoch}');
     late UploadTask uploadTask;
     if (kIsWeb) {
       uploadTask = ref.putData(file.bytes!);
@@ -324,7 +342,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       uploadTask = ref.putData(await File(file.path!).readAsBytes());
     }
     uploadTask.snapshotEvents.listen((event) {
-      if (event.totalBytes != 0) { 
+      if (event.totalBytes != 0) {
         setState(() {
           uploadingProgress = event.bytesTransferred / event.totalBytes;
         });
@@ -438,11 +456,9 @@ class _AppNumberTextFormFieldState extends State<AppNumberTextFormField> {
                   // maxHeight: 30,
                   ),
               alignLabelWithHint: true,
-              contentPadding: widget.decoration.contentPadding ??
-                  const EdgeInsets.symmetric(horizontal: 10),
+              contentPadding: widget.decoration.contentPadding ?? const EdgeInsets.symmetric(horizontal: 10),
               filled: widget.decoration.filled ?? true,
-              fillColor: widget.decoration.fillColor ??
-                  Theme.of(context).colorScheme.surfaceVariant,
+              fillColor: widget.decoration.fillColor ?? Theme.of(context).colorScheme.surfaceVariant,
               border: widget.decoration.border ??
                   OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),

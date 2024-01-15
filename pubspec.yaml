@@ -63,6 +63,8 @@ dependencies:
   photo_view: ^0.14.0
     # path: /Users/mohamad/Desktop/projects/kflutter/puncher
   latlng_picker:
+    path: /Users/mohamad/Desktop/projects/kflutter/latlng_picker
+  osm_nominatim:
 
 dependency_overrides:
   http: ^1.0.0
