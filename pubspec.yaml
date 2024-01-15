@@ -62,6 +62,7 @@ dependencies:
   flutter_json_view:
   photo_view: ^0.14.0
     # path: /Users/mohamad/Desktop/projects/kflutter/puncher
+  latlng_picker:
 
 dependency_overrides:
   http: ^1.0.0
