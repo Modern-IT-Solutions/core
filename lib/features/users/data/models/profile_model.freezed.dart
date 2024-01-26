@@ -331,7 +331,7 @@ class __$$ProfileModelImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$ProfileModelImpl implements _ProfileModel {
-  _$ProfileModelImpl(
+  const _$ProfileModelImpl(
       {@ModelRefSerializer() required this.ref,
       required this.displayName,
       required this.email,
@@ -425,7 +425,7 @@ class _$ProfileModelImpl implements _ProfileModel {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ProfileModelImpl &&
@@ -496,7 +496,7 @@ class _$ProfileModelImpl implements _ProfileModel {
 }
 
 abstract class _ProfileModel implements ProfileModel {
-  factory _ProfileModel(
+  const factory _ProfileModel(
       {@ModelRefSerializer() required final ModelRef ref,
       required final String displayName,
       required final String email,

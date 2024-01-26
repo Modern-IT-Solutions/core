@@ -12,7 +12,7 @@ part 'profile_model.g.dart';
 
 @freezed
 class ProfileModel with _$ProfileModel implements Model {
-  factory ProfileModel({
+  const factory ProfileModel({
     @ModelRefSerializer()
     required ModelRef ref,
     required String displayName,

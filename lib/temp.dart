@@ -14,9 +14,12 @@ class ModelRef {
   }
 
   final String path;
-  ModelRef(
+  const ModelRef(
     this.path,
   );
+
+  // empty
+  static const empty = ModelRef('');
 
   String get id => path.split('/').lastOrNull ?? 'noid';
   String get collection {
