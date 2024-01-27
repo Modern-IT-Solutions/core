@@ -27,6 +27,10 @@ mixin _$EmbeddedChatRoomImageMessage {
   DateTime get createdAt => throw _privateConstructorUsedError;
   String get imageUrl => throw _privateConstructorUsedError;
   ChatRoomMessageType get type => throw _privateConstructorUsedError;
+  String? get blurHash => throw _privateConstructorUsedError;
+  double? get width => throw _privateConstructorUsedError;
+  double? get height => throw _privateConstructorUsedError;
+  int? get size => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -46,7 +50,11 @@ abstract class $EmbeddedChatRoomImageMessageCopyWith<$Res> {
       {@ModelRefSerializer() ModelRef profileRef,
       @TimestampDateTimeSerializer() DateTime createdAt,
       String imageUrl,
-      ChatRoomMessageType type});
+      ChatRoomMessageType type,
+      String? blurHash,
+      double? width,
+      double? height,
+      int? size});
 }
 
 /// @nodoc
@@ -67,6 +75,10 @@ class _$EmbeddedChatRoomImageMessageCopyWithImpl<$Res,
     Object? createdAt = null,
     Object? imageUrl = null,
     Object? type = null,
+    Object? blurHash = freezed,
+    Object? width = freezed,
+    Object? height = freezed,
+    Object? size = freezed,
   }) {
     return _then(_value.copyWith(
       profileRef: null == profileRef
@@ -85,6 +97,22 @@ class _$EmbeddedChatRoomImageMessageCopyWithImpl<$Res,
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as ChatRoomMessageType,
+      blurHash: freezed == blurHash
+          ? _value.blurHash
+          : blurHash // ignore: cast_nullable_to_non_nullable
+              as String?,
+      width: freezed == width
+          ? _value.width
+          : width // ignore: cast_nullable_to_non_nullable
+              as double?,
+      height: freezed == height
+          ? _value.height
+          : height // ignore: cast_nullable_to_non_nullable
+              as double?,
+      size: freezed == size
+          ? _value.size
+          : size // ignore: cast_nullable_to_non_nullable
+              as int?,
     ) as $Val);
   }
 }
@@ -102,7 +130,11 @@ abstract class _$$EmbeddedChatRoomImageMessageImplCopyWith<$Res>
       {@ModelRefSerializer() ModelRef profileRef,
       @TimestampDateTimeSerializer() DateTime createdAt,
       String imageUrl,
-      ChatRoomMessageType type});
+      ChatRoomMessageType type,
+      String? blurHash,
+      double? width,
+      double? height,
+      int? size});
 }
 
 /// @nodoc
@@ -122,6 +154,10 @@ class __$$EmbeddedChatRoomImageMessageImplCopyWithImpl<$Res>
     Object? createdAt = null,
     Object? imageUrl = null,
     Object? type = null,
+    Object? blurHash = freezed,
+    Object? width = freezed,
+    Object? height = freezed,
+    Object? size = freezed,
   }) {
     return _then(_$EmbeddedChatRoomImageMessageImpl(
       profileRef: null == profileRef
@@ -140,6 +176,22 @@ class __$$EmbeddedChatRoomImageMessageImplCopyWithImpl<$Res>
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as ChatRoomMessageType,
+      blurHash: freezed == blurHash
+          ? _value.blurHash
+          : blurHash // ignore: cast_nullable_to_non_nullable
+              as String?,
+      width: freezed == width
+          ? _value.width
+          : width // ignore: cast_nullable_to_non_nullable
+              as double?,
+      height: freezed == height
+          ? _value.height
+          : height // ignore: cast_nullable_to_non_nullable
+              as double?,
+      size: freezed == size
+          ? _value.size
+          : size // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 }
@@ -151,7 +203,11 @@ class _$EmbeddedChatRoomImageMessageImpl extends _EmbeddedChatRoomImageMessage {
       {@ModelRefSerializer() required this.profileRef,
       @TimestampDateTimeSerializer() required this.createdAt,
       required this.imageUrl,
-      this.type = ChatRoomMessageType.image})
+      this.type = ChatRoomMessageType.image,
+      this.blurHash,
+      this.width,
+      this.height,
+      this.size})
       : super._();
 
   factory _$EmbeddedChatRoomImageMessageImpl.fromJson(
@@ -169,10 +225,18 @@ class _$EmbeddedChatRoomImageMessageImpl extends _EmbeddedChatRoomImageMessage {
   @override
   @JsonKey()
   final ChatRoomMessageType type;
+  @override
+  final String? blurHash;
+  @override
+  final double? width;
+  @override
+  final double? height;
+  @override
+  final int? size;
 
   @override
   String toString() {
-    return 'EmbeddedChatRoomImageMessage(profileRef: $profileRef, createdAt: $createdAt, imageUrl: $imageUrl, type: $type)';
+    return 'EmbeddedChatRoomImageMessage(profileRef: $profileRef, createdAt: $createdAt, imageUrl: $imageUrl, type: $type, blurHash: $blurHash, width: $width, height: $height, size: $size)';
   }
 
   @override
@@ -186,13 +250,18 @@ class _$EmbeddedChatRoomImageMessageImpl extends _EmbeddedChatRoomImageMessage {
                 other.createdAt == createdAt) &&
             (identical(other.imageUrl, imageUrl) ||
                 other.imageUrl == imageUrl) &&
-            (identical(other.type, type) || other.type == type));
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.blurHash, blurHash) ||
+                other.blurHash == blurHash) &&
+            (identical(other.width, width) || other.width == width) &&
+            (identical(other.height, height) || other.height == height) &&
+            (identical(other.size, size) || other.size == size));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, profileRef, createdAt, imageUrl, type);
+  int get hashCode => Object.hash(runtimeType, profileRef, createdAt, imageUrl,
+      type, blurHash, width, height, size);
 
   @JsonKey(ignore: true)
   @override
@@ -216,7 +285,11 @@ abstract class _EmbeddedChatRoomImageMessage
       {@ModelRefSerializer() required final ModelRef profileRef,
       @TimestampDateTimeSerializer() required final DateTime createdAt,
       required final String imageUrl,
-      final ChatRoomMessageType type}) = _$EmbeddedChatRoomImageMessageImpl;
+      final ChatRoomMessageType type,
+      final String? blurHash,
+      final double? width,
+      final double? height,
+      final int? size}) = _$EmbeddedChatRoomImageMessageImpl;
   const _EmbeddedChatRoomImageMessage._() : super._();
 
   factory _EmbeddedChatRoomImageMessage.fromJson(Map<String, dynamic> json) =
@@ -232,6 +305,14 @@ abstract class _EmbeddedChatRoomImageMessage
   String get imageUrl;
   @override
   ChatRoomMessageType get type;
+  @override
+  String? get blurHash;
+  @override
+  double? get width;
+  @override
+  double? get height;
+  @override
+  int? get size;
   @override
   @JsonKey(ignore: true)
   _$$EmbeddedChatRoomImageMessageImplCopyWith<

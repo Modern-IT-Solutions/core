@@ -8,7 +8,7 @@ part 'embedded_chat_room_video_message.freezed.dart';
 part 'embedded_chat_room_video_message.g.dart';
 
 @freezed
-class EmbeddedChatRoomVideoMessage with _$EmbeddedChatRoomVideoMessage implements EmbeddedChatRoomMessage {
+class EmbeddedChatRoomVideoMessage with _$EmbeddedChatRoomVideoMessage implements EmbeddedChatRoomMessage,EmbeddedChatRoomFileMessage {
   
   const EmbeddedChatRoomVideoMessage._();
 
@@ -17,6 +17,9 @@ class EmbeddedChatRoomVideoMessage with _$EmbeddedChatRoomVideoMessage implement
     @TimestampDateTimeSerializer() required DateTime createdAt,
     required String videoUrl,
     @Default(ChatRoomMessageType.video) ChatRoomMessageType type,
+    int? size,
+    double? width,
+    double? height,
   }) = _EmbeddedChatRoomVideoMessage;
 
   factory EmbeddedChatRoomVideoMessage.fromJson(Map<String, dynamic> json) => _$EmbeddedChatRoomVideoMessageFromJson(json);

@@ -27,6 +27,7 @@ mixin _$EmbeddedChatRoomAudioMessage {
   DateTime get createdAt => throw _privateConstructorUsedError;
   String get audioUrl => throw _privateConstructorUsedError;
   ChatRoomMessageType get type => throw _privateConstructorUsedError;
+  int? get size => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -46,7 +47,8 @@ abstract class $EmbeddedChatRoomAudioMessageCopyWith<$Res> {
       {@ModelRefSerializer() ModelRef profileRef,
       @TimestampDateTimeSerializer() DateTime createdAt,
       String audioUrl,
-      ChatRoomMessageType type});
+      ChatRoomMessageType type,
+      int? size});
 }
 
 /// @nodoc
@@ -67,6 +69,7 @@ class _$EmbeddedChatRoomAudioMessageCopyWithImpl<$Res,
     Object? createdAt = null,
     Object? audioUrl = null,
     Object? type = null,
+    Object? size = freezed,
   }) {
     return _then(_value.copyWith(
       profileRef: null == profileRef
@@ -85,6 +88,10 @@ class _$EmbeddedChatRoomAudioMessageCopyWithImpl<$Res,
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as ChatRoomMessageType,
+      size: freezed == size
+          ? _value.size
+          : size // ignore: cast_nullable_to_non_nullable
+              as int?,
     ) as $Val);
   }
 }
@@ -102,7 +109,8 @@ abstract class _$$EmbeddedChatRoomAudioMessageImplCopyWith<$Res>
       {@ModelRefSerializer() ModelRef profileRef,
       @TimestampDateTimeSerializer() DateTime createdAt,
       String audioUrl,
-      ChatRoomMessageType type});
+      ChatRoomMessageType type,
+      int? size});
 }
 
 /// @nodoc
@@ -122,6 +130,7 @@ class __$$EmbeddedChatRoomAudioMessageImplCopyWithImpl<$Res>
     Object? createdAt = null,
     Object? audioUrl = null,
     Object? type = null,
+    Object? size = freezed,
   }) {
     return _then(_$EmbeddedChatRoomAudioMessageImpl(
       profileRef: null == profileRef
@@ -140,6 +149,10 @@ class __$$EmbeddedChatRoomAudioMessageImplCopyWithImpl<$Res>
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as ChatRoomMessageType,
+      size: freezed == size
+          ? _value.size
+          : size // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 }
@@ -151,7 +164,8 @@ class _$EmbeddedChatRoomAudioMessageImpl extends _EmbeddedChatRoomAudioMessage {
       {@ModelRefSerializer() required this.profileRef,
       @TimestampDateTimeSerializer() required this.createdAt,
       required this.audioUrl,
-      this.type = ChatRoomMessageType.audio})
+      this.type = ChatRoomMessageType.audio,
+      this.size})
       : super._();
 
   factory _$EmbeddedChatRoomAudioMessageImpl.fromJson(
@@ -169,10 +183,12 @@ class _$EmbeddedChatRoomAudioMessageImpl extends _EmbeddedChatRoomAudioMessage {
   @override
   @JsonKey()
   final ChatRoomMessageType type;
+  @override
+  final int? size;
 
   @override
   String toString() {
-    return 'EmbeddedChatRoomAudioMessage(profileRef: $profileRef, createdAt: $createdAt, audioUrl: $audioUrl, type: $type)';
+    return 'EmbeddedChatRoomAudioMessage(profileRef: $profileRef, createdAt: $createdAt, audioUrl: $audioUrl, type: $type, size: $size)';
   }
 
   @override
@@ -186,13 +202,14 @@ class _$EmbeddedChatRoomAudioMessageImpl extends _EmbeddedChatRoomAudioMessage {
                 other.createdAt == createdAt) &&
             (identical(other.audioUrl, audioUrl) ||
                 other.audioUrl == audioUrl) &&
-            (identical(other.type, type) || other.type == type));
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.size, size) || other.size == size));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, profileRef, createdAt, audioUrl, type);
+      Object.hash(runtimeType, profileRef, createdAt, audioUrl, type, size);
 
   @JsonKey(ignore: true)
   @override
@@ -216,7 +233,8 @@ abstract class _EmbeddedChatRoomAudioMessage
       {@ModelRefSerializer() required final ModelRef profileRef,
       @TimestampDateTimeSerializer() required final DateTime createdAt,
       required final String audioUrl,
-      final ChatRoomMessageType type}) = _$EmbeddedChatRoomAudioMessageImpl;
+      final ChatRoomMessageType type,
+      final int? size}) = _$EmbeddedChatRoomAudioMessageImpl;
   const _EmbeddedChatRoomAudioMessage._() : super._();
 
   factory _EmbeddedChatRoomAudioMessage.fromJson(Map<String, dynamic> json) =
@@ -232,6 +250,8 @@ abstract class _EmbeddedChatRoomAudioMessage
   String get audioUrl;
   @override
   ChatRoomMessageType get type;
+  @override
+  int? get size;
   @override
   @JsonKey(ignore: true)
   _$$EmbeddedChatRoomAudioMessageImplCopyWith<

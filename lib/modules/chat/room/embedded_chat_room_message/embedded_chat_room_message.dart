@@ -43,3 +43,7 @@ abstract class EmbeddedChatRoomMessage {
     }
   }
 }
+
+abstract class EmbeddedChatRoomFileMessage  {
+  int? get size;
+}

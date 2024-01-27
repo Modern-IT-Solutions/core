@@ -16,6 +16,7 @@ _$EmbeddedChatRoomAudioMessageImpl _$$EmbeddedChatRoomAudioMessageImplFromJson(
       audioUrl: json['audioUrl'] as String,
       type: $enumDecodeNullable(_$ChatRoomMessageTypeEnumMap, json['type']) ??
           ChatRoomMessageType.audio,
+      size: json['size'] as int?,
     );
 
 Map<String, dynamic> _$$EmbeddedChatRoomAudioMessageImplToJson(
@@ -26,6 +27,7 @@ Map<String, dynamic> _$$EmbeddedChatRoomAudioMessageImplToJson(
           const TimestampDateTimeSerializer().toJson(instance.createdAt),
       'audioUrl': instance.audioUrl,
       'type': _$ChatRoomMessageTypeEnumMap[instance.type]!,
+      'size': instance.size,
     };
 
 const _$ChatRoomMessageTypeEnumMap = {

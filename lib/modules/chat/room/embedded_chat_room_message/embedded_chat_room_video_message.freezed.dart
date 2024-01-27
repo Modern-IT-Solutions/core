@@ -27,6 +27,9 @@ mixin _$EmbeddedChatRoomVideoMessage {
   DateTime get createdAt => throw _privateConstructorUsedError;
   String get videoUrl => throw _privateConstructorUsedError;
   ChatRoomMessageType get type => throw _privateConstructorUsedError;
+  int? get size => throw _privateConstructorUsedError;
+  double? get width => throw _privateConstructorUsedError;
+  double? get height => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -46,7 +49,10 @@ abstract class $EmbeddedChatRoomVideoMessageCopyWith<$Res> {
       {@ModelRefSerializer() ModelRef profileRef,
       @TimestampDateTimeSerializer() DateTime createdAt,
       String videoUrl,
-      ChatRoomMessageType type});
+      ChatRoomMessageType type,
+      int? size,
+      double? width,
+      double? height});
 }
 
 /// @nodoc
@@ -67,6 +73,9 @@ class _$EmbeddedChatRoomVideoMessageCopyWithImpl<$Res,
     Object? createdAt = null,
     Object? videoUrl = null,
     Object? type = null,
+    Object? size = freezed,
+    Object? width = freezed,
+    Object? height = freezed,
   }) {
     return _then(_value.copyWith(
       profileRef: null == profileRef
@@ -85,6 +94,18 @@ class _$EmbeddedChatRoomVideoMessageCopyWithImpl<$Res,
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as ChatRoomMessageType,
+      size: freezed == size
+          ? _value.size
+          : size // ignore: cast_nullable_to_non_nullable
+              as int?,
+      width: freezed == width
+          ? _value.width
+          : width // ignore: cast_nullable_to_non_nullable
+              as double?,
+      height: freezed == height
+          ? _value.height
+          : height // ignore: cast_nullable_to_non_nullable
+              as double?,
     ) as $Val);
   }
 }
@@ -102,7 +123,10 @@ abstract class _$$EmbeddedChatRoomVideoMessageImplCopyWith<$Res>
       {@ModelRefSerializer() ModelRef profileRef,
       @TimestampDateTimeSerializer() DateTime createdAt,
       String videoUrl,
-      ChatRoomMessageType type});
+      ChatRoomMessageType type,
+      int? size,
+      double? width,
+      double? height});
 }
 
 /// @nodoc
@@ -122,6 +146,9 @@ class __$$EmbeddedChatRoomVideoMessageImplCopyWithImpl<$Res>
     Object? createdAt = null,
     Object? videoUrl = null,
     Object? type = null,
+    Object? size = freezed,
+    Object? width = freezed,
+    Object? height = freezed,
   }) {
     return _then(_$EmbeddedChatRoomVideoMessageImpl(
       profileRef: null == profileRef
@@ -140,6 +167,18 @@ class __$$EmbeddedChatRoomVideoMessageImplCopyWithImpl<$Res>
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as ChatRoomMessageType,
+      size: freezed == size
+          ? _value.size
+          : size // ignore: cast_nullable_to_non_nullable
+              as int?,
+      width: freezed == width
+          ? _value.width
+          : width // ignore: cast_nullable_to_non_nullable
+              as double?,
+      height: freezed == height
+          ? _value.height
+          : height // ignore: cast_nullable_to_non_nullable
+              as double?,
     ));
   }
 }
@@ -151,7 +190,10 @@ class _$EmbeddedChatRoomVideoMessageImpl extends _EmbeddedChatRoomVideoMessage {
       {@ModelRefSerializer() required this.profileRef,
       @TimestampDateTimeSerializer() required this.createdAt,
       required this.videoUrl,
-      this.type = ChatRoomMessageType.video})
+      this.type = ChatRoomMessageType.video,
+      this.size,
+      this.width,
+      this.height})
       : super._();
 
   factory _$EmbeddedChatRoomVideoMessageImpl.fromJson(
@@ -169,10 +211,16 @@ class _$EmbeddedChatRoomVideoMessageImpl extends _EmbeddedChatRoomVideoMessage {
   @override
   @JsonKey()
   final ChatRoomMessageType type;
+  @override
+  final int? size;
+  @override
+  final double? width;
+  @override
+  final double? height;
 
   @override
   String toString() {
-    return 'EmbeddedChatRoomVideoMessage(profileRef: $profileRef, createdAt: $createdAt, videoUrl: $videoUrl, type: $type)';
+    return 'EmbeddedChatRoomVideoMessage(profileRef: $profileRef, createdAt: $createdAt, videoUrl: $videoUrl, type: $type, size: $size, width: $width, height: $height)';
   }
 
   @override
@@ -186,13 +234,16 @@ class _$EmbeddedChatRoomVideoMessageImpl extends _EmbeddedChatRoomVideoMessage {
                 other.createdAt == createdAt) &&
             (identical(other.videoUrl, videoUrl) ||
                 other.videoUrl == videoUrl) &&
-            (identical(other.type, type) || other.type == type));
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.size, size) || other.size == size) &&
+            (identical(other.width, width) || other.width == width) &&
+            (identical(other.height, height) || other.height == height));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, profileRef, createdAt, videoUrl, type);
+  int get hashCode => Object.hash(
+      runtimeType, profileRef, createdAt, videoUrl, type, size, width, height);
 
   @JsonKey(ignore: true)
   @override
@@ -216,7 +267,10 @@ abstract class _EmbeddedChatRoomVideoMessage
       {@ModelRefSerializer() required final ModelRef profileRef,
       @TimestampDateTimeSerializer() required final DateTime createdAt,
       required final String videoUrl,
-      final ChatRoomMessageType type}) = _$EmbeddedChatRoomVideoMessageImpl;
+      final ChatRoomMessageType type,
+      final int? size,
+      final double? width,
+      final double? height}) = _$EmbeddedChatRoomVideoMessageImpl;
   const _EmbeddedChatRoomVideoMessage._() : super._();
 
   factory _EmbeddedChatRoomVideoMessage.fromJson(Map<String, dynamic> json) =
@@ -232,6 +286,12 @@ abstract class _EmbeddedChatRoomVideoMessage
   String get videoUrl;
   @override
   ChatRoomMessageType get type;
+  @override
+  int? get size;
+  @override
+  double? get width;
+  @override
+  double? get height;
   @override
   @JsonKey(ignore: true)
   _$$EmbeddedChatRoomVideoMessageImplCopyWith<

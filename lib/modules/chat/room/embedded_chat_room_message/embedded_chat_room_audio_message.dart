@@ -8,7 +8,7 @@ part 'embedded_chat_room_audio_message.freezed.dart';
 part 'embedded_chat_room_audio_message.g.dart';
 
 @freezed
-class EmbeddedChatRoomAudioMessage with _$EmbeddedChatRoomAudioMessage implements EmbeddedChatRoomMessage {
+class EmbeddedChatRoomAudioMessage with _$EmbeddedChatRoomAudioMessage implements EmbeddedChatRoomMessage,EmbeddedChatRoomFileMessage {
   
   const EmbeddedChatRoomAudioMessage._();
 
@@ -17,6 +17,7 @@ class EmbeddedChatRoomAudioMessage with _$EmbeddedChatRoomAudioMessage implement
     @TimestampDateTimeSerializer() required DateTime createdAt,
     required String audioUrl,
     @Default(ChatRoomMessageType.audio) ChatRoomMessageType type,
+    int? size,
   }) = _EmbeddedChatRoomAudioMessage;
 
   factory EmbeddedChatRoomAudioMessage.fromJson(Map<String, dynamic> json) => _$EmbeddedChatRoomAudioMessageFromJson(json);

@@ -16,6 +16,10 @@ _$EmbeddedChatRoomImageMessageImpl _$$EmbeddedChatRoomImageMessageImplFromJson(
       imageUrl: json['imageUrl'] as String,
       type: $enumDecodeNullable(_$ChatRoomMessageTypeEnumMap, json['type']) ??
           ChatRoomMessageType.image,
+      blurHash: json['blurHash'] as String?,
+      width: (json['width'] as num?)?.toDouble(),
+      height: (json['height'] as num?)?.toDouble(),
+      size: json['size'] as int?,
     );
 
 Map<String, dynamic> _$$EmbeddedChatRoomImageMessageImplToJson(
@@ -26,6 +30,10 @@ Map<String, dynamic> _$$EmbeddedChatRoomImageMessageImplToJson(
           const TimestampDateTimeSerializer().toJson(instance.createdAt),
       'imageUrl': instance.imageUrl,
       'type': _$ChatRoomMessageTypeEnumMap[instance.type]!,
+      'blurHash': instance.blurHash,
+      'width': instance.width,
+      'height': instance.height,
+      'size': instance.size,
     };
 
 const _$ChatRoomMessageTypeEnumMap = {

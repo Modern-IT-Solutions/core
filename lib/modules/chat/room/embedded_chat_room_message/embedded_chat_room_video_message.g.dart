@@ -16,6 +16,9 @@ _$EmbeddedChatRoomVideoMessageImpl _$$EmbeddedChatRoomVideoMessageImplFromJson(
       videoUrl: json['videoUrl'] as String,
       type: $enumDecodeNullable(_$ChatRoomMessageTypeEnumMap, json['type']) ??
           ChatRoomMessageType.video,
+      size: json['size'] as int?,
+      width: (json['width'] as num?)?.toDouble(),
+      height: (json['height'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$$EmbeddedChatRoomVideoMessageImplToJson(
@@ -26,6 +29,9 @@ Map<String, dynamic> _$$EmbeddedChatRoomVideoMessageImplToJson(
           const TimestampDateTimeSerializer().toJson(instance.createdAt),
       'videoUrl': instance.videoUrl,
       'type': _$ChatRoomMessageTypeEnumMap[instance.type]!,
+      'size': instance.size,
+      'width': instance.width,
+      'height': instance.height,
     };
 
 const _$ChatRoomMessageTypeEnumMap = {

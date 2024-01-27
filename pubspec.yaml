@@ -29,6 +29,7 @@ dependencies:
   form_builder_validators:
   video_player_media_kit:
   algeria:
+  blurhash_dart:
     # path: /Users/mohamad/Desktop/projects/packages/algeria
   flutter_map: ^6.0.0-dev.3
   lib:
