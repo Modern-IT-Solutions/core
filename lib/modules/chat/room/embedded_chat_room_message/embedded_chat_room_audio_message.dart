@@ -1,3 +1,5 @@
+import 'package:core/converters.dart';
+import 'package:core/temp.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'embedded_chat_room_message.dart';
@@ -11,7 +13,8 @@ class EmbeddedChatRoomAudioMessage with _$EmbeddedChatRoomAudioMessage implement
   const EmbeddedChatRoomAudioMessage._();
 
   const factory EmbeddedChatRoomAudioMessage({
-    required String profileRef,
+    @ModelRefSerializer() required ModelRef profileRef,
+    @TimestampDateTimeSerializer() required DateTime createdAt,
     required String audioUrl,
     @Default(ChatRoomMessageType.audio) ChatRoomMessageType type,
   }) = _EmbeddedChatRoomAudioMessage;

@@ -1,30 +1,30 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'embedded_chat_room_text_message.dart';
+part of 'embedded_chat_room_video_message.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$EmbeddedChatRoomTextMessageImpl _$$EmbeddedChatRoomTextMessageImplFromJson(
+_$EmbeddedChatRoomVideoMessageImpl _$$EmbeddedChatRoomVideoMessageImplFromJson(
         Map<String, dynamic> json) =>
-    _$EmbeddedChatRoomTextMessageImpl(
+    _$EmbeddedChatRoomVideoMessageImpl(
       profileRef:
           const ModelRefSerializer().fromJson(json['profileRef'] as String),
       createdAt:
           const TimestampDateTimeSerializer().fromJson(json['createdAt']),
-      text: json['text'] as String,
+      videoUrl: json['videoUrl'] as String,
       type: $enumDecodeNullable(_$ChatRoomMessageTypeEnumMap, json['type']) ??
-          ChatRoomMessageType.text,
+          ChatRoomMessageType.video,
     );
 
-Map<String, dynamic> _$$EmbeddedChatRoomTextMessageImplToJson(
-        _$EmbeddedChatRoomTextMessageImpl instance) =>
+Map<String, dynamic> _$$EmbeddedChatRoomVideoMessageImplToJson(
+        _$EmbeddedChatRoomVideoMessageImpl instance) =>
     <String, dynamic>{
       'profileRef': const ModelRefSerializer().toJson(instance.profileRef),
       'createdAt':
           const TimestampDateTimeSerializer().toJson(instance.createdAt),
-      'text': instance.text,
+      'videoUrl': instance.videoUrl,
       'type': _$ChatRoomMessageTypeEnumMap[instance.type]!,
     };
 

@@ -9,16 +9,21 @@ part of 'embedded_chat_room_image_message.dart';
 _$EmbeddedChatRoomImageMessageImpl _$$EmbeddedChatRoomImageMessageImplFromJson(
         Map<String, dynamic> json) =>
     _$EmbeddedChatRoomImageMessageImpl(
-      profileRef: json['profileRef'] as String,
+      profileRef:
+          const ModelRefSerializer().fromJson(json['profileRef'] as String),
+      createdAt:
+          const TimestampDateTimeSerializer().fromJson(json['createdAt']),
       imageUrl: json['imageUrl'] as String,
       type: $enumDecodeNullable(_$ChatRoomMessageTypeEnumMap, json['type']) ??
-          ChatRoomMessageType.text,
+          ChatRoomMessageType.image,
     );
 
 Map<String, dynamic> _$$EmbeddedChatRoomImageMessageImplToJson(
         _$EmbeddedChatRoomImageMessageImpl instance) =>
     <String, dynamic>{
-      'profileRef': instance.profileRef,
+      'profileRef': const ModelRefSerializer().toJson(instance.profileRef),
+      'createdAt':
+          const TimestampDateTimeSerializer().toJson(instance.createdAt),
       'imageUrl': instance.imageUrl,
       'type': _$ChatRoomMessageTypeEnumMap[instance.type]!,
     };
@@ -27,4 +32,6 @@ const _$ChatRoomMessageTypeEnumMap = {
   ChatRoomMessageType.text: 'text',
   ChatRoomMessageType.image: 'image',
   ChatRoomMessageType.audio: 'audio',
+  ChatRoomMessageType.video: 'video',
+  ChatRoomMessageType.file: 'file',
 };

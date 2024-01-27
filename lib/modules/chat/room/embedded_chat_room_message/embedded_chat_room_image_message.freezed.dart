@@ -21,7 +21,10 @@ EmbeddedChatRoomImageMessage _$EmbeddedChatRoomImageMessageFromJson(
 
 /// @nodoc
 mixin _$EmbeddedChatRoomImageMessage {
-  String get profileRef => throw _privateConstructorUsedError;
+  @ModelRefSerializer()
+  ModelRef get profileRef => throw _privateConstructorUsedError;
+  @TimestampDateTimeSerializer()
+  DateTime get createdAt => throw _privateConstructorUsedError;
   String get imageUrl => throw _privateConstructorUsedError;
   ChatRoomMessageType get type => throw _privateConstructorUsedError;
 
@@ -39,7 +42,11 @@ abstract class $EmbeddedChatRoomImageMessageCopyWith<$Res> {
       _$EmbeddedChatRoomImageMessageCopyWithImpl<$Res,
           EmbeddedChatRoomImageMessage>;
   @useResult
-  $Res call({String profileRef, String imageUrl, ChatRoomMessageType type});
+  $Res call(
+      {@ModelRefSerializer() ModelRef profileRef,
+      @TimestampDateTimeSerializer() DateTime createdAt,
+      String imageUrl,
+      ChatRoomMessageType type});
 }
 
 /// @nodoc
@@ -57,6 +64,7 @@ class _$EmbeddedChatRoomImageMessageCopyWithImpl<$Res,
   @override
   $Res call({
     Object? profileRef = null,
+    Object? createdAt = null,
     Object? imageUrl = null,
     Object? type = null,
   }) {
@@ -64,7 +72,11 @@ class _$EmbeddedChatRoomImageMessageCopyWithImpl<$Res,
       profileRef: null == profileRef
           ? _value.profileRef
           : profileRef // ignore: cast_nullable_to_non_nullable
-              as String,
+              as ModelRef,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       imageUrl: null == imageUrl
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
@@ -86,7 +98,11 @@ abstract class _$$EmbeddedChatRoomImageMessageImplCopyWith<$Res>
       __$$EmbeddedChatRoomImageMessageImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String profileRef, String imageUrl, ChatRoomMessageType type});
+  $Res call(
+      {@ModelRefSerializer() ModelRef profileRef,
+      @TimestampDateTimeSerializer() DateTime createdAt,
+      String imageUrl,
+      ChatRoomMessageType type});
 }
 
 /// @nodoc
@@ -103,6 +119,7 @@ class __$$EmbeddedChatRoomImageMessageImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? profileRef = null,
+    Object? createdAt = null,
     Object? imageUrl = null,
     Object? type = null,
   }) {
@@ -110,7 +127,11 @@ class __$$EmbeddedChatRoomImageMessageImplCopyWithImpl<$Res>
       profileRef: null == profileRef
           ? _value.profileRef
           : profileRef // ignore: cast_nullable_to_non_nullable
-              as String,
+              as ModelRef,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       imageUrl: null == imageUrl
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
@@ -127,9 +148,10 @@ class __$$EmbeddedChatRoomImageMessageImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$EmbeddedChatRoomImageMessageImpl extends _EmbeddedChatRoomImageMessage {
   const _$EmbeddedChatRoomImageMessageImpl(
-      {required this.profileRef,
+      {@ModelRefSerializer() required this.profileRef,
+      @TimestampDateTimeSerializer() required this.createdAt,
       required this.imageUrl,
-      this.type = ChatRoomMessageType.text})
+      this.type = ChatRoomMessageType.image})
       : super._();
 
   factory _$EmbeddedChatRoomImageMessageImpl.fromJson(
@@ -137,7 +159,11 @@ class _$EmbeddedChatRoomImageMessageImpl extends _EmbeddedChatRoomImageMessage {
       _$$EmbeddedChatRoomImageMessageImplFromJson(json);
 
   @override
-  final String profileRef;
+  @ModelRefSerializer()
+  final ModelRef profileRef;
+  @override
+  @TimestampDateTimeSerializer()
+  final DateTime createdAt;
   @override
   final String imageUrl;
   @override
@@ -146,7 +172,7 @@ class _$EmbeddedChatRoomImageMessageImpl extends _EmbeddedChatRoomImageMessage {
 
   @override
   String toString() {
-    return 'EmbeddedChatRoomImageMessage(profileRef: $profileRef, imageUrl: $imageUrl, type: $type)';
+    return 'EmbeddedChatRoomImageMessage(profileRef: $profileRef, createdAt: $createdAt, imageUrl: $imageUrl, type: $type)';
   }
 
   @override
@@ -156,6 +182,8 @@ class _$EmbeddedChatRoomImageMessageImpl extends _EmbeddedChatRoomImageMessage {
             other is _$EmbeddedChatRoomImageMessageImpl &&
             (identical(other.profileRef, profileRef) ||
                 other.profileRef == profileRef) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
             (identical(other.imageUrl, imageUrl) ||
                 other.imageUrl == imageUrl) &&
             (identical(other.type, type) || other.type == type));
@@ -163,7 +191,8 @@ class _$EmbeddedChatRoomImageMessageImpl extends _EmbeddedChatRoomImageMessage {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, profileRef, imageUrl, type);
+  int get hashCode =>
+      Object.hash(runtimeType, profileRef, createdAt, imageUrl, type);
 
   @JsonKey(ignore: true)
   @override
@@ -184,7 +213,8 @@ class _$EmbeddedChatRoomImageMessageImpl extends _EmbeddedChatRoomImageMessage {
 abstract class _EmbeddedChatRoomImageMessage
     extends EmbeddedChatRoomImageMessage {
   const factory _EmbeddedChatRoomImageMessage(
-      {required final String profileRef,
+      {@ModelRefSerializer() required final ModelRef profileRef,
+      @TimestampDateTimeSerializer() required final DateTime createdAt,
       required final String imageUrl,
       final ChatRoomMessageType type}) = _$EmbeddedChatRoomImageMessageImpl;
   const _EmbeddedChatRoomImageMessage._() : super._();
@@ -193,7 +223,11 @@ abstract class _EmbeddedChatRoomImageMessage
       _$EmbeddedChatRoomImageMessageImpl.fromJson;
 
   @override
-  String get profileRef;
+  @ModelRefSerializer()
+  ModelRef get profileRef;
+  @override
+  @TimestampDateTimeSerializer()
+  DateTime get createdAt;
   @override
   String get imageUrl;
   @override

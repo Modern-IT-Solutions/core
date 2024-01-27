@@ -3,6 +3,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'embedded_chat_room_message/embedded_chat_room_message.dart';
 
+export 'embedded_chat_room_message/embedded_chat_room_message.dart';
+
 part 'embedded_chat_room_model.freezed.dart';
 part 'embedded_chat_room_model.g.dart';
 

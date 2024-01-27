@@ -9,7 +9,10 @@ part of 'embedded_chat_room_audio_message.dart';
 _$EmbeddedChatRoomAudioMessageImpl _$$EmbeddedChatRoomAudioMessageImplFromJson(
         Map<String, dynamic> json) =>
     _$EmbeddedChatRoomAudioMessageImpl(
-      profileRef: json['profileRef'] as String,
+      profileRef:
+          const ModelRefSerializer().fromJson(json['profileRef'] as String),
+      createdAt:
+          const TimestampDateTimeSerializer().fromJson(json['createdAt']),
       audioUrl: json['audioUrl'] as String,
       type: $enumDecodeNullable(_$ChatRoomMessageTypeEnumMap, json['type']) ??
           ChatRoomMessageType.audio,
@@ -18,7 +21,9 @@ _$EmbeddedChatRoomAudioMessageImpl _$$EmbeddedChatRoomAudioMessageImplFromJson(
 Map<String, dynamic> _$$EmbeddedChatRoomAudioMessageImplToJson(
         _$EmbeddedChatRoomAudioMessageImpl instance) =>
     <String, dynamic>{
-      'profileRef': instance.profileRef,
+      'profileRef': const ModelRefSerializer().toJson(instance.profileRef),
+      'createdAt':
+          const TimestampDateTimeSerializer().toJson(instance.createdAt),
       'audioUrl': instance.audioUrl,
       'type': _$ChatRoomMessageTypeEnumMap[instance.type]!,
     };
@@ -27,4 +32,6 @@ const _$ChatRoomMessageTypeEnumMap = {
   ChatRoomMessageType.text: 'text',
   ChatRoomMessageType.image: 'image',
   ChatRoomMessageType.audio: 'audio',
+  ChatRoomMessageType.video: 'video',
+  ChatRoomMessageType.file: 'file',
 };

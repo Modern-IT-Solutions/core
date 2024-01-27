@@ -1,4 +1,9 @@
+import 'package:core/core.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:media_cache_manager/media_cache_manager.dart';
+import 'package:universal_io/io.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../consts/consts.dart';
 import 'service.dart';
@@ -57,4 +62,31 @@ class StorageService extends Service {
   //     snapshot: DownloadMediaSnapshot(),
   //   );
   // }
+
+
+  Future<String> upload(PlatformFile file, void Function(double?) progressCallback) async {
+    final ref = FirebaseStorage.instance.ref()
+      .child('uploads')
+      .child(getCurrentProfile()!.uid)
+      .child('${DateTime.now().millisecondsSinceEpoch}');
+    late UploadTask uploadTask;
+    if (kIsWeb) {
+      uploadTask = ref.putData(file.bytes!);
+    } else {
+      uploadTask = ref.putData(await File(file.path!).readAsBytes());
+    }
+    uploadTask.snapshotEvents.listen((event) {
+      if (event.totalBytes != 0) {
+        progressCallback(event.bytesTransferred / event.totalBytes);
+      }
+    });
+    final snapshot = await uploadTask.whenComplete(() {
+      progressCallback(null);
+    });
+    if (snapshot.state == TaskState.success) {
+      final url = await snapshot.ref.getDownloadURL();
+      return url;
+    }
+    throw Exception('Upload failed');
+  }
 }

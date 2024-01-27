@@ -37,7 +37,7 @@ Future<CachedCollection?> getCollection({
         builder: builder,
         minmumUpdateDuration: minmumUpdateDuration,
         orderBy: orderBy,
-        startAfter:startAfter,
+        startAfter: startAfter,
       );
 }
 
@@ -60,7 +60,7 @@ Future<CachedCount?> getCount({
         builder: builder,
         minmumUpdateDuration: minmumUpdateDuration,
         orderBy: orderBy,
-        startAfter:startAfter,
+        startAfter: startAfter,
       );
 }
 
@@ -115,6 +115,14 @@ Future<CachedDocument?> getDocument({
       );
 }
 
+Stream<Map<String, dynamic>> getDocumentStream({
+  required ModelRef ref,
+}) {
+  return Services.instance.get<DatabaseService>()!.getDocumentStream(
+        ref: ref,
+      );
+}
+
 /// createDocument
 Future<CachedDocument> createDocument({
   required String path,
@@ -125,6 +133,7 @@ Future<CachedDocument> createDocument({
         data: data,
       );
 }
+
 /// createDocument
 Future<CachedDocument> setDocument({
   required String path,
@@ -196,4 +205,8 @@ ThemeService getTheme() {
 
 PreferencesService getPrefs() {
   return Services.instance.get<PreferencesService>()!;
+}
+
+StorageService getStorage() {
+  return Services.instance.get<StorageService>()!;
 }

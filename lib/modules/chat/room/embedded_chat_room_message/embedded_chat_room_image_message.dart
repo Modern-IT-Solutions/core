@@ -1,3 +1,5 @@
+import 'package:core/converters.dart';
+import 'package:core/temp.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'embedded_chat_room_message.dart';
@@ -11,9 +13,10 @@ class EmbeddedChatRoomImageMessage with _$EmbeddedChatRoomImageMessage implement
   const EmbeddedChatRoomImageMessage._();
 
   const factory EmbeddedChatRoomImageMessage({
-    required String profileRef,
+    @ModelRefSerializer() required ModelRef profileRef,
+    @TimestampDateTimeSerializer() required DateTime createdAt,
     required String imageUrl,
-    @Default(ChatRoomMessageType.text) ChatRoomMessageType type,
+    @Default(ChatRoomMessageType.image) ChatRoomMessageType type,
   }) = _EmbeddedChatRoomImageMessage;
 
   factory EmbeddedChatRoomImageMessage.fromJson(Map<String, dynamic> json) => _$EmbeddedChatRoomImageMessageFromJson(json);

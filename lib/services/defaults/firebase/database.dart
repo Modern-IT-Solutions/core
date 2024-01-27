@@ -214,6 +214,18 @@ class DatabaseService extends Service {
     return cachedCount.first;
   }
 
+  Stream<Map<String, dynamic>> getDocumentStream({
+    required ModelRef ref,
+  }) {
+    final document = FirebaseFirestore.instance.doc(ref.parentDocumentRef?.path ?? ref.path).snapshots();
+    return document.where((event) => event.data() != null).map((e) {
+      if (ref.isEmbedded) {
+        return e.data()![ref.fieldPath!];
+      }
+      return e.data()!;
+    });
+  }
+
   Future<CachedDocument?> getDocument({
     required String path,
     String? cacheId,

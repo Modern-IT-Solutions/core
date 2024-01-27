@@ -8,9 +8,9 @@ import 'models/base.dart';
 /// ModelRefMixin
 class ModelRef {
   /// random() is a static method that returns a random string of length [length]
-  static ModelRef random(String col,[int length = 11]) {
+  static ModelRef random(String col, [int length = 11]) {
     var r = Random();
-    return ModelRef(col+"/"+generateDocumentId(length));
+    return ModelRef(col + "/" + generateDocumentId(length));
   }
 
   final String path;
@@ -32,7 +32,47 @@ class ModelRef {
     }
     return tokens.join('/');
   }
+  // after "." is the field path, it cam be nested so from first "." to last "."
+  String? get fieldPath {
+    if (!id.contains('.')) {
+      return null;
+    }
+    return id.split('.').sublist(1).join('.');
+  }
+  // [parentDocumentRef] returns the parent document ref if exists
+  ModelRef? get parentDocumentRef {
+    if (!isEmbedded) {
+      return null;
+    }
+    return ModelRef(path.split('.').first);
+  }
+  // [isEmbedded] is true if the model is embedded in another model
+  bool get isEmbedded => fieldPath != null;
 
+  // updateModel is a helper method that updates the model in the database
+  // it takes cas if model is embedded also
+  Future<void> update(Map<String, dynamic> data) async {
+    if (isEmbedded) {
+      // embeddedData just add the fieldPath as prefix to all the data keys
+      var embeddedData = <String, dynamic>{};
+      data.forEach((key, value) {
+        embeddedData[fieldPath! + '.' + key] = value;
+      });
+      await updateDocument(path: parentDocumentRef!.path, data: embeddedData);
+    } else {
+      await updateDocument(path: path, data: data);
+    }
+  }
+  /// createModel is a helper method that creates the model in the database
+  Future<void> create(Map<String, dynamic> data) async {
+    if (isEmbedded) {
+      await updateDocument(path: parentDocumentRef!.path, data: {
+        fieldPath!: data,
+      });
+    } else {
+      await createDocument(path: path, data: data);
+    }
+  }
 
   ModelRef copyWith({
     String? ref,
@@ -60,16 +100,13 @@ class ModelRef {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
-    return other is ModelRef &&
-      other.path == path;
+
+    return other is ModelRef && other.path == path;
   }
 
   @override
   int get hashCode => path.hashCode;
 }
-
-
 
 ////
 
@@ -146,7 +183,6 @@ Future<void> showDeleteModelDailog(BuildContext context, Model model) async {
   );
 }
 
-
 // delete assistance, a simple dialog with a text and two buttons
 Future<void> showDeleteModelsDailog(BuildContext context, List<Model> models) async {
   bool _loading = false;
@@ -220,10 +256,9 @@ Future<void> showDeleteModelsDailog(BuildContext context, List<Model> models) as
   );
 }
 
-
 // [A-Z][0-9]
 const _chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-String generateDocumentId([int length=11]) {
+String generateDocumentId([int length = 11]) {
   var r = Random();
   var result = "";
   for (var i = 0; i < length; i++) {

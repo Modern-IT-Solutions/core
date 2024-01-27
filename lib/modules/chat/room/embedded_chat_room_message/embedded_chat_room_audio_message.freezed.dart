@@ -21,7 +21,10 @@ EmbeddedChatRoomAudioMessage _$EmbeddedChatRoomAudioMessageFromJson(
 
 /// @nodoc
 mixin _$EmbeddedChatRoomAudioMessage {
-  String get profileRef => throw _privateConstructorUsedError;
+  @ModelRefSerializer()
+  ModelRef get profileRef => throw _privateConstructorUsedError;
+  @TimestampDateTimeSerializer()
+  DateTime get createdAt => throw _privateConstructorUsedError;
   String get audioUrl => throw _privateConstructorUsedError;
   ChatRoomMessageType get type => throw _privateConstructorUsedError;
 
@@ -39,7 +42,11 @@ abstract class $EmbeddedChatRoomAudioMessageCopyWith<$Res> {
       _$EmbeddedChatRoomAudioMessageCopyWithImpl<$Res,
           EmbeddedChatRoomAudioMessage>;
   @useResult
-  $Res call({String profileRef, String audioUrl, ChatRoomMessageType type});
+  $Res call(
+      {@ModelRefSerializer() ModelRef profileRef,
+      @TimestampDateTimeSerializer() DateTime createdAt,
+      String audioUrl,
+      ChatRoomMessageType type});
 }
 
 /// @nodoc
@@ -57,6 +64,7 @@ class _$EmbeddedChatRoomAudioMessageCopyWithImpl<$Res,
   @override
   $Res call({
     Object? profileRef = null,
+    Object? createdAt = null,
     Object? audioUrl = null,
     Object? type = null,
   }) {
@@ -64,7 +72,11 @@ class _$EmbeddedChatRoomAudioMessageCopyWithImpl<$Res,
       profileRef: null == profileRef
           ? _value.profileRef
           : profileRef // ignore: cast_nullable_to_non_nullable
-              as String,
+              as ModelRef,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       audioUrl: null == audioUrl
           ? _value.audioUrl
           : audioUrl // ignore: cast_nullable_to_non_nullable
@@ -86,7 +98,11 @@ abstract class _$$EmbeddedChatRoomAudioMessageImplCopyWith<$Res>
       __$$EmbeddedChatRoomAudioMessageImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String profileRef, String audioUrl, ChatRoomMessageType type});
+  $Res call(
+      {@ModelRefSerializer() ModelRef profileRef,
+      @TimestampDateTimeSerializer() DateTime createdAt,
+      String audioUrl,
+      ChatRoomMessageType type});
 }
 
 /// @nodoc
@@ -103,6 +119,7 @@ class __$$EmbeddedChatRoomAudioMessageImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? profileRef = null,
+    Object? createdAt = null,
     Object? audioUrl = null,
     Object? type = null,
   }) {
@@ -110,7 +127,11 @@ class __$$EmbeddedChatRoomAudioMessageImplCopyWithImpl<$Res>
       profileRef: null == profileRef
           ? _value.profileRef
           : profileRef // ignore: cast_nullable_to_non_nullable
-              as String,
+              as ModelRef,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       audioUrl: null == audioUrl
           ? _value.audioUrl
           : audioUrl // ignore: cast_nullable_to_non_nullable
@@ -127,7 +148,8 @@ class __$$EmbeddedChatRoomAudioMessageImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$EmbeddedChatRoomAudioMessageImpl extends _EmbeddedChatRoomAudioMessage {
   const _$EmbeddedChatRoomAudioMessageImpl(
-      {required this.profileRef,
+      {@ModelRefSerializer() required this.profileRef,
+      @TimestampDateTimeSerializer() required this.createdAt,
       required this.audioUrl,
       this.type = ChatRoomMessageType.audio})
       : super._();
@@ -137,7 +159,11 @@ class _$EmbeddedChatRoomAudioMessageImpl extends _EmbeddedChatRoomAudioMessage {
       _$$EmbeddedChatRoomAudioMessageImplFromJson(json);
 
   @override
-  final String profileRef;
+  @ModelRefSerializer()
+  final ModelRef profileRef;
+  @override
+  @TimestampDateTimeSerializer()
+  final DateTime createdAt;
   @override
   final String audioUrl;
   @override
@@ -146,7 +172,7 @@ class _$EmbeddedChatRoomAudioMessageImpl extends _EmbeddedChatRoomAudioMessage {
 
   @override
   String toString() {
-    return 'EmbeddedChatRoomAudioMessage(profileRef: $profileRef, audioUrl: $audioUrl, type: $type)';
+    return 'EmbeddedChatRoomAudioMessage(profileRef: $profileRef, createdAt: $createdAt, audioUrl: $audioUrl, type: $type)';
   }
 
   @override
@@ -156,6 +182,8 @@ class _$EmbeddedChatRoomAudioMessageImpl extends _EmbeddedChatRoomAudioMessage {
             other is _$EmbeddedChatRoomAudioMessageImpl &&
             (identical(other.profileRef, profileRef) ||
                 other.profileRef == profileRef) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
             (identical(other.audioUrl, audioUrl) ||
                 other.audioUrl == audioUrl) &&
             (identical(other.type, type) || other.type == type));
@@ -163,7 +191,8 @@ class _$EmbeddedChatRoomAudioMessageImpl extends _EmbeddedChatRoomAudioMessage {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, profileRef, audioUrl, type);
+  int get hashCode =>
+      Object.hash(runtimeType, profileRef, createdAt, audioUrl, type);
 
   @JsonKey(ignore: true)
   @override
@@ -184,7 +213,8 @@ class _$EmbeddedChatRoomAudioMessageImpl extends _EmbeddedChatRoomAudioMessage {
 abstract class _EmbeddedChatRoomAudioMessage
     extends EmbeddedChatRoomAudioMessage {
   const factory _EmbeddedChatRoomAudioMessage(
-      {required final String profileRef,
+      {@ModelRefSerializer() required final ModelRef profileRef,
+      @TimestampDateTimeSerializer() required final DateTime createdAt,
       required final String audioUrl,
       final ChatRoomMessageType type}) = _$EmbeddedChatRoomAudioMessageImpl;
   const _EmbeddedChatRoomAudioMessage._() : super._();
@@ -193,7 +223,11 @@ abstract class _EmbeddedChatRoomAudioMessage
       _$EmbeddedChatRoomAudioMessageImpl.fromJson;
 
   @override
-  String get profileRef;
+  @ModelRefSerializer()
+  ModelRef get profileRef;
+  @override
+  @TimestampDateTimeSerializer()
+  DateTime get createdAt;
   @override
   String get audioUrl;
   @override

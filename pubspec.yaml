@@ -27,6 +27,7 @@ dependencies:
   visibility_detector:
   feather_icons:
   form_builder_validators:
+  video_player_media_kit:
   algeria:
     # path: /Users/mohamad/Desktop/projects/packages/algeria
   flutter_map: ^6.0.0-dev.3
