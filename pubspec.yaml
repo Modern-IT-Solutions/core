@@ -37,6 +37,12 @@ dependencies:
     git:
      url: https://github.com/Modern-IT-Solutions/lib.git
      ref: main
+  zplayer:
+    # path: ../zplayer
+    git:
+     url: https://github.com/Modern-IT-Solutions/z-player.git
+     ref: main
+
   cached_network_image:
   form_builder_phone_field:
   file_picker:
@@ -67,6 +73,8 @@ dependencies:
   latlng_picker:
     path: /Users/mohamad/Desktop/projects/kflutter/latlng_picker
   osm_nominatim:
+  motif: ^0.0.6
+  image_picker: ^1.0.7
 
 dependency_overrides:
   http: ^1.0.0
