@@ -71,7 +71,7 @@ dependencies:
   photo_view: ^0.14.0
     # path: /Users/mohamad/Desktop/projects/kflutter/puncher
   latlng_picker:
-    path: /Users/mohamad/Desktop/projects/kflutter/latlng_picker
+    # path: /Users/mohamad/Desktop/projects/kflutter/latlng_picker
   osm_nominatim:
   motif: ^0.0.6
   image_picker: ^1.0.7
