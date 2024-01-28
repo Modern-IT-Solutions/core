@@ -28,7 +28,6 @@ class GiftCardOrderModel with _$GiftCardOrderModel implements Model {
     @TimestampDateTimeSerializer() required DateTime createdAt,
     @TimestampDateTimeSerializer() required DateTime updatedAt,
     @NullableTimestampDateTimeSerializer() DateTime? deletedAt,
-
     ///
     required ProfileModel profile,
     required ShippingModel shipping,
