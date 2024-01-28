@@ -128,20 +128,27 @@ class DatabaseService extends Service {
 
   Future<void> _saveCache() async {
     dateToJson(e) {
-        if (e is DateTime) {
-          return e.toIso8601String();
-        } else if (e is Timestamp) {
-          return e.toDate().toIso8601String();
-        }
-        return e;
-      };
-    final cachedDocuments = _cachedDocuments.map((e) => jsonEncode(e.toJson(),toEncodable: dateToJson,)).toList();
+      if (e is DateTime) {
+        return e.toIso8601String();
+      } else if (e is Timestamp) {
+        return e.toDate().toIso8601String();
+      }
+      return e;
+    }
+
+    ;
+    final cachedDocuments = _cachedDocuments
+        .map((e) => jsonEncode(
+              e.toJson(),
+              toEncodable: dateToJson,
+            ))
+        .toList();
     await prefs.setStringList('cached_documents', cachedDocuments);
 
-    final cachedCollections = _cachedCollections.map((e) => jsonEncode(e.toJson(),toEncodable: dateToJson)).toList();
+    final cachedCollections = _cachedCollections.map((e) => jsonEncode(e.toJson(), toEncodable: dateToJson)).toList();
     await prefs.setStringList('cached_collections', cachedCollections);
 
-    final cachedCounts = _cachedCounts.map((e) => jsonEncode(e.toJson(),toEncodable: dateToJson)).toList();
+    final cachedCounts = _cachedCounts.map((e) => jsonEncode(e.toJson(), toEncodable: dateToJson)).toList();
     await prefs.setStringList('cached_counts', cachedCounts);
   }
 
@@ -176,16 +183,16 @@ class DatabaseService extends Service {
     String? query = "",
     bool withExpired = false,
   }) {
-    Iterable<CachedCollection> cachedCollection;
+    List<CachedCollection> cachedCollection;
     if (query == null) {
-      cachedCollection = _cachedCollections.where((e) => e.ref == path);
+      cachedCollection = _cachedCollections.where((e) => e.ref == path).toList();
     } else {
-      cachedCollection = _cachedCollections.where((e) => e.ref == path && e.query == query);
+      cachedCollection = _cachedCollections.where((e) => e.ref == path && e.query == query).toList();
     }
     if (cachedCollection.isEmpty) {
       return null;
     }
-    cachedCollection = cachedCollection.where((e) => e.expiresAt == null || e.expiresAt!.isAfter(DateTime.now()));
+    cachedCollection = cachedCollection.where((e) => e.expiresAt == null || e.expiresAt!.isAfter(DateTime.now())).toList();
     if (cachedCollection.isEmpty) {
       return null;
     }
@@ -444,9 +451,9 @@ class DatabaseService extends Service {
   /// path: the path of the collection in firestore
   ///  withExpired: if true, bypass the expired check
   ///  behavior: it can be: cacheOnly, serverOnly, cacheFirst, serverFirst
-  /// 
-  /// 
-  /// 
+  ///
+  ///
+  ///
   Future<CachedCollection?> getCollection({
     String? cacheId,
     OrderBy? orderBy,
@@ -474,7 +481,9 @@ class DatabaseService extends Service {
     bool hasOrderBy(String field) {
       var list = <dynamic>[];
       if (query.parameters.containsKey("orderBy")) {
-        list = [...query.parameters["orderBy"]];
+        list = [
+          ...query.parameters["orderBy"]
+        ];
       }
       for (var item in list) {
         if (item.toString().contains(field)) {
@@ -483,7 +492,7 @@ class DatabaseService extends Service {
       }
       return false;
     }
-    
+
     if (!hasOrderBy("deletedAt")) {
       query = query.orderBy("deletedAt", descending: false);
     }
@@ -497,12 +506,25 @@ class DatabaseService extends Service {
     }
     query = query.limit(limit);
 
+    //
+    var queryId = smallCacheId((cacheId ?? "") + path, query.parameters);
+    // load cached version
+    final cachedCollection = getCachedCollection(path: path, query: queryId, withExpired: withExpired);
+    if (cachedCollection != null) {
+      // if its cached in less than 5min then return it
+      var now = DateTime.now();
+      var diff = now.difference(cachedCollection.updatedAtOrCachedAt);
+      if (diff < minmumUpdateDuration) {
+        return cachedCollection.filter(withTrashed: withTrashed);
+      }
+    }
+
     final collection = await query.get();
     print("collection.docs.length ${collection.docs.length}");
     if (collection.docs.isNotEmpty) {
       final cachedCollection = CachedCollection(
         ref: path,
-        query: UniqueKey().toString(),
+        query: queryId,
         documents: collection.docs
             .map(
               (e) => CachedDocument(
@@ -516,14 +538,12 @@ class DatabaseService extends Service {
       );
       _cachedCollections.removeWhere((e) => e.ref == path);
       _cachedCollections.add(cachedCollection);
-      // await
-      // _saveCache();
+      await _saveCache();
       var data = cachedCollection.filter(withTrashed: withTrashed);
       return data;
     }
     return null;
   }
-
 
   Future<CachedCollection?> getCollectionX({
     String? cacheId,
@@ -596,9 +616,9 @@ class DatabaseService extends Service {
             );
           } catch (e) {
             query2 = FirebaseFirestore.instance.collection(path).where(
-              'updatedAt',
-              isGreaterThan: Timestamp.fromDate(cachedCollection.updatedAtOrCachedAt),
-            );
+                  'updatedAt',
+                  isGreaterThan: Timestamp.fromDate(cachedCollection.updatedAtOrCachedAt),
+                );
           }
           if (orderBy != null) {
             query2 = query.orderBy(orderBy.field, descending: orderBy.descending);
@@ -782,6 +802,7 @@ class DatabaseService extends Service {
         }
       },
     );
+    return json.hashCode.toString();
     var hash = sha256.convert(utf8.encode(json)).toString();
     var confirmHash = sha256.convert(utf8.encode(json)).toString();
     assert(confirmHash == hash, "hash is not correct");

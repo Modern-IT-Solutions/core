@@ -25,7 +25,7 @@ Future<CachedCollection?> getCollection({
 }) async {
   if (getPrefs().getOption<bool>("useCache", defaults: true) == false) {
     behavior = FetchBehavior.serverOnly;
-    minmumUpdateDuration = Duration(minutes: 1);
+    minmumUpdateDuration = Duration(seconds: 10);
   }
   return await Services.instance.get<DatabaseService>()!.getCollection(
         cacheId: cacheId,
