@@ -10,6 +10,7 @@ import 'package:universal_io/io.dart';
 import '../../consts/consts.dart';
 import '../service.dart';
 import 'default_settings_loader_model.dart';
+export 'default_settings_loader_model.dart';
 
 /// [SettingsServiceConfigs] responsible for settings configs
 class SettingsServiceConfigs<L extends SettingsLoaderModel> extends ServiceConfigs {

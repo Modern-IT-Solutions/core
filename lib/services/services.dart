@@ -1,10 +1,24 @@
 import 'dart:async';
 import 'consts/consts.dart';
 import 'defaults/service.dart';
+
+/// [AuthServices] responsible for initializing all services and app lifecycle
 export './defaults/auth.dart';
+/// [FirebaseService] responsible for initializing all services and app lifecycle
 export 'defaults/firebase/firebase.dart';
+/// [NotificationsService] responsible for initializing all services and app lifecycle
 export './defaults/notifications.dart';
+/// [StorageService] responsible for initializing all services and app lifecycle
 export './defaults/storage.dart';
+/// [PreferencesService] responsible for initializing all services and app lifecycle
+export './defaults/preferences.dart';
+/// [SettingsService] responsible for initializing all services and app lifecycle
+export './defaults/settings/settings.dart';
+/// [ThemeService] responsible for initializing all services and app lifecycle
+export './defaults/theme.dart';
+
+// more
+export './consts/consts.dart';
 
 /// [Services] responsible for initializing all services and app lifecycle
 class Services {

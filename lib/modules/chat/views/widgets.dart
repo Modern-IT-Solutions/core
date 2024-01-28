@@ -3,6 +3,7 @@
 // ignore: depend_on_referenced_packages
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:blurhash_dart/blurhash_dart.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -14,7 +15,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:form_builder_validators/src/form_builder_validators.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -22,8 +22,6 @@ import 'package:lib/lib.dart';
 import 'package:mime/mime.dart';
 import 'package:motif/motif.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:universal_io/io.dart';
-import 'package:url_launcher/url_launcher.dart';
 // import 'package:video_player/video_player.dart';
 import 'package:zplayer/zplayer.dart';
 
@@ -165,7 +163,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
 
   final ImagePicker picker = ImagePicker();
 
-  Future<PlatformFile?> showImagePickerDialog(BuildContext context) async {
+  Future<PlatformFile?> showImagePickerDialog(BuildContext context, {bool compress = true}) async {
     return await showDialog<PlatformFile>(
       context: context,
       builder: (context) {
@@ -178,7 +176,12 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
                 leading: const Icon(FluentIcons.image_24_regular),
                 title: const Text("Gallery"),
                 onTap: () async {
-                  final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                  final XFile? image = await picker.pickImage(
+                    source: ImageSource.gallery,
+                    imageQuality: compress ? 70 : 90,
+                    maxWidth: compress ? 1080 : 1600,
+                    maxHeight: compress ? 720 : 1600,
+                  );
                   Navigator.of(context).pop(image == null
                       ? null
                       : PlatformFile(
@@ -193,7 +196,12 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
                 leading: const Icon(FluentIcons.camera_24_regular),
                 title: const Text("Camera"),
                 onTap: () async {
-                  final XFile? image = await picker.pickImage(source: ImageSource.camera);
+                  final XFile? image = await picker.pickImage(
+                    source: ImageSource.camera,
+                    imageQuality: compress ? 70 : 90,
+                    maxWidth: compress ? 1080 : 1600,
+                    maxHeight: compress ? 720 : 1600,
+                  );
                   Navigator.of(context).pop(image == null
                       ? null
                       : PlatformFile(
@@ -407,7 +415,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      "Members: ${room!.profiles.map((e) => e.displayName + " (${e.roles.firstOrNull?.name})").join(", ")},",
+                      "Members: ${room!.profiles.map((e) => "${e.displayName} (${e.roles.firstOrNull?.name})").join(", ")},",
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodySmall!.copyWith(
                             color: Theme.of(context).colorScheme.tertiary.withOpacity(0.5),
@@ -421,7 +429,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
         ),
         if (loading)
           const SizedBox(
-            height: 1,
+            height: 2,
             child: LinearProgressIndicator(),
           )
         else
@@ -442,7 +450,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
                   icon: uploadingProgress != null
                       ? SizedBox.square(
                           dimension: 24,
-                          child: CircularProgressIndicator.adaptive(
+                          child: CircularProgressIndicator(
                             strokeWidth: 2,
                             value: uploadingProgress!,
                           ),
@@ -591,16 +599,51 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 250, maxWidth: 250),
             child: CachedNetworkImage(
+              // imageUrl: "${message.imageUrl}?w=${Random().nextInt(1000) + 1000}",
               imageUrl: message.imageUrl,
-              placeholder: (context, url) => Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12),
-                height: 20,
-                width: 20,
-                child: const CircularProgressIndicator.adaptive(
-                  strokeWidth: 2,
+              progressIndicatorBuilder: (context, url, downloadProgress) => AspectRatio(
+                key: ValueKey(downloadProgress.progress),
+                aspectRatio: (message.width ?? 1) / (message.height ?? 1),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    value: downloadProgress.progress,
+                  ),
                 ),
               ),
-              errorWidget: (context, url, error) => const Icon(Icons.error),
+              errorWidget: (context, url, error) {
+                String errorMessage = "Failed to load image";
+                // try {
+                //   errorMessage=(error as dynamic).message.toString();
+                // } catch (e) {
+                //   if (error is Exception) {
+                //     errorMessage = error.toString();
+                //   }
+                // }
+
+
+                return AspectRatio(
+                
+                aspectRatio: (message.width ?? 1) / (message.height ?? 1),
+                child: Container(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error, color: Theme.of(context).colorScheme.onErrorContainer),
+                      const SizedBox(height: 4),
+                      Text(
+                      errorMessage,
+                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                              color: Theme.of(context).colorScheme.onErrorContainer
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+              },
             ),
           ),
         ),
@@ -827,7 +870,7 @@ class _SingleSourceMediaPlayerState extends State<SingleSourceMediaPlayer> {
         ),
       );
     }
-    return ZPlayer(title: Text("Media"), streams: {
+    return ZPlayer(title: const Text("Media"), streams: {
       ZMuxedStream(
         src: widget.source.toString(),
         resolution: const Size(480, 360),
