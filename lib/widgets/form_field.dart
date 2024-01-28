@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:form_builder_phone_field/form_builder_phone_field.dart';
+// import 'package:form_builder_phone_field/form_builder_phone_field.dart';
 import 'package:latlng_picker/latlng_picker.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -443,29 +443,30 @@ class _AppNumberTextFormFieldState extends State<AppNumberTextFormField> {
         //   ),
         SizedBox(
           height: widget.height,
-          child: FormBuilderPhoneField(
-            name: 'ho',
-            controller: widget.controller,
-            // cursorHeight: 30,
-            // maxLines: 1,
-            scrollPadding: const EdgeInsets.all(0),
-            // expands: true,
-            decoration: widget.decoration.copyWith(
-              isDense: true,
-              constraints: const BoxConstraints(
-                  // maxHeight: 30,
-                  ),
-              alignLabelWithHint: true,
-              contentPadding: widget.decoration.contentPadding ?? const EdgeInsets.symmetric(horizontal: 10),
-              filled: widget.decoration.filled ?? true,
-              fillColor: widget.decoration.fillColor ?? Theme.of(context).colorScheme.surfaceVariant,
-              border: widget.decoration.border ??
-                  OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-            ),
-            validator: widget.validator,
-          ),
+          // child: 
+          // FormBuilderPhoneField(
+          //   name: 'ho',
+          //   controller: widget.controller,
+          //   // cursorHeight: 30,
+          //   // maxLines: 1,
+          //   scrollPadding: const EdgeInsets.all(0),
+          //   // expands: true,
+          //   decoration: widget.decoration.copyWith(
+          //     isDense: true,
+          //     constraints: const BoxConstraints(
+          //         // maxHeight: 30,
+          //         ),
+          //     alignLabelWithHint: true,
+          //     contentPadding: widget.decoration.contentPadding ?? const EdgeInsets.symmetric(horizontal: 10),
+          //     filled: widget.decoration.filled ?? true,
+          //     fillColor: widget.decoration.fillColor ?? Theme.of(context).colorScheme.surfaceVariant,
+          //     border: widget.decoration.border ??
+          //         OutlineInputBorder(
+          //           borderRadius: BorderRadius.circular(20),
+          //         ),
+          //   ),
+          //   validator: widget.validator,
+          // ),
         ),
         // if (this.widget.helper != null)
         //   DefaultTextStyle(
