@@ -9,7 +9,6 @@ import 'package:crypto/crypto.dart';
 import 'package:core/services/consts/consts.dart';
 // ignore: depend_on_referenced_packages
 import 'package:core/core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../models/cached_document.dart';
