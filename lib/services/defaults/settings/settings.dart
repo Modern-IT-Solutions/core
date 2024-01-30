@@ -71,14 +71,18 @@ class SettingsService<L extends SettingsLoaderModel> extends Service {
 
   /// Loads the settings from the server
   Future<void> _loadServerSettings() async {
-    var settings = await getDocument(
-      path: configs.path,
-      behavior: FetchBehavior.serverFirst,
-    );
-    if (settings != null) {
-      _settings = settings.data;
-      _lastFetch = DateTime.now();
-      notifyListeners();
+    try {
+      var settings = await getDocument(
+        path: configs.path,
+        behavior: FetchBehavior.serverFirst,
+      );
+      if (settings != null) {
+        _settings = settings.data;
+        _lastFetch = DateTime.now();
+        notifyListeners();
+      }
+    } catch (e) {
+      print(e);
     }
   }
 

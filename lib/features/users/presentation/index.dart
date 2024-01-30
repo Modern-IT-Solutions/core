@@ -1773,6 +1773,30 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       hasNext: true,
     );
     limit = limit ?? value!.limit;
+
+
+  void _handleFirebaseException(FirebaseException e) {
+      if (e.code == "failed-precondition") {
+        var data = e.message!.split("https");
+        var message = data[0];
+        var url = "https${data[1]}";
+        needIndexError = (
+          name: message,
+          url: url,
+        );
+        value = value?.copyWith(
+          error: e.toString(),
+          loading: false,
+          models: [],
+        );
+      } else {
+        value = value?.copyWith(
+          error: e.toString(),
+          loading: false,
+        );
+      }
+  }
+  
     try {
       value = value!.copyWith(
         models: concat ? value!.models : null,
@@ -1870,31 +1894,30 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     }
     // need index error from firebase
     on FirebaseException catch (e) {
-      if (e.code == "failed-precondition") {
-        var data = e.message!.split("https");
-        var message = data[0];
-        var url = "https${data[1]}";
-        needIndexError = (
-          name: message,
-          url: url,
-        );
-        value = value?.copyWith(
-          error: e.toString(),
-          loading: false,
-          models: [],
-        );
-      } else {
-        value = value?.copyWith(
-          error: e.toString(),
-          loading: false,
-        );
-      }
+      _handleFirebaseException(e);
     } catch (e) {
+      print(e);
+      try {
+        if ((e as PlatformException).code == "failed-precondition") {
+          _handleFirebaseException(
+            FirebaseException(
+              plugin: "cloud_firestore",
+              message: e.message,
+              code: e.code,
+            )
+          );
+        } 
+      } catch (e) {
+        print(e);
+      }
       value = value?.copyWith(
         error: e.toString(),
         loading: false,
       );
     }
+
+
+
 
     /// sync selected models
     syncSelectedModels();

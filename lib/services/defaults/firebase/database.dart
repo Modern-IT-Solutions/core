@@ -740,7 +740,7 @@ class DatabaseService extends Service {
       if (_count != null) {
         return Future.value(_count);
       }
-      try {
+      // try {
         var response = await query.count().get();
         _count = CachedCount(
           ref: path,
@@ -753,10 +753,11 @@ class DatabaseService extends Service {
         _cachedCounts.add(_count!);
         await _saveCache();
         return _count;
-      } catch (e) {
-        _count = null;
-        print(e);
-      }
+      // } catch (e) {
+      //   _count = null;
+      //   print(e);
+      //   rethrow;
+      // }
     }
 
     if (behavior == FetchBehavior.cacheOnly) {

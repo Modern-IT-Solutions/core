@@ -15,21 +15,25 @@ class DataFlagWidget extends StatelessWidget {
   /// [DataFlagWidget.flag] is the flag to show
   final DataFalg flag;
   final String? custom;
+  final Color color;
 
   const DataFlagWidget({
     super.key,
     this.flag = DataFalg.custom,
+    this.color = Colors.grey,
     this.custom,
   });
 
   const DataFlagWidget.empty({
     super.key,
     this.flag = DataFalg.empty,
+    this.color = Colors.grey,
   }) : this.custom = null;
 
   const DataFlagWidget.error({
     super.key,
     this.flag = DataFalg.error,
+    this.color = Colors.grey,
   }) : this.custom = null;
 
   @override
@@ -41,12 +45,12 @@ class DataFlagWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 5),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(4),
-            color: Colors.grey.withOpacity(0.2),
+            color: color,
           ),
           child: Text(
             this.custom?.nullIfEmpty == null ? flag.name : this.custom!,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                  color: Colors.white,
                 ),
           ),
         ),

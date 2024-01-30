@@ -8,11 +8,7 @@ part 'gift_card_order_model.freezed.dart';
 part 'gift_card_order_model.g.dart';
 
 enum OrderStatus {
-  // pending,
-  // processing,
-  // completed,
-  // cancelled;
-  pending(color: Colors.yellow),
+  pending(color: Colors.orange),
   processing(color: Colors.blue),
   completed(color: Colors.green),
   cancelled(color: Colors.red);
