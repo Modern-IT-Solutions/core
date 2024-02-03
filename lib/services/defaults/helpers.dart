@@ -42,7 +42,7 @@ Future<CachedCollection?> getCollection({
 }
 
 // getCount
-Future<CachedCount?> getCount({
+Future<CachedAggregate?> getCount({
   String? cacheId,
   required String path,
   bool withExpired = false,
@@ -53,6 +53,55 @@ Future<CachedCount?> getCount({
   Iterable<Object?>? startAfter,
 }) async {
   return await Services.instance.get<DatabaseService>()!.getCount(
+        cacheId: cacheId,
+        path: path,
+        withExpired: withExpired,
+        behavior: behavior,
+        builder: builder,
+        minmumUpdateDuration: minmumUpdateDuration,
+        orderBy: orderBy,
+        startAfter: startAfter,
+      );
+}
+
+// getCount
+Future<CachedAggregate?> getSum({
+  required String field,
+  String? cacheId,
+  required String path,
+  bool withExpired = false,
+  FetchBehavior behavior = FetchBehavior.cacheFirst,
+  Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>>)? builder,
+  Duration minmumUpdateDuration = const Duration(minutes: 10),
+  OrderBy? orderBy,
+  Iterable<Object?>? startAfter,
+}) async {
+  return await Services.instance.get<DatabaseService>()!.getSum(
+        field: field,
+        cacheId: cacheId,
+        path: path,
+        withExpired: withExpired,
+        behavior: behavior,
+        builder: builder,
+        minmumUpdateDuration: minmumUpdateDuration,
+        orderBy: orderBy,
+        startAfter: startAfter,
+      );
+}
+// getAverage
+Future<CachedAggregate?> getAverage({
+  required String field,
+  String? cacheId,
+  required String path,
+  bool withExpired = false,
+  FetchBehavior behavior = FetchBehavior.cacheFirst,
+  Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>>)? builder,
+  Duration minmumUpdateDuration = const Duration(minutes: 10),
+  OrderBy? orderBy,
+  Iterable<Object?>? startAfter,
+}) async {
+  return await Services.instance.get<DatabaseService>()!.getAverage(
+        field: field,
         cacheId: cacheId,
         path: path,
         withExpired: withExpired,

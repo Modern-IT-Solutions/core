@@ -921,6 +921,8 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                         },
                         menuChildren: [
                           const SizedBox(height: 8),
+                          for (var item in widget.controller.description.menuItems) item,
+                          const Divider(),
                           MenuItemButton(
                             leadingIcon: const Icon(
                               FluentIcons.archive_32_regular,
@@ -1765,6 +1767,24 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     notifyListeners();
   }
 
+  /// getQuery
+  Query<Map<String, dynamic>> querybuilder(Query<Map<String, dynamic>> query) {
+    var strict = false;
+    if (value?.filters.isEmpty == false) {
+      for (var filter in value!.filters) {
+        if (!filter.active) continue;
+        if (filter.strict) {
+          strict = true;
+        }
+        var d = filter.remote.call(query);
+        if (d != null) {
+          query = d;
+        }
+      }
+    }
+    return query;
+  }
+
   /// [search] is a function to search for models
   Future<void> search({Iterable<Object?>? startAfter, bool concat = false, int? limit}) async {
     needIndexError = null;
@@ -1774,8 +1794,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     );
     limit = limit ?? value!.limit;
 
-
-  void _handleFirebaseException(FirebaseException e) {
+    void _handleFirebaseException(FirebaseException e) {
       if (e.code == "failed-precondition") {
         var data = e.message!.split("https");
         var message = data[0];
@@ -1795,31 +1814,16 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
           loading: false,
         );
       }
-  }
-  
+    }
+
     try {
       value = value!.copyWith(
         models: concat ? value!.models : null,
         count: (await getCount(
           path: description.path,
-          builder: (query) {
-            var strict = false;
-            if (value?.filters.isEmpty == false) {
-              for (var filter in value!.filters) {
-                if (!filter.active) continue;
-                if (filter.strict) {
-                  strict = true;
-                }
-                var d = filter.remote.call(query);
-                if (d != null) {
-                  query = d;
-                }
-              }
-            }
-            return query;
-          },
+          builder: querybuilder,
         ))
-            ?.count,
+            ?.value.toInt(),
       );
       notifyListeners();
       var _models = await getModelCollection(
@@ -1836,37 +1840,38 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
                 // ) null,
                 ...startAfter ?? [],
               ],
-        builder: (query) {
-          var strict = false;
-          if (value?.filters.isEmpty == false) {
-            for (var filter in value!.filters) {
-              if (!filter.active) continue;
-              if (filter.strict) {
-                strict = true;
-              }
-              var d = filter.remote.call(query);
-              if (d != null) {
-                query = d;
-              }
-            }
-          }
-          // apply search query
-          if (value?.searchQuery?.value?.isNotEmpty == true && value?.searchQuery?.field.isNotEmpty == true) {
-            // text search example:
-            // .where('name', '>=', queryText)
-            // .where('name', '<=', queryText+ '\uf8ff')
-            // try {
-            //   query = query.where(
-            //     value!.searchQuery!.field,
-            //     isGreaterThanOrEqualTo: value!.searchQuery!.value,
-            //     isLessThanOrEqualTo: value!.searchQuery!.value! + '\uf8ff',
-            //   );
-            // } catch (e) {
-            //   print(e);
-            // }
-          }
-          return query;
-        },
+        builder: querybuilder,
+        // (query) {
+        //   var strict = false;
+        //   if (value?.filters.isEmpty == false) {
+        //     for (var filter in value!.filters) {
+        //       if (!filter.active) continue;
+        //       if (filter.strict) {
+        //         strict = true;
+        //       }
+        //       var d = filter.remote.call(query);
+        //       if (d != null) {
+        //         query = d;
+        //       }
+        //     }
+        //   }
+        //   // apply search query
+        //   if (value?.searchQuery?.value?.isNotEmpty == true && value?.searchQuery?.field.isNotEmpty == true) {
+        //     // text search example:
+        //     // .where('name', '>=', queryText)
+        //     // .where('name', '<=', queryText+ '\uf8ff')
+        //     // try {
+        //     //   query = query.where(
+        //     //     value!.searchQuery!.field,
+        //     //     isGreaterThanOrEqualTo: value!.searchQuery!.value,
+        //     //     isLessThanOrEqualTo: value!.searchQuery!.value! + '\uf8ff',
+        //     //   );
+        //     // } catch (e) {
+        //     //   print(e);
+        //     // }
+        //   }
+        //   return query;
+        // },
         limit: limit,
       );
       if (_models.length < limit) {
@@ -1899,14 +1904,12 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       print(e);
       try {
         if ((e as PlatformException).code == "failed-precondition") {
-          _handleFirebaseException(
-            FirebaseException(
-              plugin: "cloud_firestore",
-              message: e.message,
-              code: e.code,
-            )
-          );
-        } 
+          _handleFirebaseException(FirebaseException(
+            plugin: "cloud_firestore",
+            message: e.message,
+            code: e.code,
+          ));
+        }
       } catch (e) {
         print(e);
       }
@@ -1915,9 +1918,6 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         loading: false,
       );
     }
-
-
-
 
     /// sync selected models
     syncSelectedModels();
@@ -2017,6 +2017,11 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     //   filters: value!.filters.map((e) => e.copyWith(active: e.name == filter.name && filter.active)).toList(),
     // );
     await search();
+  }
+
+  /// [useFilter]
+  Future<void> useFilter(IndexViewFilter<M> filter, [bool allowMultipleFilters = false]) async {
+    await updateFilter(filter.copyWith(active: true), allowMultipleFilters);
   }
 
   /// remove filter
@@ -2240,6 +2245,10 @@ class ModelDescription<T extends Model> {
 
   /// actions
   final List<ModelAction<T>> actions;
+
+  /// menu items
+  final List<Widget> menuItems;
+
   const ModelDescription({
     required this.fields,
     required this.name,
@@ -2247,6 +2256,7 @@ class ModelDescription<T extends Model> {
     required this.fromJson,
     required this.tileBuilder,
     required this.actions,
+    this.menuItems = const [],
   });
   Map<String, List<ModelAction<T>>> get groupedActions {
     var map = <String, List<ModelAction<T>>>{};
@@ -2273,6 +2283,7 @@ class ModelDescription<T extends Model> {
     T Function(Map<String, dynamic> data)? fromJson,
     ModelGeneralData Function(T model)? tileBuilder,
     List<ModelAction<T>>? actions,
+    List<Widget>? menuItems,
   }) {
     return ModelDescription<T>(
       fields: fields ?? this.fields,
@@ -2281,6 +2292,7 @@ class ModelDescription<T extends Model> {
       fromJson: fromJson ?? this.fromJson,
       tileBuilder: tileBuilder ?? this.tileBuilder,
       actions: actions ?? this.actions,
+      menuItems: menuItems ?? this.menuItems,
     );
   }
 }
@@ -2990,166 +3002,185 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                     ),
                   // show search field
                   if (searchEnabled)
-                  Container(
-                    width: 300,
-                    height: 40,
-                    // max with is view port -50
-                    constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 50),
-                    child: Center(
-                      child: AppTextFormField(
-                        useButtonHeight: true,
-                        controller: searchController,
-                        // enabled: !loading.value,
-                        onSubmitted: (String value) {
-                          controller.value = controller.value!.copyWith(
-                            searchQuery: SearchQuery(
-                              field: controller.value!.searchQuery?.field ?? controller.description.fields.firstOrNull?.name ?? "",
-                              value: value,
+                    Container(
+                      width: 300,
+                      height: 40,
+                      // max with is view port -50
+                      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 50),
+                      child: Center(
+                        child: AppTextFormField(
+                          useButtonHeight: true,
+                          controller: searchController,
+                          // enabled: !loading.value,
+                          onSubmitted: (String value) {
+                            controller.value = controller.value!.copyWith(
+                              searchQuery: SearchQuery(
+                                field: controller.value!.searchQuery?.field ?? controller.description.fields.firstOrNull?.name ?? "",
+                                value: value,
+                              ),
+                            );
+                            controller.search();
+                          },
+                          onChanged: (String value) async {
+                            controller.setSearchQueryValue(value);
+                          },
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(FluentIcons.search_24_regular),
+                            label: Text(
+                              'Search${controller.value!.searchQuery!.field.isNotEmpty == true ? " (${controller.value!.searchQuery!.field})" : ""}',
+                              maxLines: 1,
+                              softWrap: false,
                             ),
-                          );
-                          controller.search();
-                        },
-                        onChanged: (String value) async {
-                          controller.setSearchQueryValue(value);
-                        },
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(FluentIcons.search_24_regular),
-                          label: Text(
-                            'Search${controller.value!.searchQuery!.field.isNotEmpty == true ? " (${controller.value!.searchQuery!.field})" : ""}',
-                            maxLines: 1,
-                            softWrap: false,
+                            alignLabelWithHint: true,
+                            // select search field
+                            suffixIcon: controller.value?.searchQuery == null
+                                ? null
+                                : MenuAnchor(
+                                    builder: (context, controller, child) {
+                                      return IconButton(
+                                        icon: const Icon(
+                                          FluentIcons.filter_24_regular,
+                                        ),
+                                        onPressed: () => controller.open(),
+                                        // label: Text(value!.searchQuery!.field),
+                                      );
+                                    },
+                                    menuChildren: [
+                                      for (var field in controller.description.fields)
+                                        MenuItemButton(
+                                          leadingIcon: const Icon(FeatherIcons.user),
+                                          trailingIcon: controller.value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
+                                          onPressed: controller.value!.searchQuery!.field == field
+                                              ? null
+                                              : () {
+                                                  controller.setSearchQueryField(field.name);
+                                                },
+                                          child: Text(field.name.titleCase),
+                                        ),
+                                    ],
+                                  ),
                           ),
-                          alignLabelWithHint: true,
-                          // select search field
-                          suffixIcon: controller.value?.searchQuery == null
-                              ? null
-                              : MenuAnchor(
-                                  builder: (context, controller, child) {
-                                    return IconButton(
-                                      icon: const Icon(
-                                        FluentIcons.filter_24_regular,
-                                      ),
-                                      onPressed: () => controller.open(),
-                                      // label: Text(value!.searchQuery!.field),
-                                    );
-                                  },
-                                  menuChildren: [
-                                    for (var field in controller.description.fields)
-                                      MenuItemButton(
-                                        leadingIcon: const Icon(FeatherIcons.user),
-                                        trailingIcon: controller.value!.searchQuery!.field == field ? const Icon(FluentIcons.checkmark_24_regular) : null,
-                                        onPressed: controller.value!.searchQuery!.field == field
-                                            ? null
-                                            : () {
-                                                controller.setSearchQueryField(field.name);
-                                              },
-                                        child: Text(field.name.titleCase),
-                                      ),
-                                  ],
-                                ),
                         ),
                       ),
                     ),
-                  ),
                   SizedBox(
                     width: gap / 2,
                   ),
                   if (defaultFiltersEnabled)
-                  for (var filter in controller.value!.filters)
+                    for (var filter in controller.value!.filters)
+                      Padding(
+                        padding: EdgeInsets.only(right: gap / 2),
+                        child: SizedBox(
+                          height: 40,
+                          child: Builder(
+                            builder: (context) {
+                              bool isActive = filter.active ?? false;
+                              bool isFixed = filter.fixed ?? false;
+                              return GestureDetector(
+                                onTap: () {
+                                  controller.updateFilter(filter.copyWith(active: !filter.active), allowMultipleFilters);
+                                },
+                                child: Chip(
+                                  label: Text(filter.name.titleCase),
+                                  backgroundColor: isActive == true ? Theme.of(context).colorScheme.primary : null,
+                                  side: isActive == true ? const BorderSide(color: Colors.transparent) : BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
+                                  labelStyle: TextStyle(color: isActive == true ? Theme.of(context).colorScheme.onPrimary : null),
+                                  deleteIcon: isFixed == true
+                                      ? null
+                                      : const Icon(
+                                          FluentIcons.dismiss_24_regular,
+                                          size: 15,
+                                        ),
+                                  deleteIconColor: isActive == true ? Theme.of(context).colorScheme.onPrimary : null,
+                                  onDeleted: isFixed == true
+                                      ? null
+                                      : () {
+                                          controller.removeFilter(filter);
+                                        },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                  if (addFiltersEnabled)
                     Padding(
                       padding: EdgeInsets.only(right: gap / 2),
                       child: SizedBox(
                         height: 40,
-                        child: Builder(
-                          builder: (context) {
-                            bool isActive = filter.active ?? false;
-                            bool isFixed = filter.fixed ?? false;
-                            return GestureDetector(
-                              onTap: () {
-                                controller.updateFilter(filter.copyWith(active: !filter.active), allowMultipleFilters);
-                              },
-                              child: Chip(
-                                label: Text(filter.name.titleCase),
-                                backgroundColor: isActive == true ? Theme.of(context).colorScheme.primary : null,
-                                side: isActive == true ? const BorderSide(color: Colors.transparent) : BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(.12)),
-                                labelStyle: TextStyle(color: isActive == true ? Theme.of(context).colorScheme.onPrimary : null),
-                                deleteIcon: isFixed == true
-                                    ? null
-                                    : const Icon(
-                                        FluentIcons.dismiss_24_regular,
-                                        size: 15,
-                                      ),
-                                deleteIconColor: isActive == true ? Theme.of(context).colorScheme.onPrimary : null,
-                                onDeleted: isFixed == true
-                                    ? null
-                                    : () {
-                                        controller.removeFilter(filter);
-                                      },
+                        child: MenuAnchor(
+                          builder: (context, controller, _) {
+                            return ActionChip(
+                              label: const Icon(
+                                FluentIcons.add_28_regular,
+                                size: 20,
                               ),
+                              onPressed: () async {
+                                if (controller.isOpen) {
+                                  controller.close();
+                                } else {
+                                  controller.open();
+                                }
+                              },
                             );
                           },
+                          menuChildren: <Widget>[
+                            MenuItemButton(
+                              leadingIcon: const Icon(
+                                FluentIcons.add_28_regular,
+                                size: 20,
+                              ),
+                              onPressed: () async {
+                                var filter = await showFilterWizard(context, controller.description);
+                                if (filter != null) {
+                                  controller.value = controller.value!.copyWith(filters: [
+                                    ...controller.value!.filters,
+                                    filter
+                                  ]);
+                                  controller.useFilter(controller.value!.filters.last);
+                                }
+                              },
+                              child: const Text('Custom filter'),
+                            ),
+                            // datetime range
+                            MenuItemButton(
+                              leadingIcon: const Icon(
+                                FluentIcons.calendar_28_regular,
+                                size: 20,
+                              ),
+                              onPressed: () async {
+                                var filter = await showDateRangeFilterWizard(context, controller.description);
+                                if (filter != null) {
+                                  controller.value = controller.value!.copyWith(filters: [
+                                    ...controller.value!.filters,
+                                    filter
+                                  ]);
+                                  controller.useFilter(controller.value!.filters.last);
+                                }
+                              },
+                              child: const Text('Date range'),
+                            ),
+                            // today filter
+                            // datetime range
+                            MenuItemButton(
+                              leadingIcon: const Icon(
+                                FluentIcons.calendar_20_regular,
+                                size: 20,
+                              ),
+                              onPressed: () async {
+                                controller.value = controller.value!.copyWith(filters: [
+                                  ...controller.value!.filters,
+                                  IndexViewFilter(name: "Today's", remote: (q) => q.where("updatedAt", isGreaterThan: Timestamp.fromDate(DateTime.now().startOfDay)).orderBy("updatedAt", descending: true)),
+                                ]);
+                                // activate today's filter
+                                controller.useFilter(controller.value!.filters.last);
+                              },
+                              child: const Text('Today\'s'),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  if (addFiltersEnabled)
-                  Padding(
-                    padding: EdgeInsets.only(right: gap / 2),
-                    child: SizedBox(
-                      height: 40,
-                      child: MenuAnchor(
-                        builder: (context, controller, _) {
-                          return ActionChip(
-                            label: const Icon(
-                              FluentIcons.add_28_regular,
-                              size: 20,
-                            ),
-                            onPressed: () async {
-                              if (controller.isOpen) {
-                                controller.close();
-                              } else {
-                                controller.open();
-                              }
-                            },
-                          );
-                        },
-                        menuChildren: [
-                          MenuItemButton(
-                            leadingIcon: const Icon(
-                              FluentIcons.add_28_regular,
-                              size: 20,
-                            ),
-                            onPressed: () async {
-                              var filter = await showFilterWizard(context, controller.description);
-                              if (filter != null) {
-                                controller.value = controller.value!.copyWith(filters: [
-                                  ...controller.value!.filters,
-                                  filter
-                                ]);
-                              }
-                            },
-                            child: const Text('Custom filter'),
-                          ),
-                          // datetime range
-                          MenuItemButton(
-                            leadingIcon: const Icon(
-                              FluentIcons.calendar_28_regular,
-                              size: 20,
-                            ),
-                            onPressed: () async {
-                              var filter = await showDateRangeFilterWizard(context, controller.description);
-                              if (filter != null) {
-                                controller.value = controller.value!.copyWith(filters: [
-                                  ...controller.value!.filters,
-                                  filter
-                                ]);
-                              }
-                            },
-                            child: const Text('Date range'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                   SizedBox(
                     width: gap,
                   ),

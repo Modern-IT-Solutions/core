@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+// ignore_for_file: public_member_api_docs, sort_constructors_first, no_leading_underscores_for_local_identifiers
 import 'dart:async';
 import 'dart:convert';
 
@@ -91,8 +91,8 @@ class DatabaseService extends Service {
   List<CachedDocument> get cachedDocuments => _cachedDocuments;
   List<CachedCollection> _cachedCollections = [];
   List<CachedCollection> get cachedCollections => _cachedCollections;
-  List<CachedCount> _cachedCounts = [];
-  List<CachedCount> get cachedCounts => _cachedCounts;
+  List<CachedAggregate> _cachedAggregates = [];
+  List<CachedAggregate> get cachedAggregates => _cachedAggregates;
 
   bool get isEmpty => _cachedDocuments.isEmpty && _cachedCollections.isEmpty;
   int get length =>
@@ -104,7 +104,7 @@ class DatabaseService extends Service {
     await prefs.clear();
     _cachedDocuments = [];
     _cachedCollections = [];
-    _cachedCounts = [];
+    _cachedAggregates = [];
     notifyListeners();
   }
 
@@ -121,7 +121,7 @@ class DatabaseService extends Service {
 
     final cachedCounts = prefs.getStringList('cached_counts');
     if (cachedCounts != null) {
-      _cachedCounts = cachedCounts.map((e) => CachedCount.fromJson(jsonDecode(e))).toList();
+      _cachedAggregates = cachedCounts.map((e) => CachedAggregate.fromJson(jsonDecode(e))).toList();
     }
   }
 
@@ -147,7 +147,7 @@ class DatabaseService extends Service {
     final cachedCollections = _cachedCollections.map((e) => jsonEncode(e.toJson(), toEncodable: dateToJson)).toList();
     await prefs.setStringList('cached_collections', cachedCollections);
 
-    final cachedCounts = _cachedCounts.map((e) => jsonEncode(e.toJson(), toEncodable: dateToJson)).toList();
+    final cachedCounts = _cachedAggregates.map((e) => jsonEncode(e.toJson(), toEncodable: dateToJson)).toList();
     await prefs.setStringList('cached_counts', cachedCounts);
   }
 
@@ -199,16 +199,16 @@ class DatabaseService extends Service {
   }
 
   /// getCachedCount
-  CachedCount? getCachedCount({
+  CachedAggregate? getCachedAggregate({
     required String path,
     String? query = "",
     bool withExpired = false,
   }) {
-    Iterable<CachedCount> cachedCount;
+    Iterable<CachedAggregate> cachedCount;
     if (query == null) {
-      cachedCount = _cachedCounts.where((e) => e.ref == path);
+      cachedCount = _cachedAggregates.where((e) => e.ref == path);
     } else {
-      cachedCount = _cachedCounts.where((e) => e.ref == path && e.query == query);
+      cachedCount = _cachedAggregates.where((e) => e.ref == path && e.query == query);
     }
     if (cachedCount.isEmpty) {
       return null;
@@ -690,8 +690,9 @@ class DatabaseService extends Service {
   /// count cache
   Map<String, int> _countCache = {};
 
-  /// [getCount]
-  Future<CachedCount?> getCount({
+  /// [getAverage]
+  Future<CachedAggregate?> getAverage({
+    required String field,
     String? cacheId,
     OrderBy? orderBy,
     required String path,
@@ -725,32 +726,202 @@ class DatabaseService extends Service {
       isNull: true,
     );
 
-    var queryString = smallCacheId((cacheId ?? "") + path, {
+    var queryString = smallCacheId("average_${cacheId ?? ""}$path", {
       ...query.parameters,
       "orderBy": orderBy.toString(),
     });
-    CachedCount? _cachedCount;
-    CachedCount? _count;
-    CachedCount? _getCachedCount() {
-      _cachedCount = _cachedCount ?? getCachedCount(path: path, query: queryString, withExpired: withExpired);
+    CachedAggregate? _cachedAverage;
+    CachedAggregate? _average;
+    CachedAggregate? _getCachedAggregate() {
+      _cachedAverage = _cachedAverage ?? getCachedAggregate(path: path, query:queryString, withExpired: withExpired);
+      return _cachedAverage;
+    }
+
+    Future<CachedAggregate?> _getAverage() async {
+      if (_average != null) {
+        return Future.value(_average);
+      }
+      // try {
+        var response = await query.aggregate(average(field)).get();
+        _average = CachedAggregate(
+          ref: path,
+          query: queryString,
+          value: response.getAverage(field)!,
+          cachedAt: DateTime.now(),
+          expiresAt: DateTime.now().add(minmumUpdateDuration),
+        );
+        _cachedAggregates.removeWhere((e) => e.ref == path);
+        _cachedAggregates.add(_average!);
+        await _saveCache();
+        return _average;
+      // } catch (e) {
+      //   _average = null;
+      //   print(e);
+      //   rethrow;
+      // }
+    }
+
+    if (behavior == FetchBehavior.cacheOnly) {
+      return _getCachedAggregate();
+    } else if (behavior == FetchBehavior.serverOnly) {
+      await _getAverage();
+      return _average;
+    } else if (behavior == FetchBehavior.cacheFirst) {
+      return _getCachedAggregate() ?? await _getAverage();
+    } else if (behavior == FetchBehavior.serverFirst) {
+      return await _getAverage() ?? _getCachedAggregate();
+    }
+
+    return null;
+  }
+
+
+  /// [getSum]
+  Future<CachedAggregate?> getSum({
+    required String field,
+    String? cacheId,
+    OrderBy? orderBy,
+    required String path,
+    bool withExpired = false,
+    // withTrashed
+    bool withTrashed = false,
+    FetchBehavior behavior = FetchBehavior.cacheFirst,
+    Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> collection)? builder,
+
+    /// time between each update, within this time will return the cached collection instead of going to server if behavior is serverFirst
+    Duration minmumUpdateDuration = const Duration(seconds: 5),
+
+    // startAfterRef
+    Iterable<Object?>? startAfter,
+  }) async {
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection(path).orderBy("ref");
+    if (startAfter != null) {
+      query = query.startAfter(startAfter);
+    }
+
+    if (builder != null) {
+      query = builder(FirebaseFirestore.instance.collection(path));
+      query = query.orderBy("ref");
+      if (startAfter != null) {
+        query = query.startAfter(startAfter);
+      }
+    }
+
+    query = query.where(
+      'deletedAt',
+      isNull: true,
+    );
+
+    var queryString = smallCacheId("sum_${cacheId ?? ""}$path", {
+      ...query.parameters,
+      "orderBy": orderBy.toString(),
+    });
+    CachedAggregate? _cachedSum;
+    CachedAggregate? _sum;
+    CachedAggregate? _getCachedAggregate() {
+      _cachedSum = _cachedSum ?? getCachedAggregate(path: path, query:queryString, withExpired: withExpired);
+      return _cachedSum;
+    }
+
+    Future<CachedAggregate?> _getSum() async {
+      if (_sum != null) {
+        return Future.value(_sum);
+      }
+      // try {
+        var response = await query.aggregate(sum(field)).get();
+        _sum = CachedAggregate(
+          ref: path,
+          query: queryString,
+          value: response.getSum(field)!,
+          cachedAt: DateTime.now(),
+          expiresAt: DateTime.now().add(minmumUpdateDuration),
+        );
+        _cachedAggregates.removeWhere((e) => e.ref == path);
+        _cachedAggregates.add(_sum!);
+        await _saveCache();
+        return _sum;
+      // } catch (e) {
+      //   _sum = null;
+      //   print(e);
+      //   rethrow;
+      // }
+    }
+
+    if (behavior == FetchBehavior.cacheOnly) {
+      return _getCachedAggregate();
+    } else if (behavior == FetchBehavior.serverOnly) {
+      await _getSum();
+      return _sum;
+    } else if (behavior == FetchBehavior.cacheFirst) {
+      return _getCachedAggregate() ?? await _getSum();
+    } else if (behavior == FetchBehavior.serverFirst) {
+      return await _getSum() ?? _getCachedAggregate();
+    }
+
+    return null;
+  }
+
+  /// [getCount]
+  Future<CachedAggregate?> getCount({
+    String? cacheId,
+    OrderBy? orderBy,
+    required String path,
+    bool withExpired = false,
+    // withTrashed
+    bool withTrashed = false,
+    FetchBehavior behavior = FetchBehavior.cacheFirst,
+    Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> collection)? builder,
+
+    /// time between each update, within this time will return the cached collection instead of going to server if behavior is serverFirst
+    Duration minmumUpdateDuration = const Duration(seconds: 5),
+
+    // startAfterRef
+    Iterable<Object?>? startAfter,
+  }) async {
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection(path).orderBy("ref");
+    if (startAfter != null) {
+      query = query.startAfter(startAfter);
+    }
+
+    if (builder != null) {
+      query = builder(FirebaseFirestore.instance.collection(path));
+      query = query.orderBy("ref");
+      if (startAfter != null) {
+        query = query.startAfter(startAfter);
+      }
+    }
+
+    query = query.where(
+      'deletedAt',
+      isNull: true,
+    );
+
+    var queryString = smallCacheId("count_${cacheId ?? ""}$path", {
+      ...query.parameters,
+      "orderBy": orderBy.toString(),
+    });
+    CachedAggregate? _cachedCount;
+    CachedAggregate? _count;
+    CachedAggregate? _getCachedAggregate() {
+      _cachedCount = _cachedCount ?? getCachedAggregate(path: path, query:queryString, withExpired: withExpired);
       return _cachedCount;
     }
 
-    Future<CachedCount?> _getCount() async {
+    Future<CachedAggregate?> _getCount() async {
       if (_count != null) {
         return Future.value(_count);
       }
       // try {
-        var response = await query.count().get();
-        _count = CachedCount(
+        var response = await query.aggregate(count()).get();
+        _count = CachedAggregate(
           ref: path,
           query: queryString,
-          count: response.count!,
+          value: response.count!,
           cachedAt: DateTime.now(),
           expiresAt: DateTime.now().add(minmumUpdateDuration),
         );
-        _cachedCounts.removeWhere((e) => e.ref == path);
-        _cachedCounts.add(_count!);
+        _cachedAggregates.removeWhere((e) => e.ref == path);
+        _cachedAggregates.add(_count!);
         await _saveCache();
         return _count;
       // } catch (e) {
@@ -761,18 +932,19 @@ class DatabaseService extends Service {
     }
 
     if (behavior == FetchBehavior.cacheOnly) {
-      return _getCachedCount();
+      return _getCachedAggregate();
     } else if (behavior == FetchBehavior.serverOnly) {
       await _getCount();
       return _count;
     } else if (behavior == FetchBehavior.cacheFirst) {
-      return _getCachedCount() ?? await _getCount();
+      return _getCachedAggregate() ?? await _getCount();
     } else if (behavior == FetchBehavior.serverFirst) {
-      return await _getCount() ?? _getCachedCount();
+      return await _getCount() ?? _getCachedAggregate();
     }
 
     return null;
   }
+
 
   // String _firestoreQueryToString(String id, Query<Map<String, dynamic>> query) {
   //   return jsonEncode(

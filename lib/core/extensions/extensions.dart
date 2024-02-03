@@ -16,3 +16,15 @@ extension QuerySnapshotToListResult<T extends Model> on QuerySnapshot<T> {
     );
   }
 }
+
+
+/// [endOfDay] and [startOfDay] are used to get the start and end of the day
+extension DateTimeStartEndOfDay on DateTime {
+  DateTime get startOfDay {
+    return DateTime(year, month, day);
+  }
+
+  DateTime get endOfDay {
+    return DateTime(year, month, day, 23, 59, 59, 999, 999);
+  }
+}

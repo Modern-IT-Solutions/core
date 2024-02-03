@@ -1,4 +1,5 @@
 import 'package:core/core.dart';
+import 'package:intl/intl.dart';
 
 class CachedDocument {
   final String ref;
@@ -292,39 +293,39 @@ class CachedCollection {
 }
 
 // CachedCount
-class CachedCount {
+class CachedAggregate {
   final String ref;
   final String? query;
-  final int count;
+  final num value;
   final DateTime cachedAt;
   final DateTime? expiresAt;
 
-  CachedCount({
+  CachedAggregate({
     required this.ref,
     required this.query,
-    required this.count,
+    required this.value,
     required this.cachedAt,
     this.expiresAt,
   });
 
-  CachedCount copyWith({String? ref,String? query, int? count, DateTime? cachedAt, DateTime? expiresAt}) {
-    return CachedCount(
+  CachedAggregate copyWith({String? ref,String? query, num? count, DateTime? cachedAt, DateTime? expiresAt}) {
+    return CachedAggregate(
       ref: ref ?? this.ref,
       query: query ?? this.query,
-      count: count ?? this.count,
+      value: count ?? this.value,
       cachedAt: cachedAt ?? this.cachedAt,
       expiresAt: expiresAt ?? this.expiresAt,
     );
   }
   
   @override
-  String toString() => 'CachedCount(ref: $ref, count: $count, cachedAt: $cachedAt)';
+  String toString() => 'CachedCount(ref: $ref, count: $value, cachedAt: $cachedAt)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is CachedCount && other.ref == ref && other.query == query;
+    return other is CachedAggregate && other.ref == ref && other.query == query;
   }
 
   @override
@@ -335,18 +336,18 @@ class CachedCount {
     return {
       'ref': ref,
       'query': query,
-      'count': count,
+      'count': value,
       'cachedAt': cachedAt.millisecondsSinceEpoch,
       'expiresAt': expiresAt?.millisecondsSinceEpoch,
     };
   }
 
   /// fromJson
-  factory CachedCount.fromJson(Map<String, dynamic> map) {
-    return CachedCount(
+  factory CachedAggregate.fromJson(Map<String, dynamic> map) {
+    return CachedAggregate(
       ref: map['ref'],
       query: map['query'],
-      count: map['count'],
+      value: map['count'],
       cachedAt: DateTime.fromMillisecondsSinceEpoch(map['cachedAt']),
       expiresAt: map['expiresAt'] != null ? DateTime.fromMillisecondsSinceEpoch(map['expiresAt']) : null,
     );

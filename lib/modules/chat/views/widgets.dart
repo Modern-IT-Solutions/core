@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+// ignore_for_file: public_member_api_docs, sort_constructors_first, depend_on_referenced_packages
 
 // ignore: depend_on_referenced_packages
 
@@ -6,14 +6,12 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:blurhash_dart/blurhash_dart.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:core/core.dart';
 import 'package:core/features/users/presentation/find.dart';
 import 'package:core/modules/chat/room/embedded_chat_room_model.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
@@ -540,23 +538,57 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
     );
   }
 
-  BorderRadius _getBorderRadius(bool hasPrev, bool hasNext, {double max = 8, double min = 14}) {
+  BorderRadius _getBorderRadius(bool hasPrev, bool hasNext, {double max = 8, double min = 16, bool inverse = false}) {
+    return BorderRadius.circular(min);
     if (hasPrev && hasNext) {
-      return BorderRadius.all(Radius.circular(max));
+      BorderRadius b;
+      if (inverse) {
+        b=BorderRadius.horizontal(
+          left: Radius.circular(min),
+          right: Radius.circular(max),
+        );
+      } else {
+        b=BorderRadius.horizontal(
+          left: Radius.circular(max),
+          right: Radius.circular(min),
+        );
+      }
+      return b;
     }
     if (hasPrev) {
-      return BorderRadius.vertical(
+      var b= BorderRadius.vertical(
         top: Radius.circular(max),
         bottom: Radius.circular(min),
       );
+      if (inverse) {
+        return b.copyWith(
+          bottomLeft: b.topLeft,
+          bottomRight: b.topRight,
+          topLeft: b.bottomLeft,
+          topRight: b.bottomRight,
+        );
+      }
     }
     if (hasNext) {
-      return BorderRadius.vertical(
+       var b= BorderRadius.vertical(
         top: Radius.circular(min),
         bottom: Radius.circular(max),
       );
+      return b;
     }
-    return BorderRadius.all(Radius.circular(min));
+          var b= BorderRadius.all(Radius.circular(min));
+      if (inverse) {
+        b=b.copyWith(
+          topLeft: Radius.circular(max),
+          bottomLeft: Radius.circular(max),
+        );
+      } else {
+        b=b.copyWith(
+          topRight: Radius.circular(max),
+          bottomRight: Radius.circular(max),
+        );
+      }
+      return b;
   }
 
   InkWell _buildMessage(EmbeddedChatRoomMessage? prevMessage, EmbeddedChatRoomMessage? nextMessage, EmbeddedChatRoomMessage message, BuildContext context) {
@@ -573,7 +605,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
     Widget child = const SizedBox();
     if (message is EmbeddedChatRoomTextMessage) {
       child = Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 6),
         child: Text(
           message.text,
           style: Theme.of(context).textTheme.bodyMedium!.copyWith(
