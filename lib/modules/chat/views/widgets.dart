@@ -523,17 +523,17 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
             ),
           ],
         ),
-        const Divider(height: 1),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            "This is an embedded chat room, its limited and cant be over 500kb, wish is about 500 messages or less",
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                  color: Theme.of(context).colorScheme.tertiary.withOpacity(0.5),
-                ),
-          ),
-        ),
+        // const Divider(height: 1),
+        // Padding(
+        //   padding: const EdgeInsets.all(8.0),
+        //   child: Text(
+        //     "This is an embedded chat room, its limited and cant be over 500kb, wish is about 500 messages or less",
+        //     textAlign: TextAlign.center,
+        //     style: Theme.of(context).textTheme.bodySmall!.copyWith(
+        //           color: Theme.of(context).colorScheme.tertiary.withOpacity(0.5),
+        //         ),
+        //   ),
+        // ),
       ],
     );
   }
