@@ -1151,7 +1151,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                   }
                                 }
                               },
-                              child: FlexTableItem(
+                              child:  FlexTableItem(
                                 selected: widget.controller.value!.selectedModels.contains(model),
                                 onSelectChanged: (val) {
                                   if (val == true) {
