@@ -131,6 +131,8 @@ class DatabaseService extends Service {
         return e.toIso8601String();
       } else if (e is Timestamp) {
         return e.toDate().toIso8601String();
+      } else if (e is GeoPoint) {
+        return [e.latitude, e.longitude];
       }
       return e;
     }

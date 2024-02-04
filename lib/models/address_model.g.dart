@@ -13,8 +13,7 @@ _$AddressModelImpl _$$AddressModelImplFromJson(Map<String, dynamic> json) =>
       city: json['city'] as String?,
       zip: json['zip'] as String?,
       country: json['country'] as String? ?? "DZ",
-      location: const GeoFirePointConverter()
-          .fromJson(json['location'] as Map<String, dynamic>?),
+      location: const GeoFirePointConverter().fromJson(json['location']),
       metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
     );
 

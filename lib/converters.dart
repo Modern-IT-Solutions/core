@@ -5,14 +5,21 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:core/core.dart';
 
-/// json coverter for [GeoFirePoint]
-class GeoFirePointConverter implements JsonConverter<GeoFirePoint?, Map<String, dynamic>?> {
+class GeoFirePointConverter implements JsonConverter<GeoFirePoint?, dynamic> {
   const GeoFirePointConverter();
 
   @override
-  GeoFirePoint? fromJson(Map<String, dynamic>? json) {
-    if (json == null) return null;
-    return GeoFirePoint(json['geopoint'] as GeoPoint);
+  GeoFirePoint? fromJson(dynamic json) {
+    try {
+      if (json == null) return null;
+      if (json is GeoPoint) return GeoFirePoint(json as GeoPoint);
+      if (json is Iterable) return GeoFirePoint(GeoPoint(json.elementAt(0) as double, json.elementAt(1) as double));
+      if (json is GeoFirePoint) return json;
+    } catch (e) {
+      print("MUST BE A GEOPOINT OR AN ITERABLE");
+      print(e);
+    }
+    return null;
   }
 
   @override
