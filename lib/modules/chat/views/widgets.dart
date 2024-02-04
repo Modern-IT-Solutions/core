@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:math';
+import 'package:record_platform_interface/src/types/record_config.dart';
 
 import 'package:blurhash_dart/blurhash_dart.dart';
 import 'package:collection/collection.dart';
@@ -19,7 +20,10 @@ import 'package:intl/intl.dart';
 import 'package:lib/lib.dart';
 import 'package:mime/mime.dart';
 import 'package:motif/motif.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:universal_io/io.dart';
 // import 'package:video_player/video_player.dart';
 import 'package:zplayer/zplayer.dart';
 
@@ -44,6 +48,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
   EmbeddedChatRoomModel? room;
   var loading = false;
   double? uploadingProgress;
+  bool isRecording = false;
   int mode = 0;
   final _messageController = TextEditingController();
   StreamSubscription<Map<String, dynamic>>? _streamSubscription;
@@ -216,6 +221,32 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
       },
     );
   }
+
+  // Future<void> sendRecordMessage() async {
+  //   setState(() {
+  //     loading = false;
+  //     uploadingProgress = 0.0;
+  //     isRecording = true;
+  //   });
+  //   try {
+
+  //     var url = await getStorage().upload(pickedFile, (progress) {
+  //       setState(() {
+  //         uploadingProgress = progress;
+  //       });
+  //     });
+
+  //     EmbeddedChatRoomMessage message;
+  //     await sendMessage(message);
+  //   } catch (e) {
+  //     print(e);
+  //   } finally {
+  //     setState(() {
+  //       loading = false;
+  //       uploadingProgress = null;
+  //     });
+  //   }
+  // }
 
   Future<void> sendFileMessage(FileType type) async {
     setState(() {
@@ -485,6 +516,33 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
                         ),
                       ],
                       ListTile(
+                        leading: const Icon(FluentIcons.mic_24_regular),
+                        title: const Text("Record"),
+                        onTap: () async {
+                          var audioPath = await showRecordDialog(context);
+                          if (audioPath != null) {
+                            var file = File(audioPath);
+                            var url = await getStorage().upload(
+                                PlatformFile(
+                                  name: 'audio',
+                                  size: await file.length(),
+                                  path: audioPath,
+                                ), (progress) {
+                              setState(() {
+                                loading = true;
+                                uploadingProgress = progress;
+                              });
+                            });
+                            EmbeddedChatRoomMessage message = EmbeddedChatRoomAudioMessage(
+                              profileRef: getCurrentProfile()!.ref,
+                              audioUrl: url,
+                              createdAt: DateTime.now(),
+                            );
+                            await sendMessage(message);
+                          }
+                        },
+                      ),
+                      ListTile(
                         leading: const Icon(FluentIcons.document_24_regular),
                         title: const Text("File"),
                         onTap: () async {
@@ -543,12 +601,12 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
     if (hasPrev && hasNext) {
       BorderRadius b;
       if (inverse) {
-        b=BorderRadius.horizontal(
+        b = BorderRadius.horizontal(
           left: Radius.circular(min),
           right: Radius.circular(max),
         );
       } else {
-        b=BorderRadius.horizontal(
+        b = BorderRadius.horizontal(
           left: Radius.circular(max),
           right: Radius.circular(min),
         );
@@ -556,7 +614,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
       return b;
     }
     if (hasPrev) {
-      var b= BorderRadius.vertical(
+      var b = BorderRadius.vertical(
         top: Radius.circular(max),
         bottom: Radius.circular(min),
       );
@@ -570,25 +628,25 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
       }
     }
     if (hasNext) {
-       var b= BorderRadius.vertical(
+      var b = BorderRadius.vertical(
         top: Radius.circular(min),
         bottom: Radius.circular(max),
       );
       return b;
     }
-          var b= BorderRadius.all(Radius.circular(min));
-      if (inverse) {
-        b=b.copyWith(
-          topLeft: Radius.circular(max),
-          bottomLeft: Radius.circular(max),
-        );
-      } else {
-        b=b.copyWith(
-          topRight: Radius.circular(max),
-          bottomRight: Radius.circular(max),
-        );
-      }
-      return b;
+    var b = BorderRadius.all(Radius.circular(min));
+    if (inverse) {
+      b = b.copyWith(
+        topLeft: Radius.circular(max),
+        bottomLeft: Radius.circular(max),
+      );
+    } else {
+      b = b.copyWith(
+        topRight: Radius.circular(max),
+        bottomRight: Radius.circular(max),
+      );
+    }
+    return b;
   }
 
   InkWell _buildMessage(EmbeddedChatRoomMessage? prevMessage, EmbeddedChatRoomMessage? nextMessage, EmbeddedChatRoomMessage message, BuildContext context) {
@@ -605,7 +663,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
     Widget child = const SizedBox();
     if (message is EmbeddedChatRoomTextMessage) {
       child = Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         child: Text(
           message.text,
           style: Theme.of(context).textTheme.bodyMedium!.copyWith(
@@ -653,28 +711,24 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
                 //   }
                 // }
 
-
                 return AspectRatio(
-                
-                aspectRatio: (message.width ?? 1) / (message.height ?? 1),
-                child: Container(
-                  color: Theme.of(context).colorScheme.errorContainer,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error, color: Theme.of(context).colorScheme.onErrorContainer),
-                      const SizedBox(height: 4),
-                      Text(
-                      errorMessage,
-                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                              color: Theme.of(context).colorScheme.onErrorContainer
-                            ),
-                      ),
-                    ],
+                  aspectRatio: (message.width ?? 1) / (message.height ?? 1),
+                  child: Container(
+                    color: Theme.of(context).colorScheme.errorContainer,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error, color: Theme.of(context).colorScheme.onErrorContainer),
+                        const SizedBox(height: 4),
+                        Text(
+                          errorMessage,
+                          style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Theme.of(context).colorScheme.onErrorContainer),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
+                );
               },
             ),
           ),
@@ -926,4 +980,81 @@ class _SingleSourceMediaPlayerState extends State<SingleSourceMediaPlayer> {
     //   controller: chewieController!,
     // );
   }
+}
+
+/// [showRecordDialog]
+Future<String?> showRecordDialog(BuildContext context) async {
+  final record = AudioRecorder();
+  bool isRecording = false;
+  String defaultPath = "${(await getTemporaryDirectory()).path}/audio.m4a";
+  String? path;
+  return await showDialog<String>(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return Dialog(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (!isRecording)
+                    IconButton(
+                      onPressed: () async {
+                        if (await record.hasPermission()) {
+                          await record.start(const RecordConfig(), path: defaultPath);
+                        }
+                        setState(() {
+                          isRecording = true;
+                        });
+                      },
+                      icon: const Icon(
+                        FluentIcons.mic_24_regular,
+                        size: 60,
+                      ),
+                      // label: const Text("Record"),
+                    ),
+                  if (isRecording)
+                    IconButton(
+                      onPressed: () async {
+                        path = await record.stop();
+                        setState(() {
+                          isRecording = false;
+                        });
+                      },
+                      icon: const Icon(
+                        FluentIcons.stop_24_filled,
+                        size: 60,
+                      ),
+                      // label: const Text("Record"),
+                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextButton(
+                        onPressed: () {if (isRecording) record.stop();
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Cancel"),
+                      ),
+                      if (path != null)
+                        TextButton.icon(
+                          onPressed: () async {
+                            Navigator.of(context).pop(path);
+                          },
+                          icon: const Icon(FluentIcons.send_20_regular),
+                          label: const Text("Send"),
+                        ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
 }
