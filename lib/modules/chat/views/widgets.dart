@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:math';
+import 'package:core/modules/chat/views/audio_recorder.dart';
 import 'package:record_platform_interface/src/types/record_config.dart';
 
 import 'package:blurhash_dart/blurhash_dart.dart';
@@ -521,7 +522,22 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
                         leading: const Icon(FluentIcons.mic_24_regular),
                         title: const Text("Record"),
                         onTap: () async {
-                          var audioPath = await showRecordDialog(context);
+                          String? audioPath;
+                          if (Platforms.isWeb) {
+                            audioPath = await showDialog(context: context,
+                              builder: (context) {
+                                return Dialog(
+                                  child: Recorder(
+                                    onStop: (path) {
+                                      Navigator.of(context).pop(path);
+                                    },
+                                  ),
+                                );    
+                              },
+                            );
+                          } else {
+                            audioPath = await showRecordDialog(context);
+                          }
                           if (audioPath != null) {
                             var file = File(audioPath);
                             var url = await getStorage().upload(
@@ -1020,7 +1036,11 @@ Future<String?> showRecordDialog(BuildContext context) async {
                     IconButton(
                       onPressed: () async {
                         if (await record.hasPermission()) {
-                          await record.start(const RecordConfig(), path: defaultPath);
+                          await record.start(const RecordConfig(
+                            encoder: AudioEncoder.aacLc,
+                            bitRate: 128000,
+                            sampleRate: 44100,
+                          ), path: defaultPath);
                         }
                         setState(() {
                           isRecording = true;
