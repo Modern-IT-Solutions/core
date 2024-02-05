@@ -38,6 +38,9 @@ class TimestampDateTimeSerializer implements JsonConverter<DateTime, dynamic> {
     if (timestamp is DateTime) return timestamp;
     if (timestamp is String) return DateTime.parse(timestamp);
     if (timestamp is Timestamp) return timestamp.toDate();
+
+    return DateTime.fromMicrosecondsSinceEpoch(0);
+
     throw Exception('Invalid timestamp format');
   }
 
