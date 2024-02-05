@@ -136,14 +136,17 @@ class DatabaseService extends Service {
       }
       return e;
     }
-
-    ;
-    final cachedDocuments = _cachedDocuments
+    List<String> cachedDocuments = [];
+    try {
+      cachedDocuments = _cachedDocuments
         .map((e) => jsonEncode(
               e.toJson(),
               toEncodable: dateToJson,
             ))
         .toList();
+    } catch (e) {
+      print(e);
+    }
     await prefs.setStringList('cached_documents', cachedDocuments);
 
     final cachedCollections = _cachedCollections.map((e) => jsonEncode(e.toJson(), toEncodable: dateToJson)).toList();
