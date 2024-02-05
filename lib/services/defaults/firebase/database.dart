@@ -109,6 +109,9 @@ class DatabaseService extends Service {
   }
 
   Future<void> _loadCache() async {
+    if (kIsWeb) {
+      return;
+    }
     final cachedDocuments = prefs.getStringList('cached_documents');
     if (cachedDocuments != null) {
       _cachedDocuments = cachedDocuments.map((e) => CachedDocument.fromJson(jsonDecode(e))).toList();
