@@ -4,6 +4,7 @@ import 'package:core/features/users/data/models/role.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:core/core.dart';
+import 'package:js/js.dart';
 
 class GeoFirePointConverter implements JsonConverter<GeoFirePoint?, dynamic> {
   const GeoFirePointConverter();
@@ -38,15 +39,14 @@ class TimestampDateTimeSerializer implements JsonConverter<DateTime, dynamic> {
     if (timestamp is DateTime) return timestamp;
     if (timestamp is String) return DateTime.parse(timestamp);
     if (timestamp is Timestamp) return timestamp.toDate();
-    try {
-      if (timestamp.runtimeType == "Timestamp") return timestamp.toDate();
-      print("timestamp:${timestamp}");
-      print("runtimeType:${timestamp.runtimeType}");
-      print("timestamp.toDate():${timestamp.toDate()}");
-    } catch (e) {
-      print("TimestampDateTimeSerializer:"+e.toString());
+    if (timestamp.runtimeType.toString() == "LegacyJavaScriptObject") {
+      try {
+        return DateTime.fromMillisecondsSinceEpoch(timestamp.seconds*1000, isUtc: true);
+      } catch (e) {
+        print("Error parsing timestamp");
+        print(e);
+      }
     }
-
     // TODO: check if this is necessary
     return DateTime.fromMicrosecondsSinceEpoch(0);
 
