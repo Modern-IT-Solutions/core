@@ -132,28 +132,32 @@ class DatabaseService extends Service {
       } else if (e is Timestamp) {
         return e.toDate().toIso8601String();
       } else if (e is GeoPoint) {
-        return [e.latitude, e.longitude];
+        return [
+          e.latitude,
+          e.longitude
+        ];
       }
       return e;
     }
+
     List<String> cachedDocuments = [];
     try {
       cachedDocuments = _cachedDocuments
-        .map((e) => jsonEncode(
-              e.toJson(),
-              toEncodable: dateToJson,
-            ))
-        .toList();
+          .map((e) => jsonEncode(
+                e.toJson(),
+                toEncodable: dateToJson,
+              ))
+          .toList();
+      await prefs.setStringList('cached_documents', cachedDocuments);
+
+      final cachedCollections = _cachedCollections.map((e) => jsonEncode(e.toJson(), toEncodable: dateToJson)).toList();
+      await prefs.setStringList('cached_collections', cachedCollections);
+
+      final cachedCounts = _cachedAggregates.map((e) => jsonEncode(e.toJson(), toEncodable: dateToJson)).toList();
+      await prefs.setStringList('cached_counts', cachedCounts);
     } catch (e) {
       print(e);
     }
-    await prefs.setStringList('cached_documents', cachedDocuments);
-
-    final cachedCollections = _cachedCollections.map((e) => jsonEncode(e.toJson(), toEncodable: dateToJson)).toList();
-    await prefs.setStringList('cached_collections', cachedCollections);
-
-    final cachedCounts = _cachedAggregates.map((e) => jsonEncode(e.toJson(), toEncodable: dateToJson)).toList();
-    await prefs.setStringList('cached_counts', cachedCounts);
   }
 
   /// getCachedDocument
@@ -738,7 +742,7 @@ class DatabaseService extends Service {
     CachedAggregate? _cachedAverage;
     CachedAggregate? _average;
     CachedAggregate? _getCachedAggregate() {
-      _cachedAverage = _cachedAverage ?? getCachedAggregate(path: path, query:queryString, withExpired: withExpired);
+      _cachedAverage = _cachedAverage ?? getCachedAggregate(path: path, query: queryString, withExpired: withExpired);
       return _cachedAverage;
     }
 
@@ -747,18 +751,18 @@ class DatabaseService extends Service {
         return Future.value(_average);
       }
       // try {
-        var response = await query.aggregate(average(field)).get();
-        _average = CachedAggregate(
-          ref: path,
-          query: queryString,
-          value: response.getAverage(field)!,
-          cachedAt: DateTime.now(),
-          expiresAt: DateTime.now().add(minmumUpdateDuration),
-        );
-        _cachedAggregates.removeWhere((e) => e.ref == path);
-        _cachedAggregates.add(_average!);
-        await _saveCache();
-        return _average;
+      var response = await query.aggregate(average(field)).get();
+      _average = CachedAggregate(
+        ref: path,
+        query: queryString,
+        value: response.getAverage(field)!,
+        cachedAt: DateTime.now(),
+        expiresAt: DateTime.now().add(minmumUpdateDuration),
+      );
+      _cachedAggregates.removeWhere((e) => e.ref == path);
+      _cachedAggregates.add(_average!);
+      await _saveCache();
+      return _average;
       // } catch (e) {
       //   _average = null;
       //   print(e);
@@ -779,7 +783,6 @@ class DatabaseService extends Service {
 
     return null;
   }
-
 
   /// [getSum]
   Future<CachedAggregate?> getSum({
@@ -824,7 +827,7 @@ class DatabaseService extends Service {
     CachedAggregate? _cachedSum;
     CachedAggregate? _sum;
     CachedAggregate? _getCachedAggregate() {
-      _cachedSum = _cachedSum ?? getCachedAggregate(path: path, query:queryString, withExpired: withExpired);
+      _cachedSum = _cachedSum ?? getCachedAggregate(path: path, query: queryString, withExpired: withExpired);
       return _cachedSum;
     }
 
@@ -833,18 +836,18 @@ class DatabaseService extends Service {
         return Future.value(_sum);
       }
       // try {
-        var response = await query.aggregate(sum(field)).get();
-        _sum = CachedAggregate(
-          ref: path,
-          query: queryString,
-          value: response.getSum(field)!,
-          cachedAt: DateTime.now(),
-          expiresAt: DateTime.now().add(minmumUpdateDuration),
-        );
-        _cachedAggregates.removeWhere((e) => e.ref == path);
-        _cachedAggregates.add(_sum!);
-        await _saveCache();
-        return _sum;
+      var response = await query.aggregate(sum(field)).get();
+      _sum = CachedAggregate(
+        ref: path,
+        query: queryString,
+        value: response.getSum(field)!,
+        cachedAt: DateTime.now(),
+        expiresAt: DateTime.now().add(minmumUpdateDuration),
+      );
+      _cachedAggregates.removeWhere((e) => e.ref == path);
+      _cachedAggregates.add(_sum!);
+      await _saveCache();
+      return _sum;
       // } catch (e) {
       //   _sum = null;
       //   print(e);
@@ -908,7 +911,7 @@ class DatabaseService extends Service {
     CachedAggregate? _cachedCount;
     CachedAggregate? _count;
     CachedAggregate? _getCachedAggregate() {
-      _cachedCount = _cachedCount ?? getCachedAggregate(path: path, query:queryString, withExpired: withExpired);
+      _cachedCount = _cachedCount ?? getCachedAggregate(path: path, query: queryString, withExpired: withExpired);
       return _cachedCount;
     }
 
@@ -917,18 +920,18 @@ class DatabaseService extends Service {
         return Future.value(_count);
       }
       // try {
-        var response = await query.aggregate(count()).get();
-        _count = CachedAggregate(
-          ref: path,
-          query: queryString,
-          value: response.count!,
-          cachedAt: DateTime.now(),
-          expiresAt: DateTime.now().add(minmumUpdateDuration),
-        );
-        _cachedAggregates.removeWhere((e) => e.ref == path);
-        _cachedAggregates.add(_count!);
-        await _saveCache();
-        return _count;
+      var response = await query.aggregate(count()).get();
+      _count = CachedAggregate(
+        ref: path,
+        query: queryString,
+        value: response.count!,
+        cachedAt: DateTime.now(),
+        expiresAt: DateTime.now().add(minmumUpdateDuration),
+      );
+      _cachedAggregates.removeWhere((e) => e.ref == path);
+      _cachedAggregates.add(_count!);
+      await _saveCache();
+      return _count;
       // } catch (e) {
       //   _count = null;
       //   print(e);
@@ -949,7 +952,6 @@ class DatabaseService extends Service {
 
     return null;
   }
-
 
   // String _firestoreQueryToString(String id, Query<Map<String, dynamic>> query) {
   //   return jsonEncode(
