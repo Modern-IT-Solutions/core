@@ -4,7 +4,6 @@ import 'package:core/features/users/data/models/role.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:core/core.dart';
-import 'package:js/js.dart';
 
 class GeoFirePointConverter implements JsonConverter<GeoFirePoint?, dynamic> {
   const GeoFirePointConverter();
@@ -13,7 +12,7 @@ class GeoFirePointConverter implements JsonConverter<GeoFirePoint?, dynamic> {
   GeoFirePoint? fromJson(dynamic json) {
     try {
       if (json == null) return null;
-      if (json is GeoPoint) return GeoFirePoint(json as GeoPoint);
+      if (json is GeoPoint) return GeoFirePoint(json);
       if (json is Iterable) return GeoFirePoint(GeoPoint(json.elementAt(0) as double, json.elementAt(1) as double));
       if (json is GeoFirePoint) return json;
     } catch (e) {

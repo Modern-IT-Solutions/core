@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first, depend_on_referenced_packages
+// ignore_for_file: public_member_api_docs, sort_constructors_first, depend_on_referenced_packages, use_build_context_synchronously
 
 // ignore: depend_on_referenced_packages
 
@@ -26,6 +26,8 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:universal_io/io.dart';
 // import 'package:video_player/video_player.dart';
 import 'package:zplayer/zplayer.dart';
+
+import 'audio_player.dart';
 
 // [EmbeddedChatRoomWidget]
 class EmbeddedChatRoomWidget extends StatefulWidget {
@@ -751,10 +753,14 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
           // },
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 148, maxWidth: 350),
-            child: SingleSourceMediaPlayer(
-              type: SingleSourceMediaPlayerType.audio,
-              source: Uri.parse(message.audioUrl),
+            child: AudioPlayer(
+              source: message.audioUrl,
             ),
+
+            //  SingleSourceMediaPlayer(
+            //   type: SingleSourceMediaPlayerType.audio,
+            //   source: Uri.parse(message.audioUrl),
+            // ),
           ),
         ),
       );
@@ -1000,7 +1006,17 @@ Future<String?> showRecordDialog(BuildContext context) async {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  if (!isRecording)
+                  if (path != null)
+                    Container(
+                      constraints: const BoxConstraints(maxWidth: 200),
+                      child: AudioPlayer(
+                        source: path!,
+                        onDelete: () {
+                          setState(() => path = null);
+                        },
+                      ),
+                    )
+                  else if (!isRecording)
                     IconButton(
                       onPressed: () async {
                         if (await record.hasPermission()) {
@@ -1034,7 +1050,8 @@ Future<String?> showRecordDialog(BuildContext context) async {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       TextButton(
-                        onPressed: () {if (isRecording) record.stop();
+                        onPressed: () {
+                          if (isRecording) record.stop();
                           Navigator.of(context).pop();
                         },
                         child: const Text("Cancel"),
