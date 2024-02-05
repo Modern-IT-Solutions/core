@@ -126,6 +126,9 @@ class DatabaseService extends Service {
   }
 
   Future<void> _saveCache() async {
+    if (kIsWeb) {
+      return;
+    }
     dateToJson(e) {
       if (e is DateTime) {
         return e.toIso8601String();
