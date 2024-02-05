@@ -1036,8 +1036,8 @@ Future<String?> showRecordDialog(BuildContext context) async {
                     IconButton(
                       onPressed: () async {
                         if (await record.hasPermission()) {
-                          await record.start(const RecordConfig(
-                            encoder: AudioEncoder.aacLc,
+                          await record.start(RecordConfig(
+                            encoder:Platforms.isWeb? AudioEncoder.wav: AudioEncoder.aacLc,
                             bitRate: 128000,
                             sampleRate: 44100,
                           ), path: defaultPath);
