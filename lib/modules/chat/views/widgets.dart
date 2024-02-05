@@ -524,7 +524,8 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
                         onTap: () async {
                           String? audioPath;
                           if (Platforms.isWeb) {
-                            audioPath = await showDialog(context: context,
+                            audioPath = await showDialog(
+                              context: context,
                               builder: (context) {
                                 return Dialog(
                                   child: Recorder(
@@ -532,31 +533,51 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
                                       Navigator.of(context).pop(path);
                                     },
                                   ),
-                                );    
+                                );
                               },
                             );
+                            // if (audioPath != null) {
+                            //   var file = Blob(audioPath);
+                            //   var url = await getStorage().upload(
+                            //       PlatformFile(
+                            //         name: 'audio.m4a',
+                            //         size: await file.length(),
+                            //         path: audioPath,
+                            //       ), (progress) {
+                            //     setState(() {
+                            //       loading = true;
+                            //       uploadingProgress = progress;
+                            //     });
+                            //   });
+                            //   EmbeddedChatRoomMessage message = EmbeddedChatRoomAudioMessage(
+                            //     profileRef: getCurrentProfile()!.ref,
+                            //     audioUrl: url,
+                            //     createdAt: DateTime.now(),
+                            //   );
+                            //   await sendMessage(message);
+                            // }
                           } else {
                             audioPath = await showRecordDialog(context);
-                          }
-                          if (audioPath != null) {
-                            var file = File(audioPath);
-                            var url = await getStorage().upload(
-                                PlatformFile(
-                                  name: 'audio',
-                                  size: await file.length(),
-                                  path: audioPath,
-                                ), (progress) {
-                              setState(() {
-                                loading = true;
-                                uploadingProgress = progress;
+                            if (audioPath != null) {
+                              var file = File(audioPath);
+                              var url = await getStorage().upload(
+                                  PlatformFile(
+                                    name: 'audio.m4a',
+                                    size: await file.length(),
+                                    path: audioPath,
+                                  ), (progress) {
+                                setState(() {
+                                  loading = true;
+                                  uploadingProgress = progress;
+                                });
                               });
-                            });
-                            EmbeddedChatRoomMessage message = EmbeddedChatRoomAudioMessage(
-                              profileRef: getCurrentProfile()!.ref,
-                              audioUrl: url,
-                              createdAt: DateTime.now(),
-                            );
-                            await sendMessage(message);
+                              EmbeddedChatRoomMessage message = EmbeddedChatRoomAudioMessage(
+                                profileRef: getCurrentProfile()!.ref,
+                                audioUrl: url,
+                                createdAt: DateTime.now(),
+                              );
+                              await sendMessage(message);
+                            }
                           }
                         },
                       ),
@@ -1036,11 +1057,13 @@ Future<String?> showRecordDialog(BuildContext context) async {
                     IconButton(
                       onPressed: () async {
                         if (await record.hasPermission()) {
-                          await record.start(RecordConfig(
-                            encoder:Platforms.isWeb? AudioEncoder.wav: AudioEncoder.aacLc,
-                            bitRate: 128000,
-                            sampleRate: 44100,
-                          ), path: defaultPath);
+                          await record.start(
+                              RecordConfig(
+                                encoder: Platforms.isWeb ? AudioEncoder.wav : AudioEncoder.aacLc,
+                                bitRate: 128000,
+                                sampleRate: 44100,
+                              ),
+                              path: defaultPath);
                         }
                         setState(() {
                           isRecording = true;
