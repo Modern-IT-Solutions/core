@@ -56,10 +56,10 @@ class _RecorderState extends State<Recorder> with AudioRecorderMixin {
         const config = RecordConfig(encoder: encoder, numChannels: 1);
 
         // Record to file
-        // await recordFile(_audioRecorder, config);
+        await recordFile(_audioRecorder, config);
 
         // Record to stream
-        await recordStream(_audioRecorder, config);
+        // await recordStream(_audioRecorder, config);
 
         _recordDuration = 0;
 
@@ -78,7 +78,7 @@ class _RecorderState extends State<Recorder> with AudioRecorderMixin {
     if (path != null) {
       widget.onStop(path);
 
-      downloadWebData(path);
+      // downloadWebData(path);
     }
   }
 

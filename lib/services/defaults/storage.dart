@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:media_cache_manager/media_cache_manager.dart';
 import 'package:universal_io/io.dart';
+import 'package:mime/mime.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../consts/consts.dart';
@@ -29,9 +30,7 @@ class StorageService extends Service {
   /// configs
   final StorageServiceConfigs configs;
 
-  StorageService({
-    super.id = 'DEFAULT',
-    this.configs = const StorageServiceConfigs()});
+  StorageService({super.id = 'DEFAULT', this.configs = const StorageServiceConfigs()});
 
   @override
   Future<void> init() async {
@@ -63,17 +62,16 @@ class StorageService extends Service {
   //   );
   // }
 
-
   Future<String> upload(PlatformFile file, void Function(double?) progressCallback) async {
-    final ref = FirebaseStorage.instance.ref()
-      .child('uploads')
-      .child(getCurrentProfile()!.uid)
-      .child('${DateTime.now().millisecondsSinceEpoch}');
+    final ref = FirebaseStorage.instance.ref().child('uploads').child(getCurrentProfile()!.uid).child('${DateTime.now().millisecondsSinceEpoch}');
     late UploadTask uploadTask;
     if (kIsWeb) {
       uploadTask = ref.putData(file.bytes!);
     } else {
-      uploadTask = ref.putData(await File(file.path!).readAsBytes());
+      uploadTask = ref.putData(
+        await File(file.path!).readAsBytes(),
+        SettableMetadata(contentType: lookupMimeType(file.path!.split('/').last)),
+      );
     }
     uploadTask.snapshotEvents.listen((event) {
       if (event.totalBytes != 0) {
