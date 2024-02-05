@@ -40,6 +40,7 @@ class TimestampDateTimeSerializer implements JsonConverter<DateTime, dynamic> {
     if (timestamp is Timestamp) return timestamp.toDate();
     try {
       if (timestamp.runtimeType == "Timestamp") return timestamp.toDate();
+      print("timestamp.toDate():"+timestamp.toDate());
     } catch (e) {
       print("TimestampDateTimeSerializer:"+e.toString());
     }
