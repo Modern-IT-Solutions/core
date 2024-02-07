@@ -24,6 +24,11 @@ _$ProfileModelImpl _$$ProfileModelImplFromJson(Map<String, dynamic> json) =>
           .map((e) => const RoleSerializer().fromJson(e as String))
           .toList(),
       emailVerified: json['emailVerified'] as bool,
+      sessions: (json['sessions'] as Map<String, dynamic>?)?.map(
+            (k, e) =>
+                MapEntry(k, ProfileSession.fromJson(e as Map<String, dynamic>)),
+          ) ??
+          const {},
       metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
       customClaims: json['customClaims'] as Map<String, dynamic>? ?? const {},
       createdAt:
@@ -50,6 +55,7 @@ Map<String, dynamic> _$$ProfileModelImplToJson(_$ProfileModelImpl instance) =>
       'disabled': instance.disabled,
       'roles': instance.roles.map(const RoleSerializer().toJson).toList(),
       'emailVerified': instance.emailVerified,
+      'sessions': instance.sessions.map((k, e) => MapEntry(k, e.toJson())),
       'metadata': instance.metadata,
       'customClaims': instance.customClaims,
       'createdAt':

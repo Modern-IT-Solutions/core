@@ -34,6 +34,8 @@ mixin _$ProfileModel {
   @RoleSerializer()
   List<Role> get roles => throw _privateConstructorUsedError;
   bool get emailVerified => throw _privateConstructorUsedError;
+  Map<String, ProfileSession> get sessions =>
+      throw _privateConstructorUsedError;
   Map<String, dynamic> get metadata => throw _privateConstructorUsedError;
   Map<String, dynamic> get customClaims => throw _privateConstructorUsedError;
   @TimestampDateTimeSerializer()
@@ -69,6 +71,7 @@ abstract class $ProfileModelCopyWith<$Res> {
       bool disabled,
       @RoleSerializer() List<Role> roles,
       bool emailVerified,
+      Map<String, ProfileSession> sessions,
       Map<String, dynamic> metadata,
       Map<String, dynamic> customClaims,
       @TimestampDateTimeSerializer() DateTime createdAt,
@@ -103,6 +106,7 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
     Object? disabled = null,
     Object? roles = null,
     Object? emailVerified = null,
+    Object? sessions = null,
     Object? metadata = null,
     Object? customClaims = null,
     Object? createdAt = null,
@@ -155,6 +159,10 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
           ? _value.emailVerified
           : emailVerified // ignore: cast_nullable_to_non_nullable
               as bool,
+      sessions: null == sessions
+          ? _value.sessions
+          : sessions // ignore: cast_nullable_to_non_nullable
+              as Map<String, ProfileSession>,
       metadata: null == metadata
           ? _value.metadata
           : metadata // ignore: cast_nullable_to_non_nullable
@@ -215,6 +223,7 @@ abstract class _$$ProfileModelImplCopyWith<$Res>
       bool disabled,
       @RoleSerializer() List<Role> roles,
       bool emailVerified,
+      Map<String, ProfileSession> sessions,
       Map<String, dynamic> metadata,
       Map<String, dynamic> customClaims,
       @TimestampDateTimeSerializer() DateTime createdAt,
@@ -248,6 +257,7 @@ class __$$ProfileModelImplCopyWithImpl<$Res>
     Object? disabled = null,
     Object? roles = null,
     Object? emailVerified = null,
+    Object? sessions = null,
     Object? metadata = null,
     Object? customClaims = null,
     Object? createdAt = null,
@@ -300,6 +310,10 @@ class __$$ProfileModelImplCopyWithImpl<$Res>
           ? _value.emailVerified
           : emailVerified // ignore: cast_nullable_to_non_nullable
               as bool,
+      sessions: null == sessions
+          ? _value._sessions
+          : sessions // ignore: cast_nullable_to_non_nullable
+              as Map<String, ProfileSession>,
       metadata: null == metadata
           ? _value._metadata
           : metadata // ignore: cast_nullable_to_non_nullable
@@ -343,6 +357,7 @@ class _$ProfileModelImpl implements _ProfileModel {
       required this.disabled,
       @RoleSerializer() required final List<Role> roles,
       required this.emailVerified,
+      final Map<String, ProfileSession> sessions = const {},
       final Map<String, dynamic> metadata = const {},
       final Map<String, dynamic> customClaims = const {},
       @TimestampDateTimeSerializer() required this.createdAt,
@@ -350,6 +365,7 @@ class _$ProfileModelImpl implements _ProfileModel {
       @NullableTimestampDateTimeSerializer() this.deletedAt,
       @NullableTimestampDateTimeSerializer() this.lastSignInAt})
       : _roles = roles,
+        _sessions = sessions,
         _metadata = metadata,
         _customClaims = customClaims;
 
@@ -388,6 +404,15 @@ class _$ProfileModelImpl implements _ProfileModel {
 
   @override
   final bool emailVerified;
+  final Map<String, ProfileSession> _sessions;
+  @override
+  @JsonKey()
+  Map<String, ProfileSession> get sessions {
+    if (_sessions is EqualUnmodifiableMapView) return _sessions;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_sessions);
+  }
+
   final Map<String, dynamic> _metadata;
   @override
   @JsonKey()
@@ -421,7 +446,7 @@ class _$ProfileModelImpl implements _ProfileModel {
 
   @override
   String toString() {
-    return 'ProfileModel(ref: $ref, displayName: $displayName, email: $email, phoneNumber: $phoneNumber, birthday: $birthday, photoUrl: $photoUrl, address: $address, uid: $uid, disabled: $disabled, roles: $roles, emailVerified: $emailVerified, metadata: $metadata, customClaims: $customClaims, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, lastSignInAt: $lastSignInAt)';
+    return 'ProfileModel(ref: $ref, displayName: $displayName, email: $email, phoneNumber: $phoneNumber, birthday: $birthday, photoUrl: $photoUrl, address: $address, uid: $uid, disabled: $disabled, roles: $roles, emailVerified: $emailVerified, sessions: $sessions, metadata: $metadata, customClaims: $customClaims, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, lastSignInAt: $lastSignInAt)';
   }
 
   @override
@@ -446,6 +471,7 @@ class _$ProfileModelImpl implements _ProfileModel {
             const DeepCollectionEquality().equals(other._roles, _roles) &&
             (identical(other.emailVerified, emailVerified) ||
                 other.emailVerified == emailVerified) &&
+            const DeepCollectionEquality().equals(other._sessions, _sessions) &&
             const DeepCollectionEquality().equals(other._metadata, _metadata) &&
             const DeepCollectionEquality()
                 .equals(other._customClaims, _customClaims) &&
@@ -474,6 +500,7 @@ class _$ProfileModelImpl implements _ProfileModel {
       disabled,
       const DeepCollectionEquality().hash(_roles),
       emailVerified,
+      const DeepCollectionEquality().hash(_sessions),
       const DeepCollectionEquality().hash(_metadata),
       const DeepCollectionEquality().hash(_customClaims),
       createdAt,
@@ -508,6 +535,7 @@ abstract class _ProfileModel implements ProfileModel {
       required final bool disabled,
       @RoleSerializer() required final List<Role> roles,
       required final bool emailVerified,
+      final Map<String, ProfileSession> sessions,
       final Map<String, dynamic> metadata,
       final Map<String, dynamic> customClaims,
       @TimestampDateTimeSerializer() required final DateTime createdAt,
@@ -544,6 +572,8 @@ abstract class _ProfileModel implements ProfileModel {
   List<Role> get roles;
   @override
   bool get emailVerified;
+  @override
+  Map<String, ProfileSession> get sessions;
   @override
   Map<String, dynamic> get metadata;
   @override

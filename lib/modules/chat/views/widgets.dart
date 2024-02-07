@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:core/modules/chat/views/audio_recorder.dart';
 import 'package:record_platform_interface/src/types/record_config.dart';
 
@@ -24,6 +25,7 @@ import 'package:motif/motif.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:universal_html/html.dart' as http;
 import 'package:universal_io/io.dart';
 // import 'package:video_player/video_player.dart';
 import 'package:zplayer/zplayer.dart';
@@ -536,26 +538,31 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
                                 );
                               },
                             );
-                            // if (audioPath != null) {
-                            //   var file = Blob(audioPath);
-                            //   var url = await getStorage().upload(
-                            //       PlatformFile(
-                            //         name: 'audio.m4a',
-                            //         size: await file.length(),
-                            //         path: audioPath,
-                            //       ), (progress) {
-                            //     setState(() {
-                            //       loading = true;
-                            //       uploadingProgress = progress;
-                            //     });
-                            //   });
-                            //   EmbeddedChatRoomMessage message = EmbeddedChatRoomAudioMessage(
-                            //     profileRef: getCurrentProfile()!.ref,
-                            //     audioUrl: url,
-                            //     createdAt: DateTime.now(),
-                            //   );
-                            //   await sendMessage(message);
-                            // }
+                            if (audioPath != null) {
+                              final blobFilePath = http.window.sessionStorage[audioPath];
+                              final client = http.HttpRequest;
+                              final request = await http.HttpRequest.getString(blobFilePath!);
+                              final bytes = request.codeUnits;
+                              print('response bytes.length: ${bytes.length}');
+                              var file = Blob(Uint8List.fromList(request.codeUnits));
+                              var url = await getStorage().upload(
+                                  PlatformFile(
+                                    name: 'audio.wav',
+                                    size: file.bytes.length,
+                                    bytes: file.bytes,  
+                                  ), (progress) {
+                                setState(() {
+                                  loading = true;
+                                  uploadingProgress = progress;
+                                });
+                              });
+                              EmbeddedChatRoomMessage message = EmbeddedChatRoomAudioMessage(
+                                profileRef: getCurrentProfile()!.ref,
+                                audioUrl: url,
+                                createdAt: DateTime.now(),
+                              );
+                              await sendMessage(message);
+                            }
                           } else {
                             audioPath = await showRecordDialog(context);
                             if (audioPath != null) {

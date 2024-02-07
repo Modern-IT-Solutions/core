@@ -4,6 +4,7 @@ import 'package:core/models/address_model.dart';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'profile_session.dart';
 import 'role.dart';
 
 
@@ -27,6 +28,7 @@ class ProfileModel with _$ProfileModel implements Model {
     @RoleSerializer() 
     required List<Role> roles,
     required bool emailVerified,
+    @Default({}) Map<String, ProfileSession> sessions,
     @Default({}) Map<String,dynamic> metadata,
     @Default({}) Map<String,dynamic> customClaims,
 
