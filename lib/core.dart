@@ -1,5 +1,10 @@
 library core;
 
+
+
+/// helpers
+export 'core/helpers.dart';
+
 import 'package:core/features/users/data/models/role.dart';
 
 /// packages
@@ -77,6 +82,10 @@ class DynamicConfigs {
 /// RECLEAN
 /// #modules
 /// #commerce
+
+
+
+
 
 
 

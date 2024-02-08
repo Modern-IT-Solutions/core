@@ -28,3 +28,11 @@ extension DateTimeStartEndOfDay on DateTime {
     return DateTime(year, month, day, 23, 59, 59, 999, 999);
   }
 }
+
+
+// toCSV in Map<String, dynamic>
+extension MapToCSV on Map<String, dynamic> {
+  String toCSV() {
+    return "${keys.join(",")}\n${values.join(",")}\n";
+  }
+}

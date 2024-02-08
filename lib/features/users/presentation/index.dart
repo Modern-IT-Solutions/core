@@ -1151,7 +1151,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                   }
                                 }
                               },
-                              child:  FlexTableItem(
+                              child: FlexTableItem(
                                 selected: widget.controller.value!.selectedModels.contains(model),
                                 onSelectChanged: (val) {
                                   if (val == true) {
@@ -1823,7 +1823,8 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
           path: description.path,
           builder: querybuilder,
         ))
-            ?.value.toInt(),
+            ?.value
+            .toInt(),
       );
       notifyListeners();
       var _models = await getModelCollection(
@@ -2807,47 +2808,40 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
                   }
                   return data.join(";");
                 }).join("\n")}";
-                var rawAsBytes = const Utf8Codec(allowMalformed: true).encode(raw);
-                String? dir;
-                if (Platforms.isWeb) {
-                  dir = await FileSaver.instance.saveFile(
-                    bytes: rawAsBytes,
-                    mimeType: MimeType.microsoftExcel,
-                    name: "export_${controller.description.name}_${DateFormat("yyyy-MM-dd").format(DateTime.now())}",
-                    ext: 'csv',
+                try {
+                  // TODO: use function here
+                  var dir = saveStringToFile(
+                    name: "export_${controller.description.name}_${DateFormat("yyyy-MM-dd").format(DateTime.now())}.csv",
+                    mimeType: MimeType.csv,
+                    data: raw,
                   );
-                } else {
-                  dir = await FileSaver.instance.saveAs(
-                    bytes: rawAsBytes,
-                    mimeType: MimeType.microsoftExcel,
-                    name: "export_${controller.description.name}_${DateFormat("yyyy-MM-dd").format(DateTime.now())}",
-                    ext: 'csv',
-                  );
-                }
-                // show dailog with path
-                // ignore: use_build_context_synchronously
-                await showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: const Text('Export'),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text("Exported to $dir"),
-                        ],
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Cancel'),
+                  // show dailog with path
+                  // ignore: use_build_context_synchronously
+                  await showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('Export'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text("Exported to $dir"),
+                          ],
                         ),
-                      ],
-                    );
-                  },
-                );
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Cancel'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } catch (e) {
+                  print(e);
+                }
                 Navigator.of(context).pop();
               },
               child: const Text('Export'),
