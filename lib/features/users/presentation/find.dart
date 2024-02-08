@@ -317,7 +317,7 @@ class _ProfileSummaryState extends State<ProfileSummary> {
           leading: const Icon(FluentIcons.phone_20_regular),
           contentPadding: const EdgeInsets.symmetric(horizontal: 24),
           visualDensity: const VisualDensity(vertical: -3),
-          title: profile == null ? const TextPlaceholder() : Text((profile!.phoneNumber ?? "").nullIfEmpty ?? "(No phone number)"),
+          title: profile == null ? const TextPlaceholder() : Text(("+213${profile!.phoneNumber ?? ""}").nullIfEmpty ?? "(No phone number)"),
           subtitle: const Text(
             'Phone',
             style: TextStyle(

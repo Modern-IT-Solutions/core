@@ -22,8 +22,8 @@ Future<String> saveStringToFile({
     tokens.removeLast();
     fileName = tokens.join(".");
   }
-  var rawAsBytes = Uint16List.fromList(data.codeUnits);
-  // var rawAsBytes = const Uint16List(allowMalformed: true).encode(data);
+  // var rawAsBytes = Uint16List.fromList(data.codeUnits);
+  var rawAsBytes = const Utf8Codec(allowMalformed: true).encode(data);
   String? dir;
   if (Platforms.isWeb) {
     dir = await FileSaver.instance.saveFile(
