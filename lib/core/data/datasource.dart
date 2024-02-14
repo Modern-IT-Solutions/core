@@ -140,7 +140,7 @@ mixin FirestoreDataSourceMixin<T extends Model> implements CFLUDInterface<T> {
 
   list(request) async {
     Query<T> dbquery = collection;
-    dbquery = dbquery.limit(request.limit ?? 50);
+    dbquery = dbquery.limit(request.limit ?? 100);
     // if (!request.withDeleted) {
     //   dbquery = dbquery.where('deletedAt', isNull: true);
     // }

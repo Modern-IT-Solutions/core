@@ -8,6 +8,7 @@ import '../services.dart';
 import 'firebase/database.dart';
 import 'helpers.dart';
 import 'service.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 
 
@@ -85,5 +86,35 @@ class PreferencesService extends Service {
   //     'updatedAt': DateTime.now(),
   //   };
   // }
+
+
+  FormatDateShape formatDateShape = FormatDateShape.full;
+
+  String? formatDate(DateTime? dateTime) {
+    return switch(formatDateShape){
+      FormatDateShape.full => dateTime?.formatFull(),
+      FormatDateShape.onlyDate=> dateTime?.formatOnlyDate(),
+      FormatDateShape.timeago=> dateTime?.formatTimeAgo()
+    };
+  }
 }
 
+
+enum FormatDateShape {
+  full,
+  onlyDate,
+  timeago
+}
+
+// extension
+extension FormatDate on DateTime {
+  String formatFull() {
+    return "$day.$month.$year $hour:$minute";
+  }
+  String formatOnlyDate() {
+    return "$day.$month.$year";
+  }
+  String formatTimeAgo() {
+    return timeago.format(this);
+  }
+}

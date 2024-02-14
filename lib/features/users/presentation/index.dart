@@ -1706,7 +1706,7 @@ class ModelListViewValue<M extends Model> {
     this.history = const [],
     this.metadata = const {},
     this.error,
-    this.limit = 50,
+    this.limit = 100,
   });
   ModelListViewValue<M> copyWith({
     int? count,
@@ -2896,7 +2896,7 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                   SizedBox(
                     width: gap,
                   ),
-                  if (controller.value!.selectedModels.isNotEmpty)
+                  if (controller.value?.selectedModels.isNotEmpty == true)
                     Container(
                       margin: EdgeInsetsDirectional.only(end: gap / 2),
                       clipBehavior: Clip.antiAlias,
@@ -3060,7 +3060,7 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                   SizedBox(
                     width: gap / 2,
                   ),
-                  if (defaultFiltersEnabled)
+                  if (defaultFiltersEnabled && controller.value?.filters.isNotEmpty == true)
                     for (var filter in controller.value!.filters)
                       Padding(
                         padding: EdgeInsets.only(right: gap / 2),

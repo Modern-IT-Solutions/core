@@ -585,7 +585,7 @@ Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool
                       config: const FlexTableItemConfig.flex(2, minWidth: 200),
                       builder: (model) {
                         return Text(
-                          timeago.format(model.updatedAt),
+                          getPrefs().formatDate(model.updatedAt) ?? "--",
                           style: Theme.of(context).textTheme.bodySmall,
                         );
                       }

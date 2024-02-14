@@ -143,7 +143,7 @@ class DatabaseService extends Service {
           e.longitude
         ];
       }
-      return e;
+      return e.toString();
     }
 
     List<String> cachedDocuments = [];
@@ -533,8 +533,14 @@ class DatabaseService extends Service {
       }
     }
 
+
+    // final ccollection =  getCachedCollection(path: path, query: queryId);
+    // if (kDebugMode && ccollection != null){
+    //   var data = ccollection.filter(withTrashed: withTrashed);
+    //   return data;
+    // }
+
     final collection = await query.get();
-    print("collection.docs.length ${collection.docs.length}");
     if (collection.docs.isNotEmpty) {
       final cachedCollection = CachedCollection(
         ref: path,
@@ -945,7 +951,10 @@ class DatabaseService extends Service {
       // }
     }
 
-    if (behavior == FetchBehavior.cacheOnly) {
+    if (behavior == FetchBehavior.cacheOnly 
+      // || kDebugMode
+    
+    ) {
       return _getCachedAggregate();
     } else if (behavior == FetchBehavior.serverOnly) {
       await _getCount();

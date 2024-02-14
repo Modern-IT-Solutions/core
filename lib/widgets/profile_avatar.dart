@@ -5,10 +5,11 @@ import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 
 class ProfileAvatar extends StatelessWidget {
-  const ProfileAvatar({super.key, required this.profile, this.radius = 60});
+  const ProfileAvatar({super.key, required this.profile, this.radius = 60, this.color});
 
   final ProfileModel? profile;
   final double? radius;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +50,7 @@ class ProfileAvatar extends StatelessWidget {
         child: Padding(
           padding: profile?.disabled == true ? const EdgeInsets.all(2) : const EdgeInsets.all(1),
           child: CircleAvatar(
+            backgroundColor: color,
             radius: radius,
             backgroundImage: profile?.photoUrl.nullIfEmpty == null ? null : CachedNetworkImageProvider(profile!.photoUrl),
             child:  
