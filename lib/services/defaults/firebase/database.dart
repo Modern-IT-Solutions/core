@@ -290,7 +290,10 @@ class DatabaseService extends Service {
     required String path,
     required Map<String, dynamic> data,
   }) async {
-    final document = await FirebaseFirestore.instance.collection(path).add(data);
+    final document = await FirebaseFirestore.instance.collection(path).add({
+      ...data,
+      "__createdBy": getCurrentProfile()?.uid,
+    });
     final cachedDocument = CachedDocument(
       ref: document.path,
       data: data,
@@ -315,6 +318,9 @@ class DatabaseService extends Service {
       'deletedAt': null,
       'ref': path,
       ...data,
+      "__setBy": getCurrentProfile()?.uid,
+      "__createdBy": getCurrentProfile()?.uid,
+      "__updatedBy": getCurrentProfile()?.uid,
     }, SetOptions(merge: merge));
     final cachedDocument = CachedDocument(
       ref: doc.path,
@@ -339,6 +345,7 @@ class DatabaseService extends Service {
     await FirebaseFirestore.instance.doc(path).update({
       ...data,
       'updatedAt': FieldValue.serverTimestamp(),
+      "__updatedBy": getCurrentProfile()?.uid
     });
     final cachedDocument = CachedDocument(
       ref: path,
@@ -360,11 +367,12 @@ class DatabaseService extends Service {
     required String path,
     bool softDelete = true,
   }) async {
-    if (softDelete) {
-      await FirebaseFirestore.instance.doc(path).update({
-        'deletedAt': FieldValue.serverTimestamp(),
-      });
-    } else {
+    await FirebaseFirestore.instance.doc(path).update({
+      'deletedAt': FieldValue.serverTimestamp(),
+      "__deletedBy": getCurrentProfile()?.uid
+    });
+
+    if (!softDelete) {
       await FirebaseFirestore.instance.doc(path).delete();
     }
     _cachedDocuments.removeWhere((e) => e.ref == path);
@@ -532,7 +540,6 @@ class DatabaseService extends Service {
         return cachedCollection.filter(withTrashed: withTrashed);
       }
     }
-
 
     // final ccollection =  getCachedCollection(path: path, query: queryId);
     // if (kDebugMode && ccollection != null){
@@ -951,10 +958,10 @@ class DatabaseService extends Service {
       // }
     }
 
-    if (behavior == FetchBehavior.cacheOnly 
-      // || kDebugMode
-    
-    ) {
+    if (behavior == FetchBehavior.cacheOnly
+        // || kDebugMode
+
+        ) {
       return _getCachedAggregate();
     } else if (behavior == FetchBehavior.serverOnly) {
       await _getCount();

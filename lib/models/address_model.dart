@@ -24,7 +24,7 @@ class AddressModel with _$AddressModel {
   }) = _AddressModel;
 
   factory AddressModel.fromJson(Map<String, dynamic> json) => _$AddressModelFromJson(json);
-  static const empty = const AddressModel(
+  static const empty = AddressModel(
     raw: "",
   );
 }

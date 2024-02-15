@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:core/core.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -326,7 +327,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
 
   Future<PlatformFile?> pickFile() async {
     var result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
+      type: FileType.any,
     );
     if (result != null && result.files.isNotEmpty) {
       return result.files.first;
@@ -334,7 +335,8 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
   }
 
   uploadFile(PlatformFile file) async {
-    final ref = FirebaseStorage.instance.ref().child('uploads').child('${DateTime.now().millisecondsSinceEpoch}');
+    var uid = getCurrentProfile()!.uid;
+    final ref = FirebaseStorage.instance.ref().child('uploads').child(uid).child('${DateTime.now().millisecondsSinceEpoch}');
     late UploadTask uploadTask;
     if (kIsWeb) {
       uploadTask = ref.putData(file.bytes!);

@@ -1,5 +1,6 @@
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
+import 'package:recase/recase.dart';
 
 enum DataFalg {
   none,
@@ -28,13 +29,13 @@ class DataFlagWidget extends StatelessWidget {
     super.key,
     this.flag = DataFalg.empty,
     this.color = Colors.grey,
-  }) : this.custom = null;
+  }) : custom = null;
 
   const DataFlagWidget.error({
     super.key,
     this.flag = DataFalg.error,
-    this.color = Colors.grey,
-  }) : this.custom = null;
+    this.color = Colors.red,
+  }) : custom = null;
 
   @override
   Widget build(BuildContext context) {
@@ -44,13 +45,15 @@ class DataFlagWidget extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 5),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4),
+             borderRadius: BorderRadius.circular(4),
             color: color,
           ),
           child: Text(
-            this.custom?.nullIfEmpty == null ? flag.name : this.custom!,
+            (custom?.nullIfEmpty == null ? flag.name : custom!).toUpperCase(),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.white,
+                  color: color.computeLuminance() > 0.5
+                      ? Colors.black
+                      : Colors.white,
                 ),
           ),
         ),

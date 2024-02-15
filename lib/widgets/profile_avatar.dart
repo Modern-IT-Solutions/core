@@ -23,7 +23,7 @@ class ProfileAvatar extends StatelessWidget {
         
         width: (radius != null && radius! < 25) ? 1 : 2
         
-        ) : Border.all(color: Theme.of(context).colorScheme.primary, width: 1),
+        ) : Border.all(color:color?? Theme.of(context).colorScheme.primary, width: 1),
       ),
       child: Badge(
         // offset:

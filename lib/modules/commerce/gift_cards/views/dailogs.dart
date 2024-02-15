@@ -187,12 +187,6 @@ class _GiftCardOrderFormState extends State<GiftCardOrderForm> {
           );
           widget.onUpdated?.call(context,newModel);
         }
-      }
-      // FirebaseFunctionsException
-      on FirebaseFunctionsException catch (e) {
-        setState(() {
-          _error = e.message;
-        });
       } catch (e) {
         setState(() {
           _error = e.toString();

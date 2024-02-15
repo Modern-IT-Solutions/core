@@ -10,7 +10,6 @@ import 'package:muskey/muskey.dart';
 import 'package:recase/recase.dart';
 
 import '../../data/models/role.dart';
-import '../../domain/request/profile_requests.dart';
 
 /// [UpdateProfileForm] is a form to update a new user
 class UpdateProfileForm extends StatefulWidget {

@@ -53,7 +53,7 @@ dependencies:
   media_cache_manager:
   flutter_local_notifications: ^16.0.0-dev.2
   firebase_analytics:
-  firebase_app_check:
+  # firebase_app_check:
   firebase_crashlytics:
   universal_io:
   universal_html:

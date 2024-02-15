@@ -1,15 +1,14 @@
+import 'dart:math';
+
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:core/core.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_json_view/flutter_json_view.dart';
 import 'package:lib/lib.dart';
-import 'package:flutter/services.dart';
-import 'dart:math';
 import 'package:photo_view/photo_view.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../../../core/data/requests.dart';
 
 
 /// [FindProfileForm] is a form to update a new user
