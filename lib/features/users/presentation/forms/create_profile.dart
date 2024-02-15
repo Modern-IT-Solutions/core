@@ -492,7 +492,7 @@ Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool
     ),
   );
   // ignore: use_build_context_synchronously
-  return await showDialog(
+  return await showDialog(useRootNavigator: false,
     context: context,
     builder: (context) {
       return Dialog(

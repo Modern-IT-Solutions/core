@@ -116,7 +116,7 @@ class ModelRef {
 Future<void> showDeleteModelDailog(BuildContext context, Model model) async {
   bool _loading = false;
   bool skipRecycleBin = false;
-  await showDialog(
+  await showDialog(useRootNavigator: false,
     context: context,
     builder: (context) => AlertDialog(
       title: const Text('Confirm delete'),
@@ -187,7 +187,7 @@ Future<void> showDeleteModelDailog(BuildContext context, Model model) async {
 Future<void> showDeleteModelsDailog(BuildContext context, List<Model> models) async {
   bool _loading = false;
   bool skipRecycleBin = false;
-  await showDialog(
+  await showDialog(useRootNavigator: false,
     context: context,
     builder: (context) => AlertDialog(
       title: Text('Confirm delete ${models.length} items'),

@@ -613,7 +613,7 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
 }
 
 Future<String?> showStatePicker(BuildContext context) async {
-  return await showDialog(
+  return await showDialog(useRootNavigator: false,
     context: context,
     builder: (context) {
       return StatePickerDialog();
@@ -692,7 +692,7 @@ class _StatePickerDialogState extends State<StatePickerDialog> {
 // showCityPicker
 
 Future<Map<String, dynamic>?> showCityPicker(BuildContext context, {String? state}) async {
-  return await showDialog<Map<String, dynamic>>(
+  return await showDialog<Map<String, dynamic>>(useRootNavigator: false,
     context: context,
     builder: (context) {
       return CityPickerDialog(state: state);

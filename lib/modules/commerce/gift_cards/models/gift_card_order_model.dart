@@ -114,7 +114,7 @@ class GiftCardOrderModel with _$GiftCardOrderModel implements Model {
               if (model != null) {
                 var loading = false;
                 String? error;
-                await showDialog(
+                await showDialog(useRootNavigator: false,
                   context: context,
                   builder: (context) => StatefulBuilder(builder: (context, setState) {
                     return AlertDialog(
@@ -177,7 +177,7 @@ class GiftCardOrderModel with _$GiftCardOrderModel implements Model {
               double progress = 0.0;
               var loading = false;
               if (models != null) {
-                await showDialog(
+                await showDialog(useRootNavigator: false,
                   context: context,
                   builder: (context) => StatefulBuilder(builder: (context, setState) {
                     return AlertDialog(

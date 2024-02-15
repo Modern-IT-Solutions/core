@@ -33,7 +33,7 @@ Future<ProfileModel?> showCreateProfileModelDailog(BuildContext context) async {
       },
     ),
   );
-  return await showDialog<ProfileModel?>(
+  return await showDialog<ProfileModel?>(useRootNavigator: false,
     context: context,
     builder: (context) {
       if (MediaQuery.of(context).size.width > 600) {
@@ -96,7 +96,7 @@ Future<ProfileModel?> showUpdateProfileModelDailog(BuildContext context, Profile
       ),
     ),
   );
-  return await showDialog<ProfileModel?>(
+  return await showDialog<ProfileModel?>(useRootNavigator: false,
     context: context,
     builder: (context) {
       if (MediaQuery.of(context).size.width > 600) {
@@ -116,7 +116,7 @@ Future<ProfileModel?> showUpdateProfileModelDailog(BuildContext context, Profile
 // delete station, a simple dialog with a text and two buttons
 Future<bool?> showDeleteProfileModelDailog(BuildContext context, ProfileModel model) async {
   bool _loading = false;
-  return await showDialog(
+  return await showDialog(useRootNavigator: false,
     context: context,
     builder: (context) => AlertDialog(
       title: const Text('Confirm delete'),
@@ -189,7 +189,7 @@ Future<void> showDetailsProfileModelDailog(BuildContext context, ProfileModel mo
       ],
     ),
   );
-  await showDialog(
+  await showDialog(useRootNavigator: false,
     context: context,
     builder: (context) {
       if (MediaQuery.of(context).size.width > 600) {

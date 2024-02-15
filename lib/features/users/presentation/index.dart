@@ -597,7 +597,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       ),
     );
     await showDialog(
-      context: context,
+      context: context,useRootNavigator: false,
       builder: (context) {
         if (MediaQuery.of(context).size.width > 600) {
           return Dialog(
@@ -641,7 +641,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
         ),
       ),
     );
-    await showDialog(
+    await showDialog(useRootNavigator: false,
       context: context,
       builder: (context) {
         if (MediaQuery.of(context).size.width > 600) {
@@ -731,7 +731,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
         ],
       ),
     );
-    await showDialog(
+    await showDialog(useRootNavigator: false,
       context: context,
       builder: (context) {
         if (MediaQuery.of(context).size.width > 600) {
@@ -2368,7 +2368,7 @@ Future<IndexViewFilter<M>?> showDateRangeFilterWizard<M extends Model>(BuildCont
   TextEditingController startAtController = TextEditingController();
   TextEditingController endAtController = TextEditingController();
   return await showDialog<IndexViewFilter<M>?>(
-    context: context,
+    context: context,useRootNavigator: false,
     builder: (context) {
       return StatefulBuilder(builder: (context, setState) {
         return AlertDialog(
@@ -2523,7 +2523,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
   FieldDescription? _field() => description.fields.where((e) => e.name == fieldController.text).firstOrNull;
   QueryOperations? _operator() => QueryOperations.values.where((e) => e.symbol == operatorController.text).firstOrNull;
   String? _value() => valueController.text;
-  return await showDialog<IndexViewFilter<M>?>(
+  return await showDialog<IndexViewFilter<M>?>(useRootNavigator: false,
     context: context,
     builder: (context) {
       return StatefulBuilder(builder: (context, setState) {
@@ -2754,7 +2754,7 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
   var selectedFields = fields.where((e) => e.group != FieldGroup.hidden).toList();
 
   var limit = 100;
-  await showDialog(
+  await showDialog(useRootNavigator: false,
     context: context,
     builder: (context) {
       return StatefulBuilder(builder: (context, setState) {
@@ -2849,7 +2849,7 @@ Future<void> showModelExportDialogOld<M extends Model>(BuildContext context, Mod
   }
 
   var limit = 100;
-  await showDialog(
+  await showDialog(useRootNavigator: false,
     context: context,
     builder: (context) {
       return StatefulBuilder(builder: (context, setState) {
@@ -2953,7 +2953,7 @@ Future<void> showModelExportDialogOld<M extends Model>(BuildContext context, Mod
                   );
                   // show dailog with path
                   // ignore: use_build_context_synchronously
-                  await showDialog(
+                  await showDialog(useRootNavigator: false,
                     context: context,
                     builder: (context) {
                       return AlertDialog(

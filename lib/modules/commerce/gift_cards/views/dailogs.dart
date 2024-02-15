@@ -41,7 +41,7 @@ Future<GiftCardOrderModel?> showUpdateGiftCardOrderModelDailog(BuildContext cont
     ),
   );
   return await showDialog<GiftCardOrderModel?>(
-    context: context,
+    context: context,useRootNavigator: false,
     builder: (context) {
       if (MediaQuery.of(context).size.width > 600) {
         return Dialog(
@@ -83,7 +83,7 @@ Future<GiftCardOrderModel?> showCreateGiftCardOrderModelDailog(BuildContext cont
     ),
   );
   return await showDialog<GiftCardOrderModel?>(
-    context: context,
+    context: context,useRootNavigator: false,
     builder: (context) {
       if (MediaQuery.of(context).size.width > 600) {
         return Dialog(

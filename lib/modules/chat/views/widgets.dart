@@ -173,7 +173,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
 
   Future<PlatformFile?> showImagePickerDialog(BuildContext context, {bool compress = true}) async {
     return await showDialog<PlatformFile>(
-      context: context,
+      context: context,useRootNavigator: false,
       builder: (context) {
         return AlertDialog(
           title: const Text("Pick an image"),
@@ -527,7 +527,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
                           String? audioPath;
                           if (Platforms.isWeb) {
                             audioPath = await showDialog(
-                              context: context,
+                              context: context,useRootNavigator: false,
                               builder: (context) {
                                 return Dialog(
                                   child: Recorder(
@@ -1039,7 +1039,7 @@ Future<String?> showRecordDialog(BuildContext context) async {
   String defaultPath = "${(await getTemporaryDirectory()).path}/audio.m4a";
   String? path;
   return await showDialog<String>(
-    context: context,
+    context: context,useRootNavigator: false,
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setState) {
