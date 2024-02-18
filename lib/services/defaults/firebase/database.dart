@@ -254,7 +254,6 @@ class DatabaseService extends Service {
     bool withExpired = false,
     FetchBehavior behavior = FetchBehavior.serverFirst,
     Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> collection)? builder,
-
     /// time between each update, within this time will return the cached collection instead of going to server if behavior is serverFirst
     Duration minmumUpdateDuration = const Duration(minutes: 5),
   }) async {
@@ -529,6 +528,12 @@ class DatabaseService extends Service {
     query = query.limit(limit);
 
     //
+    // custom claims fo current user
+    var cc = await FirebaseAuth.instance.currentUser?.getIdTokenResult();
+    var claims = cc?.claims;
+    print(claims);
+
+    
     var queryId = smallCacheId((cacheId ?? "") + path, query.parameters);
     // load cached version
     final cachedCollection = getCachedCollection(path: path, query: queryId, withExpired: withExpired);

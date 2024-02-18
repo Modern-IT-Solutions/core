@@ -40,6 +40,7 @@ export './features/users/data/models/role.dart';
 export './models/base.dart';
 
 export './temp.dart';
+export './core/charts.dart';
 
 export './services/defaults/preferences.dart';
 export './services/defaults/theme.dart';
@@ -56,6 +57,7 @@ export './models/stadium_model.dart';
 export './models/stadium_rental_model.dart';
 
 
+export './modules/chat/chat.dart';
 
 /// nullIfEmpty extension to String
 extension NullIfEmpty on String {
@@ -67,7 +69,7 @@ extension NullIfEmpty on String {
 
 
 class DynamicConfigs {
-  static Set<Role> _roles = {Role("admin", permissions: []),Role("user",permissions: [])};
+  static Set<Role> _roles = {};
   // set roles
   static void setRoles(Set<Role> roles) {
     _roles = roles;

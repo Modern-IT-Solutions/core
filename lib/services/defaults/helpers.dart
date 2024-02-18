@@ -1,4 +1,5 @@
 import 'package:core/core.dart';
+import 'package:core/features/users/data/models/permission.dart';
 import 'package:core/services/defaults/preferences.dart';
 
 import '../../models/cached_document.dart';
@@ -10,6 +11,33 @@ import 'theme.dart';
 ProfileModel? getCurrentProfile() {
   return Services.instance.get<AuthService>()?.currentProfile;
 }
+
+class AppRole<T extends Enum> {
+  const AppRole({required this.name, required this.permissions, required this.features});
+  final String name;
+  final List<Permission> permissions;
+  final List<T> features;
+}
+
+abstract class App<T extends Enum> {
+  final String name;
+  final String id;
+  final List<AppRole<T>> roles;
+  final String logo;
+  final String? darkLogo;
+  const App({required this.name,required this.id, required this.roles, required this.logo, this.darkLogo});
+
+  AppRole? roleOf(ProfileModel? currentProfile) {
+    if (currentProfile == null || currentProfile.rolesString.firstOrNull == null) return null;
+    return roles.firstWhere((e) => e.name == currentProfile.rolesString.first);
+  }
+}
+
+
+
+
+
+
 
 Future<CachedCollection?> getCollection({
   String? cacheId,

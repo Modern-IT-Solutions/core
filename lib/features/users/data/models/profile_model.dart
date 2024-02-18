@@ -1,5 +1,6 @@
 
 import 'package:core/core.dart';
+import 'package:core/features/users/data/models/permission.dart';
 import 'package:core/models/address_model.dart';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -176,4 +177,73 @@ extension RolesExtensions on ProfileModel {
   bool get isAdmin => roles.map((e) => e.name).contains("admin");
   bool hasRoleString(String role) => roles.map((e) => e.name).contains(role);
   bool hasRole(Role role) => hasRoleString(role.name);
+
+  
+  List<Role> get appRoles {
+    var _dr = DynamicConfigs.roles;
+    return roles.map((e) {
+      return _dr.firstWhere((r) => r.name == e.name);
+    }).toList();
+  }
+
+  List<Permission> get permissions {
+    return appRoles.expand((e) => e.permissions).toList();
+  }
+
+  bool hasPermission(Permission permission, {String? any_uid}) {
+    var stringPermissions = permissions.map((e) {
+      return e.key.replaceAll("{uid}", uid).replaceAll("{any_uid}", any_uid ?? "{any_uid}");
+    }).toList();
+    return stringPermissions.contains(
+      permission.key.replaceAll("{uid}", uid).replaceAll("{any_uid}", any_uid ?? "{any_uid}"),
+    );
+  }
+
+  bool can(String permission, {String? any_uid}) {
+    return hasPermission(Permission(key: permission), any_uid: any_uid);
+  }
+
+  // for list  (any one of the permission is enough)
+  bool canAny(List<String> permissions, {String? any_uid}) {
+    return permissions.any((e) => can(e));
+  }
+}
+
+
+// can
+/// Checks if the current user has the specified permission.
+///
+/// Returns `true` if the current user has the permission, otherwise `false`.
+/// If [any_uid] is provided, it checks if any user with the specified UID has the permission.
+/// 
+/// Example usage:
+/// ```dart
+/// bool hasPermission = can('edit_posts');
+/// ```
+// ignore: non_constant_identifier_names
+bool can(String permission, {String? any_uid}) {
+  return getCurrentProfile()?.can(
+    permission,
+    any_uid: any_uid,
+  ) ?? false;
+}
+
+/// Checks if the current profile has any of the specified permissions.
+///
+/// Returns `true` if the current profile has any of the specified [permissions].
+/// If [any_uid] is provided, it checks if the profile with the given [any_uid]
+/// has any of the specified [permissions].
+/// Returns `false` if the current profile is null or does not have any of the
+/// specified permissions.
+///
+/// Example usage:
+/// ```dart
+/// bool result = canAny(['profiles.{any_uid}.read', 'profiles.{any_uid}.write'], any_uid: 'user123');
+/// ```
+// ignore: non_constant_identifier_names
+bool canAny(List<String> permissions, {String? any_uid}) {
+  return getCurrentProfile()?.canAny(
+    permissions,
+    any_uid: any_uid,
+  ) ?? false;
 }

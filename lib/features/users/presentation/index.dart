@@ -597,7 +597,8 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       ),
     );
     await showDialog(
-      context: context,useRootNavigator: false,
+      context: context,
+      useRootNavigator: false,
       builder: (context) {
         if (MediaQuery.of(context).size.width > 600) {
           return Dialog(
@@ -641,7 +642,8 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
         ),
       ),
     );
-    await showDialog(useRootNavigator: false,
+    await showDialog(
+      useRootNavigator: false,
       context: context,
       builder: (context) {
         if (MediaQuery.of(context).size.width > 600) {
@@ -731,7 +733,8 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
         ],
       ),
     );
-    await showDialog(useRootNavigator: false,
+    await showDialog(
+      useRootNavigator: false,
       context: context,
       builder: (context) {
         if (MediaQuery.of(context).size.width > 600) {
@@ -858,10 +861,18 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                               flex: 2,
                               child: FittedBox(
                                 fit: BoxFit.scaleDown,
-                                child: Text(
-                                  widget.controller.description.name,
-                                  style: Theme.of(context).textTheme.headlineSmall!.copyWith(fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
+                                child: Tooltip(
+                                  // refresh
+                                  message: "Click to reload",
+                                  child: InkWell(
+                                    onTap: widget.controller.load,
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Text(
+                                      widget.controller.description.name,
+                                      style: Theme.of(context).textTheme.headlineSmall!.copyWith(fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -921,8 +932,36 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                         },
                         menuChildren: [
                           const SizedBox(height: 8),
-                          for (var item in widget.controller.description.menuItems) item,
+                          // statistics
+                          MenuItemButton(
+                            leadingIcon: const Icon(FluentIcons.chart_multiple_24_regular),
+                            onPressed: () {
+                              // SimpleModelViewChart(controller: widget.controller);
+                              showModalBottomSheet(
+                                context: context,
+                                useRootNavigator: false,
+                                builder: (context) {
+                                  return Column(
+                                    children: [
+                                      AppBar(
+                                        backgroundColor: Colors.transparent,
+                                        title: const Text('Statistics'),
+                                      ),
+                                      Divider(),
+                                      SimpleModelViewChart(
+                                        controller: widget.controller,
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            child: const Text('Statistics'),
+                          ),
                           const Divider(),
+
+                          for (var item in widget.controller.description.menuItems) item,
+                          if (widget.controller.description.menuItems.isNotEmpty) const Divider(),
                           MenuItemButton(
                             leadingIcon: const Icon(
                               FluentIcons.archive_32_regular,
@@ -1631,6 +1670,7 @@ class IndexViewFilter<T extends Model> {
   final bool fixed;
   final bool override;
   final bool strict;
+  final bool mixWithRootQuery;
   const IndexViewFilter({
     required this.name,
     this.local = _defaultLocalFilter,
@@ -1639,6 +1679,7 @@ class IndexViewFilter<T extends Model> {
     this.fixed = false,
     this.strict = true,
     this.override = false,
+    this.mixWithRootQuery = true,
   });
   static bool _defaultLocalFilter(model) {
     return true;
@@ -1656,6 +1697,7 @@ class IndexViewFilter<T extends Model> {
     bool? fixed,
     bool? strict,
     bool? override,
+    bool? mixWithRootQuery,
   }) {
     return IndexViewFilter<T>(
       name: name ?? this.name,
@@ -1665,6 +1707,7 @@ class IndexViewFilter<T extends Model> {
       active: active ?? this.active,
       fixed: fixed ?? this.fixed,
       strict: strict ?? this.strict,
+      mixWithRootQuery: mixWithRootQuery ?? this.mixWithRootQuery,
     );
   }
 
@@ -1698,6 +1741,7 @@ class ModelListProfileFilter {
 class ModelListViewValue<M extends Model> {
   final bool loading;
   final bool forceFilter;
+  final bool showDelete;
   final bool hasNext;
   final int? count;
   final List<M>? models;
@@ -1709,12 +1753,15 @@ class ModelListViewValue<M extends Model> {
   final List<ModelIndexType<M>> history;
   final Map<String, dynamic> metadata;
   final String? error;
+  final RemoteJsonFilterBuilder? rootQuery;
 
   /// [limit] (max items loaded each time)
   final int limit;
   const ModelListViewValue({
     this.count,
     this.forceFilter = false,
+    this.showDelete = false,
+    this.rootQuery,
     this.loading = false,
     this.hasNext = true,
     this.models,
@@ -1732,6 +1779,7 @@ class ModelListViewValue<M extends Model> {
     bool? loading,
     bool? hasNext,
     bool? forceFilter,
+    bool? showDelete,
     List<M>? models,
     SearchQuery? searchQuery,
     List<ModelListProfileFilter>? profilesFilters,
@@ -1740,6 +1788,7 @@ class ModelListViewValue<M extends Model> {
     List<ModelIndexType<M>>? history,
     Map<String, dynamic>? metadata,
     String? error,
+    RemoteJsonFilterBuilder? rootQuery,
     int? limit,
   }) {
     return ModelListViewValue<M>(
@@ -1751,11 +1800,13 @@ class ModelListViewValue<M extends Model> {
       searchQuery: searchQuery ?? this.searchQuery,
       profilesFilters: profilesFilters ?? this.profilesFilters,
       filters: filters ?? this.filters,
+      showDelete: showDelete ?? this.showDelete,
       selectedModels: selectedModels ?? this.selectedModels,
       history: history ?? this.history,
       metadata: metadata ?? this.metadata,
       error: error ?? this.error,
       limit: limit ?? this.limit,
+      rootQuery: rootQuery ?? this.rootQuery,
     );
   }
 }
@@ -1790,17 +1841,14 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// getQuery
   Query<Map<String, dynamic>> querybuilder(Query<Map<String, dynamic>> query) {
-    var strict = false;
     if (value?.filters.isEmpty == false) {
       for (var filter in value!.filters) {
         if (!filter.active) continue;
-        if (filter.strict) {
-          strict = true;
+        if (filter.strict) {}
+        if (filter.mixWithRootQuery && value!.filters.where((element) => element.active).length == 1) {
+          query = value!.rootQuery?.call(query) ?? query;
         }
-        var d = filter.remote.call(query);
-        if (d != null) {
-          query = d;
-        }
+        query = filter.remote.call(query);
       }
     }
     return query;
@@ -2001,10 +2049,8 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     bool _filters(M model) {
       for (var filter in value?.filters ?? <IndexViewFilter<M>>[]) {
         if (!filter.active) continue;
-        if (filter.local != null) {
-          if (filter.local!(model) == false) {
-            return false;
-          }
+        if (filter.local!(model) == false) {
+          return false;
         }
       }
       return where?.call(model) ?? true;
@@ -2368,7 +2414,8 @@ Future<IndexViewFilter<M>?> showDateRangeFilterWizard<M extends Model>(BuildCont
   TextEditingController startAtController = TextEditingController();
   TextEditingController endAtController = TextEditingController();
   return await showDialog<IndexViewFilter<M>?>(
-    context: context,useRootNavigator: false,
+    context: context,
+    useRootNavigator: false,
     builder: (context) {
       return StatefulBuilder(builder: (context, setState) {
         return AlertDialog(
@@ -2523,7 +2570,8 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
   FieldDescription? _field() => description.fields.where((e) => e.name == fieldController.text).firstOrNull;
   QueryOperations? _operator() => QueryOperations.values.where((e) => e.symbol == operatorController.text).firstOrNull;
   String? _value() => valueController.text;
-  return await showDialog<IndexViewFilter<M>?>(useRootNavigator: false,
+  return await showDialog<IndexViewFilter<M>?>(
+    useRootNavigator: false,
     context: context,
     builder: (context) {
       return StatefulBuilder(builder: (context, setState) {
@@ -2754,7 +2802,8 @@ Future<void> showModelExportDialog<M extends Model>(BuildContext context, ModelL
   var selectedFields = fields.where((e) => e.group != FieldGroup.hidden).toList();
 
   var limit = 100;
-  await showDialog(useRootNavigator: false,
+  await showDialog(
+    useRootNavigator: false,
     context: context,
     builder: (context) {
       return StatefulBuilder(builder: (context, setState) {
@@ -2849,7 +2898,8 @@ Future<void> showModelExportDialogOld<M extends Model>(BuildContext context, Mod
   }
 
   var limit = 100;
-  await showDialog(useRootNavigator: false,
+  await showDialog(
+    useRootNavigator: false,
     context: context,
     builder: (context) {
       return StatefulBuilder(builder: (context, setState) {
@@ -2953,7 +3003,8 @@ Future<void> showModelExportDialogOld<M extends Model>(BuildContext context, Mod
                   );
                   // show dailog with path
                   // ignore: use_build_context_synchronously
-                  await showDialog(useRootNavigator: false,
+                  await showDialog(
+                    useRootNavigator: false,
                     context: context,
                     builder: (context) {
                       return AlertDialog(
@@ -3091,22 +3142,24 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                               size: 18,
                             ),
                           ),
-                          Container(
-                            height: 30,
-                            padding: const EdgeInsets.symmetric(vertical: 5),
-                            child: const VerticalDivider(width: 1),
-                          ),
-                          TextButton.icon(
-                            style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
-                            onPressed: () {
-                              showDeleteModelsDailog(context, controller.value!.selectedModels.toList());
-                            },
-                            label: const Text("delete"),
-                            icon: const Icon(
-                              FluentIcons.delete_16_regular,
-                              size: 18,
+                          if (controller.value?.showDelete == true) ...[
+                            Container(
+                              height: 30,
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              child: const VerticalDivider(width: 1),
                             ),
-                          ),
+                            TextButton.icon(
+                              style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
+                              onPressed: () {
+                                showDeleteModelsDailog(context, controller.value!.selectedModels.toList());
+                              },
+                              label: const Text("delete"),
+                              icon: const Icon(
+                                FluentIcons.delete_16_regular,
+                                size: 18,
+                              ),
+                            ),
+                          ],
                           for (var action in controller.description.actions.where((e) => e.multiple != null)) ...[
                             Container(
                               height: 30,
@@ -3317,7 +3370,10 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                               onPressed: () async {
                                 controller.value = controller.value!.copyWith(filters: [
                                   ...controller.value!.filters,
-                                  IndexViewFilter(name: "Today's", remote: (q) => q.where("updatedAt", isGreaterThan: Timestamp.fromDate(DateTime.now().startOfDay)).orderBy("updatedAt", descending: true)),
+                                  IndexViewFilter(
+                                    name: "Today's",
+                                    remote: (q) => q.where("updatedAt", isGreaterThan: Timestamp.fromDate(DateTime.now().startOfDay)).orderBy("updatedAt", descending: true),
+                                  ),
                                 ]);
                                 // activate today's filter
                                 controller.useFilter(controller.value!.filters.last);

@@ -9,6 +9,7 @@ import 'package:flutter_json_view/flutter_json_view.dart';
 import 'package:lib/lib.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 
 /// [FindProfileForm] is a form to update a new user
@@ -401,6 +402,32 @@ class _ProfileSummaryState extends State<ProfileSummary> {
           ),
         ),
         const Divider(),
+        // sessions
+        const ListTile(
+          enabled: false,
+          leading: Icon(FluentIcons.clock_24_regular),
+          contentPadding: EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: VisualDensity(vertical: -3),
+          title: Text('Sessions'),
+        ),
+        for (var session in [...?profile?.sessions.entries])
+          ListTile(
+            leading: 
+              !session.value.valid ?
+              const Icon(FluentIcons.circle_off_20_regular, color: Colors.red) :
+              const Icon(Icons.done_all, color: Colors.green),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+            visualDensity: const VisualDensity(vertical: -3),
+            title: Text(session.key),
+            subtitle: Text(
+              timeago.format(session.value.createdAt),
+              style: const TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        const Divider(),
         // metadata
         const ListTile(
           enabled: false,
@@ -533,14 +560,14 @@ class _ProfileSummaryState extends State<ProfileSummary> {
           ),
         ),
         // advanced
-        const ListTile(
-          enabled: false,
-          leading: Icon(FluentIcons.settings_20_regular),
-          contentPadding: EdgeInsets.symmetric(horizontal: 24),
-          visualDensity: VisualDensity(vertical: -3),
-          title: Text('Advanced'),
-        ),
-        JsonView.map(profile?.toJson() ?? {})
+        // const ListTile(
+        //   enabled: false,
+        //   leading: Icon(FluentIcons.settings_20_regular),
+        //   contentPadding: EdgeInsets.symmetric(horizontal: 24),
+        //   visualDensity: VisualDensity(vertical: -3),
+        //   title: Text('Advanced'),
+        // ),
+        // JsonView.map(profile?.toJson() ?? {})
       ],
     );
   }
