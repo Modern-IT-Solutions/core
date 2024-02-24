@@ -1120,9 +1120,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                         : null,
                                 onSelectChanged: (val) {
                                   if (val == true) {
-                                    widget.controller.value = widget.controller.value!.copyWith(selectedModels: widget.controller.models!.toSet());
+                                    widget.controller.selectAll();
                                   } else {
-                                    widget.controller.value = widget.controller.value!.copyWith(selectedModels: const {});
+                                    widget.controller.unselectAll();
                                   }
                                 },
                                 children: [
@@ -2060,6 +2060,21 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       return models!.where(_filters).toList() ?? [];
     }
     // search in display name and email and phone number and uid
+    dynamic getValueFromPath(Map<String, dynamic> json, String path) {
+      var keys = path.split('.');
+      dynamic value = json;
+      
+      for (var key in keys) {
+        if (value is Map<String, dynamic>) {
+          value = value[key];
+        } else {
+          return null; // or throw an exception, depending on your requirements
+        }
+      }
+      
+      return value;
+    }
+
     return models!.where((model) {
       if (!_filters(model)) {
         return false;
@@ -2070,7 +2085,9 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
           return model.toString().contains(query);
         }
         var jsonData = model.toJson();
-        return jsonData[value!.searchQuery!.field] != null && jsonData[value!.searchQuery!.field].toString().toLowerCase().contains(query.toLowerCase());
+        var _value = getValueFromPath(jsonData, value!.searchQuery!.field);
+        // return jsonData[value!.searchQuery!.field] != null && jsonData[value!.searchQuery!.field].toString().toLowerCase().contains(query.toLowerCase());
+        return _value != null && _value.toString().toLowerCase().contains(query.toLowerCase());
       } else {
         return true;
       }
@@ -2190,7 +2207,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   /// selectAll
   void selectAll() {
     value = value?.copyWith(
-      selectedModels: value!.models!.toSet(),
+      selectedModels: filtered!.toSet(),
     );
   }
 

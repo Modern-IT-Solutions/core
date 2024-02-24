@@ -539,6 +539,7 @@ Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool
                 onModelTap: (model) async {
                   if (onModelTap?.call(model) ?? true) {
                     await showDetailsProfileModelDailog(context, model);
+                    controller.load();
                   }
                 },
                 flexTableItemBuilders: [
