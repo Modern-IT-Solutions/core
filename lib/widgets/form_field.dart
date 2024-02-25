@@ -169,6 +169,9 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
   @override
   void initState() {
     _controller = widget.controller ?? TextEditingController();
+    if (widget.initialValue != null) {
+      _controller.text = widget.initialValue!;
+    }
     // on validation failed set error text
     if (widget.validator != null) {
       _controller.addListener(() {
@@ -202,7 +205,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       constraints: widget.useButtonHeight ? constraints : null,
       child: TextFormField(
         keyboardType: widget.keyboardType,
-        initialValue: widget.initialValue,
+        // initialValue: widget.initialValue,
         onTap: () async {
           widget.onTap?.call(_controller.text);
           if (widget.mode == AppTextFormFieldMode.date) {
@@ -267,7 +270,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
         inputFormatters: widget.inputFormatters,
         enabled: widget.enabled,
         autovalidateMode: AutovalidateMode.onUserInteraction,
-        controller: widget.controller,
+        controller: _controller,
         cursorHeight: 30,
         maxLines: widget.mode == AppTextFormFieldMode.longText ? null : 1,
         scrollPadding: const EdgeInsets.all(0),

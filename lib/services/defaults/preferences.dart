@@ -109,10 +109,10 @@ enum FormatDateShape {
 // extension
 extension FormatDate on DateTime {
   String formatFull() {
-    return "$day.$month.$year $hour:$minute";
+    return "$day/$month/$year $hour:$minute";
   }
   String formatOnlyDate() {
-    return "$day.$month.$year";
+    return "$day/$month/$year";
   }
   String formatTimeAgo() {
     return timeago.format(this);
