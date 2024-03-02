@@ -204,7 +204,15 @@ enum QueryOperations {
 
   bool local<T extends Model>({required T model, required String field, required dynamic value}) {
     try {
-      dynamic fieldValue = model.toJson()[field];
+      // when field is path (e.g. "profile.uid") use while to go step by step
+      dynamic fieldValue = field.split('.').fold(model.toJson(), (dynamic previousValue, element) {
+        if (previousValue is Map) {
+          return previousValue[element];
+        } else {
+          return null;
+        }
+      });
+
       if (fieldValue == null) return false;
       if (fieldValue is Timestamp) fieldValue = fieldValue.toDate();
       if (fieldValue is DateTime) fieldValue = fieldValue.millisecondsSinceEpoch;

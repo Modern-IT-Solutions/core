@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first, no_leading_underscores_for_local_identifiers
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
@@ -541,7 +542,15 @@ class DatabaseService extends Service {
       // if its cached in less than 5min then return it
       var now = DateTime.now();
       var diff = now.difference(cachedCollection.updatedAtOrCachedAt);
-      if (diff < minmumUpdateDuration) {
+      bool forceCache =false;
+      // chance 9/10 to force cache
+      if (behavior == FetchBehavior.cacheFirst) {
+        forceCache = Random().nextInt(10) > 0;
+      }
+      if (path.contains("units") && getPrefs().getOption<bool>("forceCacheUnits",defaults: false) == true) {
+        forceCache = Random().nextInt(20) > 0;
+      }
+      if (diff < minmumUpdateDuration || forceCache) {
         return cachedCollection.filter(withTrashed: withTrashed);
       }
     }

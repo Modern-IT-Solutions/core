@@ -9,7 +9,6 @@ import 'package:muskey/muskey.dart';
 import 'package:recase/recase.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-
 /// [CreateProfileForm] is a form to create a new user
 class CreateProfileForm extends StatefulWidget {
   final VoidCallback? onCancel;
@@ -440,7 +439,7 @@ class _CreateProfileFormState extends State<CreateProfileForm> {
 }
 
 /// showProfilesPickerDialog
-Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool allowLess = false,bool Function(ProfileModel)? onModelTap, List<IndexViewFilter<ProfileModel>> filters = const [], int? length}) async {
+Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool allowLess = false, bool Function(ProfileModel)? onModelTap, List<IndexViewFilter<ProfileModel>> filters = const [], int? length}) async {
   late var controller = ModelListViewController<ProfileModel>(
     value: ModelListViewValue(
       filters: [
@@ -492,7 +491,8 @@ Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool
     ),
   );
   // ignore: use_build_context_synchronously
-  return await showDialog(useRootNavigator: false,
+  return await showDialog(
+    useRootNavigator: false,
     context: context,
     builder: (context) {
       return Dialog(
@@ -507,11 +507,11 @@ Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool
                   ValueListenableBuilder(
                       valueListenable: controller,
                       builder: (context, _, __) {
-                        bool enable =allowLess || controller.value?.selectedModels.isNotEmpty == true;
+                        bool enable = allowLess || controller.value?.selectedModels.isNotEmpty == true;
                         if (length != null) {
                           if (controller.value!.selectedModels.length > length) {
                             var temp = controller.value!.selectedModels.toList();
-                            enable= false;
+                            enable = false;
                             WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                               controller.value = controller.value!.copyWith(selectedModels: temp.sublist(temp.length - length).toSet());
                             });
@@ -519,9 +519,9 @@ Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool
                           enable = enable && controller.value!.selectedModels.length == length;
                         }
                         return TextButton.icon(
-                          onPressed:  () async {
-                                  Navigator.pop(context, controller.value?.selectedModels.toList());
-                                },
+                          onPressed: () async {
+                            Navigator.pop(context, controller.value?.selectedModels.toList());
+                          },
                           icon: const Icon(FluentIcons.check_24_regular),
                           label: const Text('Select'),
                         );
@@ -597,6 +597,7 @@ Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool
     },
   );
 }
+
 
 /// [SelectTechniciansDialog] is a dialog that have search bar and list of technicians [CheckboxListTile]
 class SelectTechniciansDialog extends StatefulWidget {

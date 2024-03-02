@@ -939,7 +939,8 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                               // SimpleModelViewChart(controller: widget.controller);
                               showModalBottomSheet(
                                 context: context,
-                                useRootNavigator: false,
+                                useRootNavigator: false,showDragHandle: true,
+                                isScrollControlled: true,
                                 builder: (context) {
                                   return Column(
                                     children: [
@@ -1814,9 +1815,10 @@ class ModelListViewValue<M extends Model> {
 /// [ModelListViewController] just like other controllers in flutter
 class ModelListViewController<M extends Model> extends ValueNotifier<ModelListViewValue<M>?> {
   final ModelDescription<M> description;
+  final FetchBehavior behavior;
   // where
   final bool Function(M model)? where;
-  ModelListViewController({ModelListViewValue<M>? value, required this.description, this.where})
+  ModelListViewController({ModelListViewValue<M>? value, required this.description, this.where, this.behavior = FetchBehavior.serverFirst})
       : super(value?.copyWith(
           searchQuery: value.searchQuery ??
               SearchQuery(
@@ -1863,9 +1865,10 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
     try {
       models = await getModelCollection(
+          behavior: behavior,
         path: description.path,
         fromJson: description.fromJson,
-        behavior: FetchBehavior.serverOnly,
+        // behavior: FetchBehavior.serverOnly,
         builder: (q) {
           return q.where(value!.searchQuery!.field, isGreaterThanOrEqualTo: value!.searchQuery!.value!).where(value!.searchQuery!.field, isLessThanOrEqualTo: "${value!.searchQuery!.value!}\uf8ff").orderBy(value!.searchQuery!.field);
         },
@@ -1942,6 +1945,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       value = value!.copyWith(
         models: concat ? value!.models : null,
         count: (await getCount(
+          behavior: behavior,
           path: description.path,
           builder: querybuilder,
         ))
@@ -1950,9 +1954,10 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       );
       notifyListeners();
       var _models = await getModelCollection(
+          behavior: behavior,
         path: description.path,
         fromJson: description.fromJson,
-        behavior: true ? FetchBehavior.serverOnly : FetchBehavior.serverFirst,
+        // behavior: true ? FetchBehavior.serverOnly : FetchBehavior.serverFirst,
         startAfter: startAfter == null
             ? null
             : [
@@ -2042,11 +2047,11 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// [filtered] is a function to get the filtered models
   List<M>? get filtered {
-    print(where);
     if (models == null) {
       return null;
     }
     bool _filters(M model) {
+      // return true;
       for (var filter in value?.filters ?? <IndexViewFilter<M>>[]) {
         if (!filter.active) continue;
         if (filter.local!(model) == false) {
