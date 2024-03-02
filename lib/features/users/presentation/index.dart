@@ -899,9 +899,22 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                         ),
                       ),
                       if (widget.onAddPressed != null)
+                      MediaQuery.of(context).size.width < 600
+                          ? IconButton.filledTonal(
+
+                              onPressed: () {
+                                widget.onAddPressed!();
+                              },
+                              icon: const Icon(FeatherIcons.plus),
+                            )
+                          : 
                         SizedBox(
                           child: FilledButton.icon(
-                            onPressed: widget.onAddPressed,
+                            onPressed: (){
+                              widget.onAddPressed!();
+                              // HapticFeedback.heavyImpact();
+                            }
+                            ,
                             label: const Text('Add'),
                             icon: const Icon(FeatherIcons.plus),
                           ),
@@ -3208,10 +3221,10 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                   // show search field
                   if (searchEnabled)
                     Container(
-                      width: 300,
+                      width: 300,  
                       height: 40,
                       // max with is view port -50
-                      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 50),
+                      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 100),
                       child: Center(
                         child: AppTextFormField(
                           useButtonHeight: true,

@@ -16,19 +16,19 @@ class DataFlagWidget extends StatelessWidget {
   /// [DataFlagWidget.flag] is the flag to show
   final DataFalg flag;
   final String? custom;
-  final Color color;
+  final Color? color;
 
   const DataFlagWidget({
     super.key,
     this.flag = DataFalg.custom,
-    this.color = Colors.grey,
+    this.color,
     this.custom,
   });
 
   const DataFlagWidget.empty({
     super.key,
     this.flag = DataFalg.empty,
-    this.color = Colors.grey,
+    this.color,
   }) : custom = null;
 
   const DataFlagWidget.error({
@@ -46,12 +46,16 @@ class DataFlagWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 5),
           decoration: BoxDecoration(
              borderRadius: BorderRadius.circular(4),
-            color: color,
+            color: color == null
+                ? Theme.of(context).colorScheme.secondary
+                : color,
           ),
           child: Text(
             (custom?.nullIfEmpty == null ? flag.name : custom!).toUpperCase(),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: color.computeLuminance() > 0.5
+                  color:
+                  color == null?Theme.of(context).colorScheme.onSecondary:
+                   color!.computeLuminance() > 0.5
                       ? Colors.black
                       : Colors.white,
                 ),
