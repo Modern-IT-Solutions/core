@@ -899,26 +899,23 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                         ),
                       ),
                       if (widget.onAddPressed != null)
-                      MediaQuery.of(context).size.width < 600
-                          ? IconButton.filledTonal(
-
-                              onPressed: () {
-                                widget.onAddPressed!();
-                              },
-                              icon: const Icon(FeatherIcons.plus),
-                            )
-                          : 
-                        SizedBox(
-                          child: FilledButton.icon(
-                            onPressed: (){
-                              widget.onAddPressed!();
-                              // HapticFeedback.heavyImpact();
-                            }
-                            ,
-                            label: const Text('Add'),
-                            icon: const Icon(FeatherIcons.plus),
-                          ),
-                        ),
+                        MediaQuery.of(context).size.width < 600
+                            ? IconButton.filledTonal(
+                                onPressed: () {
+                                  widget.onAddPressed!();
+                                },
+                                icon: const Icon(FeatherIcons.plus),
+                              )
+                            : SizedBox(
+                                child: FilledButton.icon(
+                                  onPressed: () {
+                                    widget.onAddPressed!();
+                                    // HapticFeedback.heavyImpact();
+                                  },
+                                  label: const Text('Add'),
+                                  icon: const Icon(FeatherIcons.plus),
+                                ),
+                              ),
                       // export/import
                       const SizedBox(
                         width: 10,
@@ -952,7 +949,8 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                               // SimpleModelViewChart(controller: widget.controller);
                               showModalBottomSheet(
                                 context: context,
-                                useRootNavigator: false,showDragHandle: true,
+                                useRootNavigator: false,
+                                showDragHandle: true,
                                 isScrollControlled: true,
                                 builder: (context) {
                                   return Column(
@@ -1878,7 +1876,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
     try {
       models = await getModelCollection(
-          behavior: behavior,
+        behavior: behavior,
         path: description.path,
         fromJson: description.fromJson,
         // behavior: FetchBehavior.serverOnly,
@@ -1967,7 +1965,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       );
       notifyListeners();
       var _models = await getModelCollection(
-          behavior: behavior,
+        behavior: behavior,
         path: description.path,
         fromJson: description.fromJson,
         // behavior: true ? FetchBehavior.serverOnly : FetchBehavior.serverFirst,
@@ -2081,7 +2079,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     dynamic getValueFromPath(Map<String, dynamic> json, String path) {
       var keys = path.split('.');
       dynamic value = json;
-      
+
       for (var key in keys) {
         if (value is Map<String, dynamic>) {
           value = value[key];
@@ -2089,7 +2087,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
           return null; // or throw an exception, depending on your requirements
         }
       }
-      
+
       return value;
     }
 
@@ -3221,7 +3219,7 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                   // show search field
                   if (searchEnabled)
                     Container(
-                      width: 300,  
+                      width: 300,
                       height: 40,
                       // max with is view port -50
                       constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 100),

@@ -41,7 +41,7 @@ class ThemeService extends Service {
   ThemeService({
     super.id = 'DEFAULT',
     ThemeMode themeMode = ThemeMode.system,
-    this.colorSeed = Colors.green,
+    this.colorSeed = Colors.orange,
     ThemeData? defaultTheme,
     ThemeData? defaultDarkTheme,
     bool blurEnabled = true,
