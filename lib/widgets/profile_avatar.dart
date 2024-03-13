@@ -52,7 +52,7 @@ class ProfileAvatar extends StatelessWidget {
           child: CircleAvatar(
             backgroundColor: color,
             radius: radius,
-            // backgroundImage: profile?.photoUrl.nullIfEmpty == null ? null : CachedNetworkImageProvider(profile!.photoUrl),
+            backgroundImage: profile?.photoUrl.nullIfEmpty == null ? null : CachedNetworkImageProvider(profile!.photoUrl),
             child:  
               profile?.photoUrl.nullIfEmpty != null ? null : 
                 Text((profile?.displayName.nullIfEmpty ?? "?")[0].toUpperCase(),

@@ -86,6 +86,9 @@ class AppTextFormField extends StatefulWidget {
   /// keyboardType
   final TextInputType? keyboardType;
 
+  /// [uploadPath]
+  final String? uploadPath;
+
   const AppTextFormField({
     super.key,
     this.useButtonHeight = false,
@@ -106,10 +109,12 @@ class AppTextFormField extends StatefulWidget {
     this.fileUploadTriger,
     this.keyboardType,
     this.onValueChanged,
+    this.uploadPath,
   });
 
   /// min constracter
   const AppTextFormField.min({
+    this.uploadPath,
     super.key,
     this.useButtonHeight = false,
     this.initialValue,
@@ -133,6 +138,7 @@ class AppTextFormField extends StatefulWidget {
 
   /// min constracter
   const AppTextFormField.upload({
+    this.uploadPath,
     super.key,
     this.useButtonHeight = false,
     this.onChanged,
@@ -339,8 +345,24 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
 
   uploadFile(PlatformFile file) async {
     var uid = getCurrentProfile()!.uid;
-    final ref = FirebaseStorage.instance.ref().child('uploads').child(uid).child('${DateTime.now().millisecondsSinceEpoch}');
+    var ref = FirebaseStorage.instance.ref().child('uploads');
+    if (widget.uploadPath != null) {
+      ref = ref.child(widget.uploadPath!);
+
+    }else{
+      ref = ref.child("profiles").child(uid);
+    }
+           ref = ref.child('${DateTime.now().millisecondsSinceEpoch}.${file.extension}');
+
     late UploadTask uploadTask;
+
+    SettableMetadata metadata = SettableMetadata(
+      cacheControl: 'public, max-age=63072000',
+      customMetadata: <String, String>{
+        'uploadedBy': uid,
+        
+      },
+    );
     if (kIsWeb) {
       uploadTask = ref.putData(file.bytes!);
     } else {

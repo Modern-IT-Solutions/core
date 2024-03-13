@@ -123,7 +123,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
   bool get hasPrev => prevStartAt != null && prevStartAt != currentStartAt;
   @override
-  Future<void> load() async {
+  Future<void> load () async {
     return search();
   }
 
@@ -847,7 +847,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
         builder: (context, value, _) {
           var child = RefreshIndicator.adaptive(
             triggerMode: RefreshIndicatorTriggerMode.anywhere,
-            onRefresh: widget.controller.load,
+            onRefresh: widget.controller.refresh,
             child: CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(
@@ -865,7 +865,9 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                   // refresh
                                   message: "Click to reload",
                                   child: InkWell(
-                                    onTap: widget.controller.load,
+                                    onTap: (){
+                                      widget.controller.refresh();
+                                    },
                                     borderRadius: BorderRadius.circular(8),
                                     child: Text(
                                       widget.controller.description.name,
@@ -1827,9 +1829,15 @@ class ModelListViewValue<M extends Model> {
 class ModelListViewController<M extends Model> extends ValueNotifier<ModelListViewValue<M>?> {
   final ModelDescription<M> description;
   final FetchBehavior behavior;
+  final Duration expireAfter;
+  final String? cacheId;
   // where
   final bool Function(M model)? where;
-  ModelListViewController({ModelListViewValue<M>? value, required this.description, this.where, this.behavior = FetchBehavior.serverFirst})
+  ModelListViewController({
+    ModelListViewValue<M>? value, required this.description, this.where, this.behavior = FetchBehavior.cacheFirst,
+    this.expireAfter = const Duration(minutes: 5),
+    this.cacheId,
+    })
       : super(value?.copyWith(
           searchQuery: value.searchQuery ??
               SearchQuery(
@@ -1877,6 +1885,8 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     try {
       models = await getModelCollection(
         behavior: behavior,
+        expiresAfter: expireAfter,
+        cacheId: cacheId,
         path: description.path,
         fromJson: description.fromJson,
         // behavior: FetchBehavior.serverOnly,
@@ -1922,7 +1932,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   }
 
   /// [search] is a function to search for models
-  Future<void> search({Iterable<Object?>? startAfter, bool concat = false, int? limit}) async {
+  Future<void> search({Iterable<Object?>? startAfter, bool concat = false, int? limit, bool noCache = false}) async {
     needIndexError = null;
     value = (value ?? ModelListViewValue<M>()).copyWith(
       loading: true,
@@ -1956,7 +1966,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       value = value!.copyWith(
         models: concat ? value!.models : null,
         count: (await getCount(
-          behavior: behavior,
+          behavior:noCache? FetchBehavior.serverFirst: behavior,
           path: description.path,
           builder: querybuilder,
         ))
@@ -1965,7 +1975,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       );
       notifyListeners();
       var _models = await getModelCollection(
-        behavior: behavior,
+        behavior:noCache? FetchBehavior.serverFirst:  behavior,
         path: description.path,
         fromJson: description.fromJson,
         // behavior: true ? FetchBehavior.serverOnly : FetchBehavior.serverFirst,
@@ -2036,6 +2046,11 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   /// [load] is a function to load models
   Future<void> load() async {
     return search();
+  }
+
+  /// [refresh] is a function to refresh models
+  Future<void> refresh() async {
+    return search(noCache: true);
   }
 
   /// [more] is a function to load more models

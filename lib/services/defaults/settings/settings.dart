@@ -26,7 +26,7 @@ class SettingsServiceConfigs<L extends SettingsLoaderModel> extends ServiceConfi
   const SettingsServiceConfigs({
     this.path = 'settings/DEFAULT',
     // this.loader,
-    this.expireAfter = const Duration(minutes: 1),
+    this.expireAfter = const Duration(minutes: 5),
   });
 }
 

@@ -43,18 +43,31 @@ Future<CachedCollection?> getCollection({
   String? cacheId,
   required String path,
   bool withExpired = false,
-  FetchBehavior behavior = FetchBehavior.serverFirst,
+  FetchBehavior behavior = FetchBehavior.cacheFirst,
   int limit = 100,
   bool useRef = true,
   Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>>)? builder,
   required Duration minmumUpdateDuration,
   OrderBy? orderBy,
   Iterable<Object?>? startAfter,
+  Duration expiresAfter = const Duration(minutes: 5),
 }) async {
-  if (getPrefs().getOption<bool>("useCache", defaults: true) == false) {
+  bool useCache = getPrefs().getOption<bool>("useCache") ?? false;
+  int? cacheNumber = getPrefs().getOption<int>("cacheNumber");
+  int? cacheDurationInSeconds = getPrefs().getOption<int>("cacheDurationInSeconds");
+  bool forceCacheDuration = getPrefs().getOption<bool>("forceCacheDurationInSeconds", defaults: false) ?? false;
+
+  if (useCache == false) {
     behavior = FetchBehavior.serverOnly;
-    minmumUpdateDuration = Duration(seconds: 10);
+    minmumUpdateDuration = const Duration(seconds: 10);
   }
+  if (forceCacheDuration && cacheDurationInSeconds != null) {
+    expiresAfter = Duration(seconds: cacheDurationInSeconds);
+  }
+  if (cacheNumber != null) {
+    cacheId = (cacheId ?? "" ) + cacheNumber.toString();
+  }
+
   return await Services.instance.get<DatabaseService>()!.getCollection(
         cacheId: cacheId,
         path: path,
@@ -66,6 +79,7 @@ Future<CachedCollection?> getCollection({
         minmumUpdateDuration: minmumUpdateDuration,
         orderBy: orderBy,
         startAfter: startAfter,
+        expiresAfter: expiresAfter,
       );
 }
 
@@ -145,7 +159,7 @@ Future<List<T>> getModelCollection<T>({
   String? cacheId,
   required String path,
   bool withExpired = false,
-  FetchBehavior behavior = FetchBehavior.serverFirst,
+  FetchBehavior behavior = FetchBehavior.cacheFirst,
   int limit = 100,
   bool useRef = false,
   Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>>)? builder,
@@ -154,6 +168,7 @@ Future<List<T>> getModelCollection<T>({
   OrderBy? orderBy,
   // startAfterDocument,
   Iterable<Object?>? startAfter,
+  Duration  expiresAfter = const Duration(minutes: 5),
 }) async {
   var collection = await getCollection(
     cacheId: cacheId,
@@ -166,6 +181,7 @@ Future<List<T>> getModelCollection<T>({
     minmumUpdateDuration: minmumUpdateDuration,
     orderBy: orderBy,
     startAfter: startAfter,
+    expiresAfter: expiresAfter,
   );
   if (collection == null) {
     return [];

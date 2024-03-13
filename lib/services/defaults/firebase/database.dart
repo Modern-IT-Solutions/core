@@ -255,6 +255,7 @@ class DatabaseService extends Service {
     bool withExpired = false,
     FetchBehavior behavior = FetchBehavior.serverFirst,
     Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> collection)? builder,
+
     /// time between each update, within this time will return the cached collection instead of going to server if behavior is serverFirst
     Duration minmumUpdateDuration = const Duration(minutes: 5),
   }) async {
@@ -267,6 +268,7 @@ class DatabaseService extends Service {
       behavior: behavior,
       limit: 1,
       useRef: false,
+      expiresAfter: Duration(minutes: 5),
       builder: (collection) {
         if (builder != null) {
           collection = builder(collection);
@@ -492,6 +494,9 @@ class DatabaseService extends Service {
     /// time between each update, within this time will return the cached collection instead of going to server if behavior is serverFirst
     Duration minmumUpdateDuration = const Duration(seconds: 5),
 
+    /// expire the cache after this duration
+    Duration expiresAfter = const Duration(minutes: 5),
+
     // startAfterRef
     Iterable<Object?>? startAfter,
   }) async {
@@ -530,28 +535,30 @@ class DatabaseService extends Service {
 
     //
     // custom claims fo current user
-    var cc = await FirebaseAuth.instance.currentUser?.getIdTokenResult();
-    var claims = cc?.claims;
-    print(claims);
+    // var cc = await FirebaseAuth.instance.currentUser?.getIdTokenResult();
+    // var claims = cc?.claims;
+    // print(claims);
 
-    
+    // function cacheHandler
     var queryId = smallCacheId((cacheId ?? "") + path, query.parameters);
-    // load cached version
-    final cachedCollection = getCachedCollection(path: path, query: queryId, withExpired: withExpired);
-    if (cachedCollection != null) {
-      // if its cached in less than 5min then return it
-      var now = DateTime.now();
-      var diff = now.difference(cachedCollection.updatedAtOrCachedAt);
-      bool forceCache =false;
-      // chance 9/10 to force cache
-      if (behavior == FetchBehavior.cacheFirst) {
-        forceCache = Random().nextInt(10) > 0;
+    CachedCollection? cacheHandler() {
+      // load cached version
+      final cachedCollection = getCachedCollection(path: path, query: queryId, withExpired: withExpired);
+      if (cachedCollection != null) {
+        // if expired return null
+        if (cachedCollection.expiresAt != null && (cachedCollection.expiresAt!.isAfter(DateTime.now()) || getPrefs().getOption<bool>("forceCache", defaults: false) == true)) {
+          return cachedCollection.filter(withTrashed: withTrashed);
+        }
       }
-      if (path.contains("units") && getPrefs().getOption<bool>("forceCacheUnits",defaults: false) == true) {
-        forceCache = Random().nextInt(20) > 0;
-      }
-      if (diff < minmumUpdateDuration || forceCache) {
-        return cachedCollection.filter(withTrashed: withTrashed);
+    }
+
+    if ([
+      FetchBehavior.cacheFirst,
+      FetchBehavior.cacheOnly
+    ].contains(behavior)) {
+      var cachedCollection = cacheHandler();
+      if (cachedCollection != null) {
+        return cachedCollection;
       }
     }
 
@@ -561,28 +568,38 @@ class DatabaseService extends Service {
     //   return data;
     // }
 
-    final collection = await query.get();
-    if (collection.docs.isNotEmpty) {
-      final cachedCollection = CachedCollection(
-        ref: path,
-        query: queryId,
-        documents: collection.docs
-            .map(
-              (e) => CachedDocument(
-                ref: e.reference.path,
-                data: e.data(),
-                cachedAt: DateTime.now(),
-              ),
-            )
-            .toList(),
-        cachedAt: DateTime.now(),
-      );
-      _cachedCollections.removeWhere((e) => e.ref == path);
-      _cachedCollections.add(cachedCollection);
-      await _saveCache();
-      var data = cachedCollection.filter(withTrashed: withTrashed);
-      return data;
+    try {
+      final collection = await query.get();
+      if (collection.docs.isNotEmpty) {
+        final cachedCollection = CachedCollection(
+          ref: path,
+          query: queryId,
+          documents: collection.docs
+              .map(
+                (e) => CachedDocument(
+                  ref: e.reference.path,
+                  data: e.data(),
+                  cachedAt: DateTime.now(),
+                ),
+              )
+              .toList(),
+          cachedAt: DateTime.now(),
+          expiresAt: DateTime.now().add(expiresAfter),
+        );
+        _cachedCollections.removeWhere((e) => e.ref == path && e.query == queryId);
+        _cachedCollections.add(cachedCollection);
+        await _saveCache();
+        var data = cachedCollection.filter(withTrashed: withTrashed);
+        return data;
+      }
+    } catch (e) {
+      var cachedCollection = cacheHandler();
+      if (cachedCollection != null) {
+        return cachedCollection;
+      }
+      rethrow;
     }
+
     return null;
   }
 

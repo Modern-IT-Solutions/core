@@ -14,6 +14,16 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 /// [ThemeService] responsible for database of the app content and users
 class ThemeService extends Service {
+  Key _themeKey = UniqueKey();
+
+  Key get themeKey => _themeKey;
+
+  @override
+  void notifyListeners() {
+    _themeKey = UniqueKey();
+    super.notifyListeners();
+  }
+
   /// [backgroundImage]
   ImageProvider? _backgroundImage;
   set backgroundImage(ImageProvider? value) {
