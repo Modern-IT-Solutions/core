@@ -87,6 +87,17 @@ class PreferencesService extends Service {
   //   };
   // }
 
+  Future<void> setOptions(Map<String, dynamic> options) async {
+    await updateDocument(
+      path: "preferences/options", data: options);
+  }
+
+  Future<void> setEvents(Map<String, dynamic> events) async {
+    await setDocument(
+      path: "preferences/events", data: events,
+    );
+  }
+
 
   FormatDateShape formatDateShape = FormatDateShape.full;
 

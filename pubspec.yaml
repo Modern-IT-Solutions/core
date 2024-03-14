@@ -87,6 +87,7 @@ dependency_overrides:
   flutter_svg: ^2.0.6
   latlong2: ^0.9.0
   flutter_map: ^5.0.0
+  cross_file: ^0.3.4+1
 
 dev_dependencies:
   flutter_test:
