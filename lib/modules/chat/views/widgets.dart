@@ -32,6 +32,12 @@ import 'package:zplayer/zplayer.dart';
 
 import 'audio_player.dart';
 
+// [EmbeddedChatRoomController]
+// TODO: implement the controller
+class EmbeddedChatRoomController extends ChangeNotifier {
+  EmbeddedChatRoomController();
+}
+
 // [EmbeddedChatRoomWidget]
 class EmbeddedChatRoomWidget extends StatefulWidget {
   const EmbeddedChatRoomWidget({
@@ -173,7 +179,8 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
 
   Future<PlatformFile?> showImagePickerDialog(BuildContext context, {bool compress = true}) async {
     return await showDialog<PlatformFile>(
-      context: context,useRootNavigator: false,
+      context: context,
+      useRootNavigator: false,
       builder: (context) {
         return AlertDialog(
           title: const Text("Pick an image"),
@@ -527,7 +534,8 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
                           String? audioPath;
                           if (Platforms.isWeb) {
                             audioPath = await showDialog(
-                              context: context,useRootNavigator: false,
+                              context: context,
+                              useRootNavigator: false,
                               builder: (context) {
                                 return Dialog(
                                   child: Recorder(
@@ -549,7 +557,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
                                   PlatformFile(
                                     name: 'audio.wav',
                                     size: file.bytes.length,
-                                    bytes: file.bytes,  
+                                    bytes: file.bytes,
                                   ), (progress) {
                                 setState(() {
                                   loading = true;
@@ -1039,7 +1047,8 @@ Future<String?> showRecordDialog(BuildContext context) async {
   String defaultPath = "${(await getTemporaryDirectory()).path}/audio.m4a";
   String? path;
   return await showDialog<String>(
-    context: context,useRootNavigator: false,
+    context: context,
+    useRootNavigator: false,
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setState) {
