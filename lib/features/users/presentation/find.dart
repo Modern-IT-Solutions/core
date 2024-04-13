@@ -11,7 +11,6 @@ import 'package:photo_view/photo_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-
 /// [FindProfileForm] is a form to update a new user
 class FindProfileForm extends StatefulWidget {
   final String id;
@@ -54,7 +53,7 @@ class _FindProfileFormState extends State<FindProfileForm> {
         _error = null;
         _loading = true;
       });
-      var request = FindRequest<ProfileModel> (
+      var request = FindRequest<ProfileModel>(
         id: widget.id,
       );
       try {
@@ -135,92 +134,88 @@ class _FindProfileFormState extends State<FindProfileForm> {
                   snap: true,
                   stretch: true,
                   stretchTriggerOffset: 100,
-                  flexibleSpace:  FlexibleSpaceBar(
-                          background: Stack(
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            image: station?.photoUrl == null
+                                ? null
+                                : DecorationImage(
+                                    image: CachedNetworkImageProvider(
+                                      station!.photoUrl!,
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Theme.of(context).scaffoldBackgroundColor.withOpacity(0.8),
+                                Colors.transparent,
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Container(
                                 decoration: BoxDecoration(
-                                  image: station?.photoUrl == null
-                                      ? null
-                                      : DecorationImage(
-                                          image: CachedNetworkImageProvider(
-                                            station!.photoUrl!,
-                                          ),
-                                          fit: BoxFit.cover,
-                                        ),
-                                ),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Theme.of(context)
-                                          .scaffoldBackgroundColor
-                                          .withOpacity(0.8),
-                                      Colors.transparent,
-                                    ],
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 3,
                                   ),
-                                ),
-                              ),
-                              Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: 3,
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.5),
-                                            blurRadius: 5,
-                                            offset: const Offset(0, 4),
-                                          ),
-                                        ],
-                                      ),
-                                      child: CircleAvatar(
-                                        radius: 30,
-                                        backgroundImage: station?.photoUrl ==
-                                                null
-                                            ? null
-                                            : CachedNetworkImageProvider(
-                                                station!.photoUrl.toString(),
-                                              ),
-                                      ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.5),
+                                      blurRadius: 5,
+                                      offset: const Offset(0, 4),
                                     ),
-                                    const SizedBox(height: 12),
-                                    station?.displayName == null
-                                        ? const TextPlaceholder()
-                                        : Text(
-                                            station!.displayName,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                    const SizedBox(height: 12),
                                   ],
                                 ),
+                                child: CircleAvatar(
+                                  radius: 30,
+                                  backgroundImage: station?.photoUrl == null
+                                      ? null
+                                      : CachedNetworkImageProvider(
+                                          station!.photoUrl.toString(),
+                                        ),
+                                ),
                               ),
+                              const SizedBox(height: 12),
+                              station?.displayName == null
+                                  ? const TextPlaceholder()
+                                  : Text(
+                                      station!.displayName,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                              const SizedBox(height: 12),
                             ],
                           ),
                         ),
+                      ],
+                    ),
+                  ),
                   title: const Text('Find Profile'),
                   leading: const BackButton(),
                   actions: [
                     ...widget.actions,
                   ],
                 ),
-                 SliverFillRemaining(
+                SliverFillRemaining(
                   hasScrollBody: false,
                   child: ProfileSummary(model: station),
                 ),
@@ -232,8 +227,6 @@ class _FindProfileFormState extends State<FindProfileForm> {
     );
   }
 }
-
-
 
 /// [ProfileSummary]
 class ProfileSummary extends StatefulWidget {
@@ -279,12 +272,7 @@ class _ProfileSummaryState extends State<ProfileSummary> {
                   MaterialPageRoute(
                     fullscreenDialog: true,
                     builder: (context) {
-                      return ImageViewer(image: 
-                      CachedNetworkImageProvider(
-                      profile!.photoUrl.replaceAll("=s96-c", "=w1600")
-                      )
-                      
-                      );
+                      return ImageViewer(image: CachedNetworkImageProvider(profile!.photoUrl.replaceAll("=s96-c", "=w1600")));
                     },
                   ),
                 );
@@ -386,7 +374,17 @@ class _ProfileSummaryState extends State<ProfileSummary> {
           leading: const Icon(FluentIcons.money_24_regular),
           contentPadding: const EdgeInsets.symmetric(horizontal: 24),
           visualDensity: const VisualDensity(vertical: -3),
-          title: profile == null ? const TextPlaceholder() : Text("${profile?.customClaims["wallet"]?["balance"] ?? 0} DZD"),
+          title: profile == null
+              ? const TextPlaceholder()
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("${profile?.customClaims["wallet"]?["balance"] ?? 0} DZD"),
+                    Text("<- ${profile?.customClaims["wallet"]?["icoming"] ?? 0} DZD"),
+                    Text("-> ${profile?.customClaims["wallet"]?["outcoming"] ?? 0} DZD"),
+                  ],
+                ),
           subtitle: const Text(
             'Balance',
             style: TextStyle(
@@ -410,12 +408,11 @@ class _ProfileSummaryState extends State<ProfileSummary> {
           visualDensity: VisualDensity(vertical: -3),
           title: Text('Sessions'),
         ),
-        for (var session in [...?profile?.sessions.entries])
+        for (var session in [
+          ...?profile?.sessions.entries
+        ])
           ListTile(
-            leading: 
-              !session.value.valid ?
-              const Icon(FluentIcons.circle_off_20_regular, color: Colors.red) :
-              const Icon(Icons.done_all, color: Colors.green),
+            leading: !session.value.valid ? const Icon(FluentIcons.circle_off_20_regular, color: Colors.red) : const Icon(Icons.done_all, color: Colors.green),
             contentPadding: const EdgeInsets.symmetric(horizontal: 24),
             visualDensity: const VisualDensity(vertical: -3),
             title: Text(session.key),
@@ -573,8 +570,6 @@ class _ProfileSummaryState extends State<ProfileSummary> {
   }
 }
 
-
-
 // try copy
 Future<void> tryCopy(BuildContext context, String? text) async {
   if (text != null) {
@@ -586,8 +581,6 @@ Future<void> tryCopy(BuildContext context, String? text) async {
     );
   }
 }
-
-
 
 class ImageViewer extends StatelessWidget {
   ImageViewer({
@@ -607,9 +600,9 @@ class ImageViewer extends StatelessWidget {
       body: Stack(
         children: [
           PhotoView(
-              enableRotation: true,
-              controller: controller,
-              imageProvider: image,
+            enableRotation: true,
+            controller: controller,
+            imageProvider: image,
           ),
           // toolbar
           Align(

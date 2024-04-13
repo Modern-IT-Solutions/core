@@ -123,7 +123,7 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
 
   bool get hasPrev => prevStartAt != null && prevStartAt != currentStartAt;
   @override
-  Future<void> load () async {
+  Future<void> load() async {
     return search();
   }
 
@@ -865,7 +865,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                   // refresh
                                   message: "Click to reload",
                                   child: InkWell(
-                                    onTap: (){
+                                    onTap: () {
                                       widget.controller.refresh();
                                     },
                                     borderRadius: BorderRadius.circular(8),
@@ -1834,11 +1834,13 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   // where
   final bool Function(M model)? where;
   ModelListViewController({
-    ModelListViewValue<M>? value, required this.description, this.where, this.behavior = FetchBehavior.cacheFirst,
+    ModelListViewValue<M>? value,
+    required this.description,
+    this.where,
+    this.behavior = FetchBehavior.cacheFirst,
     this.expireAfter = const Duration(minutes: 5),
     this.cacheId,
-    })
-      : super(value?.copyWith(
+  }) : super(value?.copyWith(
           searchQuery: value.searchQuery ??
               SearchQuery(
                 field: description.fields.firstOrNull?.name ?? "",
@@ -1966,7 +1968,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       value = value!.copyWith(
         models: concat ? value!.models : null,
         count: (await getCount(
-          behavior:noCache? FetchBehavior.serverFirst: behavior,
+          behavior: noCache ? FetchBehavior.serverFirst : behavior,
           path: description.path,
           builder: querybuilder,
         ))
@@ -1975,7 +1977,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       );
       notifyListeners();
       var _models = await getModelCollection(
-        behavior:noCache? FetchBehavior.serverFirst:  behavior,
+        behavior: noCache ? FetchBehavior.serverFirst : behavior,
         path: description.path,
         fromJson: description.fromJson,
         // behavior: true ? FetchBehavior.serverOnly : FetchBehavior.serverFirst,
@@ -2270,6 +2272,7 @@ enum FieldGroup {
 enum FieldType {
   number(true, icon: FluentIcons.number_symbol_square_24_regular),
   text(true, icon: FluentIcons.text_32_regular),
+  list(true, icon: FluentIcons.list_16_regular),
   date(false, icon: FluentIcons.calendar_28_regular),
   time(false, icon: FluentIcons.time_picker_24_regular),
   datetime(false, icon: FluentIcons.calendar_28_regular),
@@ -3270,6 +3273,7 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                             // controller.useFilter(controller.value!.filters.last);
                           },
                           onChanged: (String value) async {
+                            //
                             controller.setSearchQueryValue(value);
                           },
                           decoration: InputDecoration(
