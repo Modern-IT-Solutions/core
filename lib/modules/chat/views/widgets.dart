@@ -99,11 +99,13 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
     setState(() {
       loading = true;
     });
+    var newRoom = widget.createFunction!.call();
     try {
-      var newRoom = widget.createFunction!.call();
-      await widget.roomRef.create(newRoom.toJson());
+      await FirebaseFirestore.instance.collection(widget.roomRef.collection).doc(widget.roomRef.id).set(newRoom.toJson());
+      // await widget.roomRef.create(newRoom.toJson());
       _initStream();
     } catch (e) {
+      // _initStream();
       print(e);
     } finally {
       setState(() {
