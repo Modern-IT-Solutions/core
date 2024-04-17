@@ -26,7 +26,7 @@ class GiftCardOrderModel with _$GiftCardOrderModel implements Model {
     @NullableTimestampDateTimeSerializer() DateTime? deletedAt,
 
     ///
-    required ProfileModel profile,
+    ProfileModel? profile,
     required ShippingModel shipping,
     required double amount,
     required OrderStatus status,
@@ -50,21 +50,21 @@ class GiftCardOrderModel with _$GiftCardOrderModel implements Model {
           FieldDescription(
             name: "uid",
             path: "profile.uid",
-            map: (m) => m.profile.uid,
+            map: (m) => m.profile?.uid,
             type: FieldType.text,
             group: FieldGroup.metadata,
           ),
           FieldDescription(
             name: "displayName",
             path: "profile.displayName",
-            map: (m) => m.profile.displayName,
+            map: (m) => m.profile?.displayName,
             type: FieldType.text,
             group: FieldGroup.primary,
           ),
           FieldDescription(
             name: "email",
             path: "profile.email",
-            map: (m) => m.profile.email,
+            map: (m) => m.profile?.email,
             type: FieldType.email,
             group: FieldGroup.primary,
           ),
@@ -101,8 +101,8 @@ class GiftCardOrderModel with _$GiftCardOrderModel implements Model {
         path: "giftCardOrders",
         fromJson: GiftCardOrderModel.fromJson,
         tileBuilder: (model) => ModelGeneralData(
-          title: model.profile.displayName,
-          subtitle: model.profile.email.nullIfEmpty ?? model.profile.phoneNumber?.nullIfEmpty,
+          title: model.profile?.displayName,
+          subtitle: model.profile?.email.nullIfEmpty ?? model.profile?.phoneNumber?.nullIfEmpty,
           leading: ProfileAvatar(profile: model.profile),
         ),
         actions: [

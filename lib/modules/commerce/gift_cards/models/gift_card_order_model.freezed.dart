@@ -30,7 +30,7 @@ mixin _$GiftCardOrderModel {
   DateTime? get deletedAt => throw _privateConstructorUsedError;
 
   ///
-  ProfileModel get profile => throw _privateConstructorUsedError;
+  ProfileModel? get profile => throw _privateConstructorUsedError;
   ShippingModel get shipping => throw _privateConstructorUsedError;
   double get amount => throw _privateConstructorUsedError;
   OrderStatus get status =>
@@ -56,14 +56,14 @@ abstract class $GiftCardOrderModelCopyWith<$Res> {
       @TimestampDateTimeSerializer() DateTime createdAt,
       @TimestampDateTimeSerializer() DateTime updatedAt,
       @NullableTimestampDateTimeSerializer() DateTime? deletedAt,
-      ProfileModel profile,
+      ProfileModel? profile,
       ShippingModel shipping,
       double amount,
       OrderStatus status,
       String? note,
       Map<String, dynamic> metadata});
 
-  $ProfileModelCopyWith<$Res> get profile;
+  $ProfileModelCopyWith<$Res>? get profile;
   $ShippingModelCopyWith<$Res> get shipping;
 }
 
@@ -84,7 +84,7 @@ class _$GiftCardOrderModelCopyWithImpl<$Res, $Val extends GiftCardOrderModel>
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? deletedAt = freezed,
-    Object? profile = null,
+    Object? profile = freezed,
     Object? shipping = null,
     Object? amount = null,
     Object? status = null,
@@ -108,10 +108,10 @@ class _$GiftCardOrderModelCopyWithImpl<$Res, $Val extends GiftCardOrderModel>
           ? _value.deletedAt
           : deletedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      profile: null == profile
+      profile: freezed == profile
           ? _value.profile
           : profile // ignore: cast_nullable_to_non_nullable
-              as ProfileModel,
+              as ProfileModel?,
       shipping: null == shipping
           ? _value.shipping
           : shipping // ignore: cast_nullable_to_non_nullable
@@ -137,8 +137,12 @@ class _$GiftCardOrderModelCopyWithImpl<$Res, $Val extends GiftCardOrderModel>
 
   @override
   @pragma('vm:prefer-inline')
-  $ProfileModelCopyWith<$Res> get profile {
-    return $ProfileModelCopyWith<$Res>(_value.profile, (value) {
+  $ProfileModelCopyWith<$Res>? get profile {
+    if (_value.profile == null) {
+      return null;
+    }
+
+    return $ProfileModelCopyWith<$Res>(_value.profile!, (value) {
       return _then(_value.copyWith(profile: value) as $Val);
     });
   }
@@ -165,7 +169,7 @@ abstract class _$$GiftCardOrderModelImplCopyWith<$Res>
       @TimestampDateTimeSerializer() DateTime createdAt,
       @TimestampDateTimeSerializer() DateTime updatedAt,
       @NullableTimestampDateTimeSerializer() DateTime? deletedAt,
-      ProfileModel profile,
+      ProfileModel? profile,
       ShippingModel shipping,
       double amount,
       OrderStatus status,
@@ -173,7 +177,7 @@ abstract class _$$GiftCardOrderModelImplCopyWith<$Res>
       Map<String, dynamic> metadata});
 
   @override
-  $ProfileModelCopyWith<$Res> get profile;
+  $ProfileModelCopyWith<$Res>? get profile;
   @override
   $ShippingModelCopyWith<$Res> get shipping;
 }
@@ -193,7 +197,7 @@ class __$$GiftCardOrderModelImplCopyWithImpl<$Res>
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? deletedAt = freezed,
-    Object? profile = null,
+    Object? profile = freezed,
     Object? shipping = null,
     Object? amount = null,
     Object? status = null,
@@ -217,10 +221,10 @@ class __$$GiftCardOrderModelImplCopyWithImpl<$Res>
           ? _value.deletedAt
           : deletedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      profile: null == profile
+      profile: freezed == profile
           ? _value.profile
           : profile // ignore: cast_nullable_to_non_nullable
-              as ProfileModel,
+              as ProfileModel?,
       shipping: null == shipping
           ? _value.shipping
           : shipping // ignore: cast_nullable_to_non_nullable
@@ -253,7 +257,7 @@ class _$GiftCardOrderModelImpl implements _GiftCardOrderModel {
       @TimestampDateTimeSerializer() required this.createdAt,
       @TimestampDateTimeSerializer() required this.updatedAt,
       @NullableTimestampDateTimeSerializer() this.deletedAt,
-      required this.profile,
+      this.profile,
       required this.shipping,
       required this.amount,
       required this.status,
@@ -279,7 +283,7 @@ class _$GiftCardOrderModelImpl implements _GiftCardOrderModel {
 
   ///
   @override
-  final ProfileModel profile;
+  final ProfileModel? profile;
   @override
   final ShippingModel shipping;
   @override
@@ -362,7 +366,7 @@ abstract class _GiftCardOrderModel implements GiftCardOrderModel {
       @TimestampDateTimeSerializer() required final DateTime createdAt,
       @TimestampDateTimeSerializer() required final DateTime updatedAt,
       @NullableTimestampDateTimeSerializer() final DateTime? deletedAt,
-      required final ProfileModel profile,
+      final ProfileModel? profile,
       required final ShippingModel shipping,
       required final double amount,
       required final OrderStatus status,
@@ -387,7 +391,7 @@ abstract class _GiftCardOrderModel implements GiftCardOrderModel {
   @override
 
   ///
-  ProfileModel get profile;
+  ProfileModel? get profile;
   @override
   ShippingModel get shipping;
   @override

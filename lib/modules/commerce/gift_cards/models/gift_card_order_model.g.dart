@@ -16,7 +16,9 @@ _$GiftCardOrderModelImpl _$$GiftCardOrderModelImplFromJson(
           const TimestampDateTimeSerializer().fromJson(json['updatedAt']),
       deletedAt: const NullableTimestampDateTimeSerializer()
           .fromJson(json['deletedAt']),
-      profile: ProfileModel.fromJson(json['profile'] as Map<String, dynamic>),
+      profile: json['profile'] == null
+          ? null
+          : ProfileModel.fromJson(json['profile'] as Map<String, dynamic>),
       shipping:
           ShippingModel.fromJson(json['shipping'] as Map<String, dynamic>),
       amount: (json['amount'] as num).toDouble(),
@@ -35,7 +37,7 @@ Map<String, dynamic> _$$GiftCardOrderModelImplToJson(
           const TimestampDateTimeSerializer().toJson(instance.updatedAt),
       'deletedAt': const NullableTimestampDateTimeSerializer()
           .toJson(instance.deletedAt),
-      'profile': instance.profile.toJson(),
+      'profile': instance.profile?.toJson(),
       'shipping': instance.shipping.toJson(),
       'amount': instance.amount,
       'status': _$OrderStatusEnumMap[instance.status]!,
