@@ -78,21 +78,10 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
         _loading = true;
       });
       try {
-        var newModel = model.copyWith(
-          displayName: request.displayName ?? model.displayName,
-          email: request.email ?? model.email,
-          photoUrl: request.photoUrl ?? model.photoUrl,
-          phoneNumber: request.phoneNumber ?? model.phoneNumber,
-          disabled: request.disabled ?? model.disabled,
-          roles: request.roles ?? model.roles,
-          uid: request.uid ?? model.uid,
-          emailVerified: request.emailVerified ?? model.emailVerified,
-          address: request.address ?? model.address,
-          customClaims: {
-            ...?model.customClaims,
-            "_password": request.newPassword?.trim().nullIfEmpty,
-          }
-        );
+        var newModel = model.copyWith(ref: request.uid != null ? ModelRef('profiles/${request.uid}') : model.ref, displayName: request.displayName ?? model.displayName, email: request.email ?? model.email, photoUrl: request.photoUrl ?? model.photoUrl, phoneNumber: request.phoneNumber ?? model.phoneNumber, disabled: request.disabled ?? model.disabled, roles: request.roles ?? model.roles, uid: request.uid ?? model.uid, emailVerified: request.emailVerified ?? model.emailVerified, address: request.address ?? model.address, customClaims: {
+          ...?model.customClaims,
+          "_password": request.newPassword?.trim().nullIfEmpty,
+        });
         if (widget.model == null) {
           await setDocument(
             path: 'profiles/${newModel.ref.id}',
@@ -451,7 +440,7 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                                           }
                                         });
                                       },
-                                      selected: request.roles!.contains(role),
+                                      selected: request.roles!.map((e) => e.name).contains(role.name),
                                       label: Text(role.name.titleCase),
                                       // onDeleted: () {
                                       //     _roles.value.remove(role);

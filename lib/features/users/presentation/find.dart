@@ -6,6 +6,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_json_view/flutter_json_view.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:lib/lib.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -260,6 +261,8 @@ class _ProfileSummaryState extends State<ProfileSummary> {
     }
   }
 
+  double get profitsPercentage => double.tryParse((profile?.metadata["profitsPercentage"]).toString()) ?? 1.0;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -362,12 +365,118 @@ class _ProfileSummaryState extends State<ProfileSummary> {
         ),
         const Divider(),
         // wallet section
-        const ListTile(
+        ListTile(
           enabled: false,
-          leading: Icon(FluentIcons.wallet_24_regular),
-          contentPadding: EdgeInsets.symmetric(horizontal: 24),
-          visualDensity: VisualDensity(vertical: -3),
-          title: Text('Wallet'),
+          leading: const Icon(FluentIcons.wallet_24_regular),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: const VisualDensity(vertical: -3),
+          title: const Text('Wallet'),
+          // for teachers only show button that edit profets percentage
+          trailing: profile?.rolesString.contains("teacher") != true
+              ? null
+              : IconButton(
+                  onPressed: () async {
+                    GlobalKey<FormState> formKey = GlobalKey<FormState>();
+                    var current = double.tryParse((profile!.metadata["profitsPercentage"]).toString());
+                    var controller = TextEditingController(text: (current != null ? current * 100 : 100).toString());
+
+                    var loading = false;
+                    await showDialog<double>(
+                      context: context,
+                      builder: (context) {
+                        return StatefulBuilder(builder: (context, setState) {
+                          return Form(
+                            key: formKey,
+                            child: SimpleDialog(
+                              title: const Text('Edit Profits Percentage'),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    children: [
+                                      const Text('Enter the new profits percentage'),
+                                      const SizedBox(height: 12),
+                                      TextFormField(
+                                        controller: controller,
+                                        keyboardType: TextInputType.number,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Profits Percentage',
+                                          prefixText: '%',
+                                        ),
+                                        validator: FormBuilderValidators.compose([
+                                          FormBuilderValidators.required(),
+                                          FormBuilderValidators.numeric(),
+                                          FormBuilderValidators.min(0),
+                                          FormBuilderValidators.max(100),
+                                        ]),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: const Text('Cancel'),
+                                          ),
+                                          // loading
+                                          if (loading)
+                                            const CircularProgressIndicator()
+                                          else
+                                            TextButton(
+                                              onPressed: () async {
+                                                if (!formKey.currentState!.validate()) {
+                                                  return;
+                                                }
+                                                setState(() {
+                                                  loading = true;
+                                                });
+                                                var newProfitsPercentage = double.tryParse(controller.text);
+                                                if (newProfitsPercentage != null) {
+                                                  try {
+                                                    var result = await profile!.ref.update({
+                                                      "metadata.profitsPercentage": newProfitsPercentage / 100,
+                                                    });
+                                                    profile = profile!.copyWith(metadata: {
+                                                      ...profile!.metadata,
+                                                      "profitsPercentage": newProfitsPercentage / 100,
+                                                    });
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text('Updated!'),
+                                                      ),
+                                                    );
+                                                    Navigator.of(context).pop();
+                                                  } catch (e) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text('Failed!'),
+                                                      ),
+                                                    );
+                                                  }
+                                                }
+                                                setState(() {
+                                                  loading = false;
+                                                });
+                                              },
+                                              child: const Text('Save'),
+                                            ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        });
+                      },
+                    );
+                    setState(() {});
+                  },
+                  icon: const Icon(FluentIcons.edit_24_regular),
+                ),
         ),
         // balance
         ListTile(
@@ -380,9 +489,9 @@ class _ProfileSummaryState extends State<ProfileSummary> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("${profile?.customClaims["wallet"]?["balance"] ?? 0} DZD"),
-                    Text("<- ${profile?.customClaims["wallet"]?["icoming"] ?? 0} DZD"),
-                    Text("-> ${profile?.customClaims["wallet"]?["outcoming"] ?? 0} DZD"),
+                    Text("${profitsPercentage * (double.tryParse((profile?.customClaims["wallet"]?["balance"]).toString()) ?? 0)} DZD"),
+                    Text("<- ${profitsPercentage * (double.tryParse((profile?.customClaims["wallet"]?["icoming"]).toString()) ?? 0)} DZD"),
+                    Text("-> ${profitsPercentage * (double.tryParse((profile?.customClaims["wallet"]?["outcoming"]).toString()) ?? 0)} DZD"),
                   ],
                 ),
           subtitle: const Text(
