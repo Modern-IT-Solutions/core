@@ -25,19 +25,13 @@ abstract class App<T extends Enum> {
   final List<AppRole<T>> roles;
   final String logo;
   final String? darkLogo;
-  const App({required this.name,required this.id, required this.roles, required this.logo, this.darkLogo});
+  const App({required this.name, required this.id, required this.roles, required this.logo, this.darkLogo});
 
   AppRole? roleOf(ProfileModel? currentProfile) {
     if (currentProfile == null || currentProfile.rolesString.firstOrNull == null) return null;
     return roles.firstWhere((e) => e.name == currentProfile.rolesString.first);
   }
 }
-
-
-
-
-
-
 
 Future<CachedCollection?> getCollection({
   String? cacheId,
@@ -65,7 +59,7 @@ Future<CachedCollection?> getCollection({
     expiresAfter = Duration(seconds: cacheDurationInSeconds);
   }
   if (cacheNumber != null) {
-    cacheId = (cacheId ?? "" ) + cacheNumber.toString();
+    cacheId = (cacheId ?? "") + cacheNumber.toString();
   }
 
   return await Services.instance.get<DatabaseService>()!.getCollection(
@@ -130,6 +124,7 @@ Future<CachedAggregate?> getSum({
         startAfter: startAfter,
       );
 }
+
 // getAverage
 Future<CachedAggregate?> getAverage({
   required String field,
@@ -168,7 +163,7 @@ Future<List<T>> getModelCollection<T>({
   OrderBy? orderBy,
   // startAfterDocument,
   Iterable<Object?>? startAfter,
-  Duration  expiresAfter = const Duration(minutes: 5),
+  Duration expiresAfter = const Duration(minutes: 5),
 }) async {
   var collection = await getCollection(
     cacheId: cacheId,
@@ -208,7 +203,7 @@ Future<CachedDocument?> getDocument({
       );
 }
 
-Stream<Map<String, dynamic>> getDocumentStream({
+Stream<Map<String, dynamic>?> getDocumentStream({
   required ModelRef ref,
 }) {
   return Services.instance.get<DatabaseService>()!.getDocumentStream(

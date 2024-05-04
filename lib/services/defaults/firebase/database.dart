@@ -236,7 +236,7 @@ class DatabaseService extends Service {
     return cachedCount.first;
   }
 
-  Stream<Map<String, dynamic>> getDocumentStream({
+  Stream<Map<String, dynamic>?> getDocumentStream({
     required ModelRef ref,
   }) {
     final document = FirebaseFirestore.instance.doc(ref.parentDocumentRef?.path ?? ref.path).snapshots();

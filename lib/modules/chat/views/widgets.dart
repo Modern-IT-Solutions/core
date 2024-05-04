@@ -62,7 +62,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
   bool isRecording = false;
   int mode = 0;
   final _messageController = TextEditingController();
-  StreamSubscription<Map<String, dynamic>>? _streamSubscription;
+  StreamSubscription<Map<String, dynamic>?>? _streamSubscription;
   final ScrollController _scrollController = ScrollController();
   // focus
   FocusNode _focusNode = FocusNode();
@@ -101,8 +101,8 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
     });
     var newRoom = widget.createFunction!.call();
     try {
-      await FirebaseFirestore.instance.collection(widget.roomRef.collection).doc(widget.roomRef.id).set(newRoom.toJson());
-      // await widget.roomRef.create(newRoom.toJson());
+      // await FirebaseFirestore.instance.collection(widget.roomRef.collection).doc(widget.roomRef.id).set(newRoom.toJson());
+      await widget.roomRef.create(newRoom.toJson());
       _initStream();
     } catch (e) {
       // _initStream();
@@ -164,6 +164,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
   void _initStream() async {
     await _streamSubscription?.cancel();
     _streamSubscription = getDocumentStream(ref: widget.roomRef).listen((event) {
+      if (event == null) return;
       setState(() {
         room = EmbeddedChatRoomModel.fromJson(event);
       });
@@ -235,32 +236,6 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
       },
     );
   }
-
-  // Future<void> sendRecordMessage() async {
-  //   setState(() {
-  //     loading = false;
-  //     uploadingProgress = 0.0;
-  //     isRecording = true;
-  //   });
-  //   try {
-
-  //     var url = await getStorage().upload(pickedFile, (progress) {
-  //       setState(() {
-  //         uploadingProgress = progress;
-  //       });
-  //     });
-
-  //     EmbeddedChatRoomMessage message;
-  //     await sendMessage(message);
-  //   } catch (e) {
-  //     print(e);
-  //   } finally {
-  //     setState(() {
-  //       loading = false;
-  //       uploadingProgress = null;
-  //     });
-  //   }
-  // }
 
   Future<void> sendFileMessage(FileType type) async {
     setState(() {
@@ -612,6 +587,7 @@ class _EmbeddedChatRoomWidgetState extends State<EmbeddedChatRoomWidget> {
             ),
             Expanded(
               child: TextField(
+                textInputAction: TextInputAction.send,
                 focusNode: _focusNode,
                 controller: _messageController,
                 decoration: const InputDecoration(
