@@ -130,7 +130,7 @@ class DatabaseService extends Service {
   }
 
   Future<void> _saveCache() async {
-    if (kIsWeb) {
+    if (kIsWeb || true) {
       return;
     }
     dateToJson(e) {
@@ -499,6 +499,9 @@ class DatabaseService extends Service {
 
     // startAfterRef
     Iterable<Object?>? startAfter,
+
+    // descending
+    bool descending = true,
   }) async {
     late Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection(path);
     if (builder != null) {
@@ -524,7 +527,7 @@ class DatabaseService extends Service {
       query = query.orderBy("deletedAt", descending: false);
     }
     if (!hasOrderBy("updatedAt")) {
-      query = query.orderBy("updatedAt", descending: true);
+      query = query.orderBy("updatedAt", descending: descending);
     }
 
     if (startAfter != null) {

@@ -798,6 +798,22 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
   /// [_allowMultipleFilters]
   /// its good tool but in maney cases it requires creating a new index in firestore
   bool _allowMultipleFilters = false;
+  bool _descending = false;
+  String? _localSortBy;
+
+  void toggleSort(String key) {
+    if (key == _localSortBy) {
+      setState(() {
+        _descending = !_descending;
+      });
+    } else {
+      setState(() {
+        _localSortBy = key;
+        _descending = false;
+      });
+    }
+  }
+
   var searchController = TextEditingController();
   @override
   void initState() {
@@ -1041,6 +1057,14 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                             },
                             title: const Text('Allow multiple filters'),
                           ),
+                          // sort (DESC/ASC)
+                          SwitchListTile(
+                            value: widget.controller.value?.descending ?? false,
+                            onChanged: (value) {
+                              widget.controller.setDescending(value);
+                            },
+                            title: const Text('Sort Descending'),
+                          ),
                           const SizedBox(height: 8),
                         ],
                       ),
@@ -1161,7 +1185,28 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                                       maxLines: 1,
                                     ),
                                   ] else
-                                    for (var item in widget.flexTableItemBuilders!) item.header,
+                                    for (var item in widget.flexTableItemBuilders!)
+                                      GestureDetector(
+                                        onTap: () {
+                                          if (item.config.name != null) toggleSort(item.config.name!);
+                                        },
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            item.header,
+                                            // IP:SORT
+                                            if (item.config.name != null)
+                                              Icon(
+                                                _localSortBy == item.config.name
+                                                    ? _descending
+                                                        ? FluentIcons.chevron_down_24_regular
+                                                        : FluentIcons.chevron_up_24_regular
+                                                    : FluentIcons.chevron_up_24_regular,
+                                                size: 20,
+                                              )
+                                          ],
+                                        ),
+                                      ),
                                   const Icon(
                                     FluentIcons.chevron_down_24_regular,
                                     size: 20,
@@ -1769,6 +1814,9 @@ class ModelListViewValue<M extends Model> {
   final String? error;
   final RemoteJsonFilterBuilder? rootQuery;
 
+  // sort (DESC/ASC)
+  final bool descending;
+
   /// [limit] (max items loaded each time)
   final int limit;
   const ModelListViewValue({
@@ -1787,6 +1835,7 @@ class ModelListViewValue<M extends Model> {
     this.metadata = const {},
     this.error,
     this.limit = 100,
+    this.descending = true,
   });
   ModelListViewValue<M> copyWith({
     int? count,
@@ -1804,6 +1853,7 @@ class ModelListViewValue<M extends Model> {
     String? error,
     RemoteJsonFilterBuilder? rootQuery,
     int? limit,
+    bool? descending,
   }) {
     return ModelListViewValue<M>(
       count: count ?? this.count,
@@ -1821,6 +1871,7 @@ class ModelListViewValue<M extends Model> {
       error: error ?? this.error,
       limit: limit ?? this.limit,
       rootQuery: rootQuery ?? this.rootQuery,
+      descending: descending ?? this.descending,
     );
   }
 }
@@ -1862,6 +1913,15 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     notifyListeners();
   }
 
+  // sort
+  void setDescending(bool descending) {
+    value = value?.copyWith(
+      descending: descending,
+    );
+    notifyListeners();
+    refresh();
+  }
+
   /// getQuery
   Query<Map<String, dynamic>> querybuilder(Query<Map<String, dynamic>> query) {
     if (value?.filters.isEmpty == false) {
@@ -1893,9 +1953,19 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         fromJson: description.fromJson,
         // behavior: FetchBehavior.serverOnly,
         builder: (q) {
-          return q.where(value!.searchQuery!.field, isGreaterThanOrEqualTo: value!.searchQuery!.value!).where(value!.searchQuery!.field, isLessThanOrEqualTo: "${value!.searchQuery!.value!}\uf8ff").orderBy(value!.searchQuery!.field);
+          return q
+              .where(value!.searchQuery!.field, isGreaterThanOrEqualTo: value!.searchQuery!.value!)
+              .where(
+                value!.searchQuery!.field,
+                isLessThanOrEqualTo: "${value!.searchQuery!.value!}\uf8ff",
+              )
+              .orderBy(
+                value!.searchQuery!.field,
+                descending: value!.descending,
+              );
         },
         limit: limit ?? value!.limit,
+        descending: value!.descending,
       );
     }
     // needIndexError
@@ -1988,6 +2058,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
               ],
         builder: querybuilder,
         limit: limit,
+        descending: value!.descending,
       );
       if (_models.length < limit) {
         value = value!.copyWith(hasNext: false);
@@ -3424,7 +3495,7 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                                   ...controller.value!.filters,
                                   IndexViewFilter(
                                     name: "Today's",
-                                    remote: (q) => q.where("updatedAt", isGreaterThan: Timestamp.fromDate(DateTime.now().startOfDay)).orderBy("updatedAt", descending: true),
+                                    remote: (q) => q.where("updatedAt", isGreaterThan: Timestamp.fromDate(DateTime.now().startOfDay)).orderBy("updatedAt", descending: controller.value!.descending),
                                   ),
                                 ]);
                                 // activate today's filter

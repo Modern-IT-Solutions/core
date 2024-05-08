@@ -45,6 +45,7 @@ Future<CachedCollection?> getCollection({
   OrderBy? orderBy,
   Iterable<Object?>? startAfter,
   Duration expiresAfter = const Duration(minutes: 5),
+  bool descending = false,
 }) async {
   bool useCache = getPrefs().getOption<bool>("useCache") ?? false;
   int? cacheNumber = getPrefs().getOption<int>("cacheNumber");
@@ -74,6 +75,7 @@ Future<CachedCollection?> getCollection({
         orderBy: orderBy,
         startAfter: startAfter,
         expiresAfter: expiresAfter,
+        descending: descending,
       );
 }
 
@@ -164,6 +166,7 @@ Future<List<T>> getModelCollection<T>({
   // startAfterDocument,
   Iterable<Object?>? startAfter,
   Duration expiresAfter = const Duration(minutes: 5),
+  bool descending = false,
 }) async {
   var collection = await getCollection(
     cacheId: cacheId,
@@ -177,6 +180,7 @@ Future<List<T>> getModelCollection<T>({
     orderBy: orderBy,
     startAfter: startAfter,
     expiresAfter: expiresAfter,
+    descending: descending,
   );
   if (collection == null) {
     return [];
