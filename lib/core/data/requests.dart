@@ -8,8 +8,8 @@ import '../domain/repository.dart';
 abstract class BaseRequest<T extends Model> {
   const BaseRequest();
   Map<String, dynamic> toMap();
-  /// [toJsonMap] remove fields that are not json serializable
 
+  /// [toJsonMap] remove fields that are not json serializable
 }
 
 extension BaseRequestExtension on BaseRequest {
@@ -30,7 +30,6 @@ extension BaseRequestExtension on BaseRequest {
   }
 }
 
-
 /// [UpdateRequest] is a base class for update requests
 abstract class UpdateRequest<T extends Model> extends BaseRequest<T> {
   final Map<String, dynamic> data;
@@ -46,12 +45,12 @@ abstract class UpdateRequest<T extends Model> extends BaseRequest<T> {
     };
   }
 }
-// create request
- class CreateRequest<T extends Model> extends BaseRequest<T> {
 
+// create request
+class CreateRequest<T extends Model> extends BaseRequest<T> {
   final Map<String, dynamic> data;
   final String? id;
-  CreateRequest({this.id,this.data = const {}});
+  CreateRequest({this.id, this.data = const {}});
 
   /// [toMap] returns a map with the request data
   @override
@@ -62,9 +61,11 @@ abstract class UpdateRequest<T extends Model> extends BaseRequest<T> {
     };
   }
 }
+
 // delete request
- class DeleteRequest<T extends Model> extends BaseRequest<T> {
+class DeleteRequest<T extends Model> extends BaseRequest<T> {
   final String id;
+
   /// [softDelete] if true, set deletedAt field without remove the document
   /// if false, remove the document
   final bool softDelete;
@@ -79,6 +80,7 @@ abstract class UpdateRequest<T extends Model> extends BaseRequest<T> {
     };
   }
 }
+
 /// [ListRequest] is a base class for list requests
 class ListRequest<T extends Model> extends BaseRequest<T> {
   /// [withDeleted] if true, return deleted documents
@@ -89,8 +91,10 @@ class ListRequest<T extends Model> extends BaseRequest<T> {
 
   /// limit of documents to return
   final int? limit;
+
   /// custom query builder
   final Query<T> Function(Query<T> query)? queryBuilder;
+
   /// search query
   final SearchQuery? searchQuery;
 
@@ -103,16 +107,18 @@ class ListRequest<T extends Model> extends BaseRequest<T> {
   });
 
   /// [search] constructor
-  ListRequest.search(String search, {
+  ListRequest.search(
+    String search, {
     required String field,
     this.queryBuilder,
     this.limit,
     this.withDeleted = false,
     this.options,
   }) : searchQuery = SearchQuery(
-    field: field,
-    value: search,
-  );
+          field: field,
+          value: search,
+          type: null,
+        );
 
   ListRequest<T> next(int limit) {
     return ListRequest<T>(
@@ -132,14 +138,14 @@ class ListRequest<T extends Model> extends BaseRequest<T> {
       // 'queryBuilder': queryBuilder,
       'searchQuery': searchQuery?.toMap(),
     };
-  }}
+  }
+}
+
 /// [FindRequest] is a base class for find requests
- class FindRequest<T extends Model> extends BaseRequest<T> {
+class FindRequest<T extends Model> extends BaseRequest<T> {
   final String id;
   final bool withDeleted;
-  const FindRequest({
-    required this.id,
-    this.withDeleted = false});
+  const FindRequest({required this.id, this.withDeleted = false});
 
   /// [toMap] returns a map with the request data
   @override
@@ -148,4 +154,5 @@ class ListRequest<T extends Model> extends BaseRequest<T> {
       'id': id,
       'withDeleted': withDeleted,
     };
-  }}
+  }
+}

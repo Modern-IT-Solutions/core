@@ -491,7 +491,7 @@ class _ProfileSummaryState extends State<ProfileSummary> {
                   children: [
                     Text("${profitsPercentage * (double.tryParse((profile?.customClaims["wallet"]?["balance"]).toString()) ?? 0)} DZD"),
                     Text("<- ${profitsPercentage * (double.tryParse((profile?.customClaims["wallet"]?["icoming"]).toString()) ?? 0)} DZD"),
-                    Text("-> ${profitsPercentage * (double.tryParse((profile?.customClaims["wallet"]?["outcoming"]).toString()) ?? 0)} DZD"),
+                    Text("-> ${profitsPercentage * (double.tryParse((profile?.customClaims["wallet"]?["outgoing"]).toString()) ?? 0)} DZD"),
                   ],
                 ),
           subtitle: const Text(

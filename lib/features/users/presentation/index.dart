@@ -142,7 +142,13 @@ class ManageProfilesViewState<M extends ProfileModel> extends State<ManageProfil
       }
       ListResult<M> data = (await widget.repository.list(
         ListRequest(
-            searchQuery: query != null && query.isNotEmpty && type != null ? SearchQuery(field: type.name, value: query) : null,
+            searchQuery: query != null && query.isNotEmpty && type != null
+                ? SearchQuery(
+                    field: type.name,
+                    value: query,
+                    type: null,
+                  )
+                : null,
             queryBuilder: (query) {
               for (QueryFilterInterface<M> filter in activeFilters) {
                 query = filter.server(query as Query<M>);
@@ -770,6 +776,7 @@ class ModelListView<M extends Model> extends StatefulWidget {
   final void Function(M model)? onModelTap;
   final void Function()? onAddPressed;
   // final List<({Icon icon, String label, Future<Null> Function() onTap})>? addOptions;
+  // sort function
   const ModelListView({
     super.key,
     this.enableSelectOnTap = false,
@@ -1485,7 +1492,7 @@ class _ModelListViewState<M extends Model> extends State<ModelListView<M>> {
                           // )
                           else
                           // you reached the end text
-                          if (widget.controller.value?.models != null && widget.controller.value!.models!.isNotEmpty)
+                          if (widget.controller.value?.hasNext == false)
                             const Padding(
                               padding: EdgeInsets.symmetric(
                                 vertical: 24.0,
@@ -1884,9 +1891,11 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
   final String? cacheId;
   // where
   final bool Function(M model)? where;
+  final int Function(M a, M b)? sortFunction;
   ModelListViewController({
     ModelListViewValue<M>? value,
     required this.description,
+    this.sortFunction,
     this.where,
     this.behavior = FetchBehavior.cacheFirst,
     this.expireAfter = const Duration(minutes: 5),
@@ -1896,6 +1905,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
               SearchQuery(
                 field: description.fields.firstOrNull?.name ?? "",
                 value: "",
+                type: null,
               ),
         ));
 
@@ -1927,7 +1937,9 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     if (value?.filters.isEmpty == false) {
       for (var filter in value!.filters) {
         if (!filter.active) continue;
-        if (filter.strict) {}
+        if (filter.strict) {
+          // query = filter.remote.call(query); // AI gen
+        }
         if (filter.mixWithRootQuery && value!.filters.where((element) => element.active).length == 1) {
           query = value!.rootQuery?.call(query) ?? query;
         }
@@ -1945,28 +1957,39 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     List<M> models = [];
 
     try {
-      models = await getModelCollection(
-        behavior: behavior,
-        expiresAfter: expireAfter,
-        cacheId: cacheId,
-        path: description.path,
-        fromJson: description.fromJson,
-        // behavior: FetchBehavior.serverOnly,
-        builder: (q) {
-          return q
-              .where(value!.searchQuery!.field, isGreaterThanOrEqualTo: value!.searchQuery!.value!)
-              .where(
-                value!.searchQuery!.field,
-                isLessThanOrEqualTo: "${value!.searchQuery!.value!}\uf8ff",
-              )
-              .orderBy(
-                value!.searchQuery!.field,
-                descending: value!.descending,
-              );
-        },
-        limit: limit ?? value!.limit,
-        descending: value!.descending,
-      );
+      if ([
+        FieldType.list.name,
+        FieldType.listText.name
+      ].contains(value!.searchQuery!.type)) {
+        var docs = await FirebaseFirestore.instance.collection(description.path).where(value!.searchQuery!.field, arrayContains: value!.searchQuery!.value).get();
+        models = docs.docs.map((e) => description.fromJson(e.data())).toList();
+      } else {
+        models = await getModelCollection(
+          behavior: behavior,
+          expiresAfter: expireAfter,
+          cacheId: cacheId,
+          path: description.path,
+          fromJson: description.fromJson,
+          // behavior: FetchBehavior.serverOnly,
+          builder: (q) {
+            if (value!.searchQuery!.value == FieldType.listText.name) {
+              q = q.where(value!.searchQuery!.field, arrayContains: value!.searchQuery!.value);
+              // return q;
+            } else {
+              q = q.where(value!.searchQuery!.field, isGreaterThanOrEqualTo: value!.searchQuery!.value!).where(
+                    value!.searchQuery!.field,
+                    isLessThanOrEqualTo: "${value!.searchQuery!.value!}\uf8ff",
+                  );
+            }
+            return q.orderBy(
+              value!.searchQuery!.field,
+              descending: value!.descending,
+            );
+          },
+          limit: limit ?? value!.limit,
+          descending: value!.descending,
+        );
+      }
     }
     // needIndexError
     on FirebaseException catch (e) {
@@ -2060,8 +2083,19 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         limit: limit,
         descending: value!.descending,
       );
+
+      // sort
+      if (sortFunction != null) {
+        _models.sort(sortFunction!);
+      }
       if (_models.length < limit) {
-        value = value!.copyWith(hasNext: false);
+        value = value!.copyWith(
+          hasNext: value!.models == null
+              ? true
+              : value!.count == null
+                  ? false
+                  : value!.count! > value!.models!.length,
+        );
       }
       if (concat) {
         // check if the first item equal to the last item in the current models
@@ -2128,13 +2162,17 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
 
   /// [more] is a function to load more models
   Future<void> more() async {
+    var model = value!.models?.lastOrNull;
+    if (model == null) {
+      return;
+    }
     return search(startAfter: [
       // deleted at
-      (value?.models?.last.deletedAt != null) ? Timestamp.fromDate(value!.models!.last.deletedAt!) : null,
+      (value?.models?.last.deletedAt != null) ? Timestamp.fromDate(model.deletedAt!) : null,
       // updated at
-      (value?.models?.last.updatedAt != null) ? Timestamp.fromDate(value!.models!.last.updatedAt!) : null,
+      (value?.models?.last.updatedAt != null) ? Timestamp.fromDate(model.updatedAt!) : null,
       // ref
-      (value?.models?.last.ref.path != null) ? value!.models!.last.ref.path : null,
+      (value?.models?.last.ref.path != null) ? model.ref.path : null,
       //// if (value?.models?.last.ref.path != null) value!.models!.last.ref.path
       // why 3 seconds? because we are not really sure about the date are the same
       // Timestamp.fromDate((value?.models?.last.updatedAt ?? DateTime.now()).add(const Duration(seconds: 3)))
@@ -2149,6 +2187,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     if (models == null) {
       return null;
     }
+
     bool _filters(M model) {
       // return true;
       for (var filter in value?.filters ?? <IndexViewFilter<M>>[]) {
@@ -2275,6 +2314,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       searchQuery: SearchQuery(
         field: value!.searchQuery?.field ?? "ref",
         value: "",
+        type: null,
       ),
     );
     await search();
@@ -2290,11 +2330,12 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
     value = value?.copyWith(searchQuery: query);
   }
 
-  void setSearchQueryField(String field) {
+  void setSearchQueryField(String field, String? type) {
     value = value?.copyWith(
       searchQuery: SearchQuery(
         field: field,
         value: value?.searchQuery?.value ?? "",
+        type: type,
       ),
     );
   }
@@ -2304,6 +2345,7 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
         searchQuery: SearchQuery(
       field: value?.searchQuery?.field ?? description.fields.firstOrNull?.path ?? "",
       value: _value,
+      type: value?.searchQuery?.type,
     ));
   }
 
@@ -2890,6 +2932,7 @@ Future<IndexViewFilter<M>?> showFilterWizard<M extends Model>(BuildContext conte
                           return _operator()!.remote(query: query, field: _field()?.name ?? fieldController.text, value: value);
                         },
                         local: (model) {
+                          return true;
                           return _operator()!.local(
                             field: _field()?.name ?? fieldController.text,
                             value: value,
@@ -3376,7 +3419,7 @@ class ModelViewFiltersChips<M extends Model> extends StatelessWidget {
                                           onPressed: controller.value!.searchQuery!.field == field
                                               ? null
                                               : () {
-                                                  controller.setSearchQueryField(field.path);
+                                                  controller.setSearchQueryField(field.path, field.type.name);
                                                 },
                                           child: Text(field.name),
                                         ),

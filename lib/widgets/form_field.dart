@@ -257,7 +257,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
             }
           } else if (widget.mode == AppTextFormFieldMode.location) {
             var v = widget.initialValue?.split(",");
-            var center = v?.length == 2? LatLng(double.tryParse(v!.first) ?? 0, double.tryParse(v!.last) ?? 0) : LatLng(0,0);
+            var center = v?.length == 2 ? LatLng(double.tryParse(v!.first) ?? 0, double.tryParse(v!.last) ?? 0) : LatLng(0, 0);
             var latlng = await showLatLngPickerDialog(
               context: context,
               length: 1,
@@ -348,11 +348,10 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
     var ref = FirebaseStorage.instance.ref().child('uploads');
     if (widget.uploadPath != null) {
       ref = ref.child(widget.uploadPath!);
-
-    }else{
+    } else {
       ref = ref.child("profiles").child(uid);
     }
-           ref = ref.child('${DateTime.now().millisecondsSinceEpoch}.${file.extension}');
+    ref = ref.child('${DateTime.now().millisecondsSinceEpoch}.${file.extension}');
 
     late UploadTask uploadTask;
 
@@ -360,7 +359,6 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       cacheControl: 'public, max-age=63072000',
       customMetadata: <String, String>{
         'uploadedBy': uid,
-        
       },
     );
     if (kIsWeb) {
@@ -455,7 +453,7 @@ class _AppNumberTextFormFieldState extends State<AppNumberTextFormField> {
       children: [
         // if (widget.label != null)
         //   DefaultTextStyle(
-        //     style: Theme.of(context).textTheme.caption!,
+        //     style: Theme.of(context).textTheme.bodySmall!,
         //     child: Row(
         //       children: [
         //         widget.label!,
@@ -470,7 +468,7 @@ class _AppNumberTextFormFieldState extends State<AppNumberTextFormField> {
         //   ),
         SizedBox(
           height: widget.height,
-          // child: 
+          // child:
           // FormBuilderPhoneField(
           //   name: 'ho',
           //   controller: widget.controller,
@@ -497,7 +495,7 @@ class _AppNumberTextFormFieldState extends State<AppNumberTextFormField> {
         ),
         // if (this.widget.helper != null)
         //   DefaultTextStyle(
-        //     style: Theme.of(context).textTheme.caption!,
+        //     style: Theme.of(context).textTheme.bodySmall!,
         //     child: widget.helper!,
         //   ),
       ],

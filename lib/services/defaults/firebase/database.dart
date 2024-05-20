@@ -314,7 +314,7 @@ class DatabaseService extends Service {
     bool merge = false,
   }) async {
     var doc = FirebaseFirestore.instance.doc(path);
-    final document = await doc.set({
+    var dataa = {
       'updatedAt': FieldValue.serverTimestamp(),
       'createdAt': FieldValue.serverTimestamp(),
       'deletedAt': null,
@@ -323,7 +323,8 @@ class DatabaseService extends Service {
       "__setBy": getCurrentProfile()?.uid,
       "__createdBy": getCurrentProfile()?.uid,
       "__updatedBy": getCurrentProfile()?.uid,
-    }, SetOptions(merge: merge));
+    };
+    final document = await doc.set(dataa, SetOptions(merge: merge));
     final cachedDocument = CachedDocument(
       ref: doc.path,
       data: data,
@@ -532,7 +533,10 @@ class DatabaseService extends Service {
 
     if (startAfter != null) {
       query = query.orderBy("ref");
-      query = query.startAfter(startAfter);
+      query = query.startAfter([
+        // 0,
+        ...startAfter
+      ]);
     }
     query = query.limit(limit);
 

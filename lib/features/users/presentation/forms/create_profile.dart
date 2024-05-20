@@ -598,7 +598,6 @@ Future<List<ProfileModel>?> showProfilesPickerDialog(BuildContext context, {bool
   );
 }
 
-
 /// [SelectTechniciansDialog] is a dialog that have search bar and list of technicians [CheckboxListTile]
 class SelectTechniciansDialog extends StatefulWidget {
   /// list of selected technicians [Profile.uid]
@@ -633,6 +632,7 @@ class _SelectTechniciansDialogState extends State<SelectTechniciansDialog> {
       query = SearchQuery(
         field: 'displayName',
         value: _searchController.text,
+        type: null,
       );
     }
     technicians = await ProfileRepository.instance.list(

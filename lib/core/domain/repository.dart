@@ -1,12 +1,10 @@
 import 'package:core/core.dart';
 
+abstract class RepositoryInterface<T extends Model>
 
-abstract class RepositoryInterface<
-  T extends Model>
-  
-  //  extends CFLUDInterface<T> 
-   
-   {
+//  extends CFLUDInterface<T>
+
+{
   // data source getter
   DataSource<T> get source;
 
@@ -19,34 +17,34 @@ abstract class RepositoryInterface<
 
 // CRUD interface
 abstract class CFLUDInterface<
-  T extends Model
-  // , 
-  // F extends FindRequest,
-  // C extends CreateRequest,
-  // L extends ListRequest, 
-  // U extends UpdateRequest,
-  // D extends DeleteRequest
-  > {
+    T extends Model
+    // ,
+    // F extends FindRequest,
+    // C extends CreateRequest,
+    // L extends ListRequest,
+    // U extends UpdateRequest,
+    // D extends DeleteRequest
+    > {
   Future<T> create(CreateRequest<T> request);
   Future<T?> find(FindRequest<T> request);
   Future<ListResult<T>> list(ListRequest<T> request);
   // realtimelist like snapshot in firestore
 
-
   Future<void> update(UpdateRequest<T> request);
   Future<void> delete(DeleteRequest<T> request);
 }
-
 
 /// [SearchQuery] is a class to build a query to search
 class SearchQuery {
   final String field;
   final String? value;
+  final String? type;
 
-  const SearchQuery({required this.field,this.value});
+  const SearchQuery({required this.field, this.value, required this.type});
 
   Map<String, dynamic> toMap() => {
-    'field': field,
-    'value': value,
-  };
+        'field': field,
+        'value': value,
+        'type': type,
+      };
 }

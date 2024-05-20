@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show describeEnum, kIsWeb;
 
 /// [ThemeService] responsible for database of the app content and users
 class ThemeService extends Service {
@@ -30,22 +30,28 @@ class ThemeService extends Service {
     _backgroundImage = value;
     notifyListeners();
   }
+
   ImageProvider? get backgroundImage => _backgroundImage;
+
   /// [mode]
   Color colorSeed;
+
   /// [_blurEnabled]
   bool _blurEnabled;
   set blurEnabled(bool value) {
     _blurEnabled = value;
     notifyListeners();
   }
+
   bool get blurEnabled => _blurEnabled;
+
   /// [animationEnabled]
   bool _animationEnabled;
   set animationEnabled(bool value) {
     _animationEnabled = value;
     notifyListeners();
   }
+
   bool get animationEnabled => _animationEnabled;
 
   ThemeService({
@@ -57,19 +63,15 @@ class ThemeService extends Service {
     bool blurEnabled = true,
     bool animationEnabled = true,
     ImageProvider? backgroundImage,
-              // "https://images2.alphacoders.com/130/1305211.png"
-              // "https://i.redd.it/jn2ear0ah9n91.jpg",
-  })  : 
-        _animationEnabled = animationEnabled,
+    // "https://images2.alphacoders.com/130/1305211.png"
+    // "https://i.redd.it/jn2ear0ah9n91.jpg",
+  })  : _animationEnabled = animationEnabled,
         _backgroundImage = backgroundImage,
         _themeMode = themeMode,
         _blurEnabled = blurEnabled,
         _themeData = defaultTheme ??
             ThemeData(
-              badgeTheme: BadgeThemeData(
-                backgroundColor: colorSeed,
-                textColor: Colors.white
-              ),
+              badgeTheme: BadgeThemeData(backgroundColor: colorSeed, textColor: Colors.white),
               chipTheme: ChipThemeData(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(100),
@@ -109,7 +111,7 @@ class ThemeService extends Service {
                 ThemeData().textTheme.apply(
                       bodyColor: Colors.white,
                       displayColor: Colors.white,
-                ),
+                    ),
               ),
               colorScheme: ColorScheme.fromSeed(
                 seedColor: colorSeed,
@@ -124,7 +126,6 @@ class ThemeService extends Service {
 
   late SharedPreferences prefs;
 
-
   // _themeData.copyWith(
   //       colorScheme: _themeData.colorScheme.copyWith(
   //         brightness: Brightness.dark,
@@ -138,9 +139,9 @@ class ThemeService extends Service {
       _blurEnabled = false;
     }
     prefs = await SharedPreferences.getInstance();
-    // SystemUiOverlayStyle
-
+    await load();
     super.init();
+
     log.info('App~Service: Theme initialized');
   }
 
@@ -154,10 +155,31 @@ class ThemeService extends Service {
   ThemeMode _themeMode = ThemeMode.system;
   ThemeMode get themeMode => _themeMode;
 
+  // save (shared preferences)
+  Future<void> save() async {
+    await prefs.setString('themeMode', _themeMode.name);
+    await prefs.setString('colorSeed', colorSeed.value.toString());
+  }
+
+  // load (shared preferences)
+  Future<void> load() async {
+    final themeMode = prefs.getString('themeMode');
+    if (themeMode != null) {
+      _themeMode = ThemeMode.values.firstWhere((e) => e.name == themeMode);
+    }
+    final colorSeed = prefs.getString('colorSeed');
+    if (colorSeed != null) {
+      setColorSeed(Color(int.parse(colorSeed)));
+    }
+    notifyListeners();
+  }
+
   void setThemeData(ThemeData themeData) {
     _themeData = themeData;
     notifyListeners();
+    save();
   }
+
   void setCurrentThemeData(ThemeData themeData) {
     if (_themeMode == ThemeMode.light) {
       _themeData = themeData;
@@ -165,32 +187,34 @@ class ThemeService extends Service {
       _darkThemeData = themeData;
     }
     notifyListeners();
+    save();
   }
 
   void setDarkThemeData(ThemeData themeData) {
     _darkThemeData = themeData;
     notifyListeners();
+    save();
   }
 
   void setThemeMode(ThemeMode themeMode) {
     _themeMode = themeMode;
     notifyListeners();
+    save();
   }
 
   void setColorScheme(ColorScheme colorScheme) {
     _themeData = _themeData.copyWith(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: colorScheme.primary,
-        brightness: Brightness.light,
-      )
-    );
+        colorScheme: ColorScheme.fromSeed(
+      seedColor: colorScheme.primary,
+      brightness: Brightness.light,
+    ));
     _darkThemeData = _darkThemeData.copyWith(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: colorScheme.primary,
-        brightness: Brightness.dark,
-      )
-    );
+        colorScheme: ColorScheme.fromSeed(
+      seedColor: colorScheme.primary,
+      brightness: Brightness.dark,
+    ));
     notifyListeners();
+    save();
   }
 
   Future<void> setColorSchemeFromImage(ImageProvider image) async {
@@ -200,6 +224,7 @@ class ThemeService extends Service {
 
   void setColorSeed(Color color) {
     final colorSchema = ColorScheme.fromSeed(seedColor: color);
+    colorSeed = color;
     setColorScheme(colorSchema);
   }
 }
