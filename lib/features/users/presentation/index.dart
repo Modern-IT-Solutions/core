@@ -2090,11 +2090,13 @@ class ModelListViewController<M extends Model> extends ValueNotifier<ModelListVi
       }
       if (_models.length < limit) {
         value = value!.copyWith(
-          hasNext: value!.models == null
-              ? true
-              : value!.count == null
-                  ? false
-                  : value!.count! > value!.models!.length,
+          hasNext: value!.models != null && value!.count == value!.models!.length
+              ? false
+              : value!.models == null
+                  ? true
+                  : value!.count == null
+                      ? false
+                      : value!.count! > value!.models!.length,
         );
       }
       if (concat) {
