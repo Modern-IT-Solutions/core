@@ -33,7 +33,8 @@ Future<ProfileModel?> showCreateProfileModelDailog(BuildContext context) async {
       },
     ),
   );
-  return await showDialog<ProfileModel?>(useRootNavigator: false,
+  return await showDialog<ProfileModel?>(
+    useRootNavigator: false,
     context: context,
     builder: (context) {
       if (MediaQuery.of(context).size.width > 600) {
@@ -51,7 +52,8 @@ Future<ProfileModel?> showCreateProfileModelDailog(BuildContext context) async {
 }
 
 // update station
-Future<ProfileModel?> showUpdateProfileModelDailog(BuildContext context, ProfileModel? model) async {
+Future<ProfileModel?> showUpdateProfileModelDailog(
+    BuildContext context, ProfileModel? model) async {
   var child = Container(
     constraints: const BoxConstraints(maxWidth: 500),
     child: Center(
@@ -96,7 +98,8 @@ Future<ProfileModel?> showUpdateProfileModelDailog(BuildContext context, Profile
       ),
     ),
   );
-  return await showDialog<ProfileModel?>(useRootNavigator: false,
+  return await showDialog<ProfileModel?>(
+    useRootNavigator: false,
     context: context,
     builder: (context) {
       if (MediaQuery.of(context).size.width > 600) {
@@ -114,13 +117,16 @@ Future<ProfileModel?> showUpdateProfileModelDailog(BuildContext context, Profile
 }
 
 // delete station, a simple dialog with a text and two buttons
-Future<bool?> showDeleteProfileModelDailog(BuildContext context, ProfileModel model) async {
+Future<bool?> showDeleteProfileModelDailog(
+    BuildContext context, ProfileModel model) async {
   bool _loading = false;
-  return await showDialog(useRootNavigator: false,
+  return await showDialog(
+    useRootNavigator: false,
     context: context,
     builder: (context) => AlertDialog(
       title: const Text('Confirm delete'),
-      content: const Text('this action cannot be undone, are you sure you want to continue?'),
+      content: const Text(
+          'this action cannot be undone, are you sure you want to continue?'),
       actions: [
         TextButton(
           onPressed: () {
@@ -137,7 +143,8 @@ Future<bool?> showDeleteProfileModelDailog(BuildContext context, ProfileModel mo
                       _loading = true;
                     });
                     try {
-                      await ProfileRepository.instance.delete(DeleteRequest(model.ref.id));
+                      await ProfileRepository.instance
+                          .delete(DeleteRequest(model.ref.id));
                       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                         SnackBar(
                             behavior: SnackBarBehavior.floating,
@@ -146,7 +153,8 @@ Future<bool?> showDeleteProfileModelDailog(BuildContext context, ProfileModel mo
                             action: SnackBarAction(
                               label: 'Close',
                               onPressed: () {
-                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context)
+                                    .hideCurrentSnackBar();
                               },
                             )),
                       );
@@ -157,7 +165,9 @@ Future<bool?> showDeleteProfileModelDailog(BuildContext context, ProfileModel mo
                       _loading = false;
                     });
                   },
-            child: _loading ? const CircularProgressIndicator.adaptive() : const Text('Delete'),
+            child: _loading
+                ? const CircularProgressIndicator.adaptive()
+                : const Text('Delete'),
           );
         }),
       ],
@@ -165,31 +175,47 @@ Future<bool?> showDeleteProfileModelDailog(BuildContext context, ProfileModel mo
   );
 }
 
-
-
 @override
-Future<void> showDetailsProfileModelDailog(BuildContext context, ProfileModel model) async {
+Future<void> showDetailsProfileModelDailog(
+    BuildContext context, ProfileModel model) async {
+  BooleanValueNotifier isLoading = BooleanValueNotifier.instance;
   var child = Container(
     constraints: const BoxConstraints(maxWidth: 500),
-    child: FindProfileForm(
-      id: model.ref.id,
-      model: model,
-      actions: [
-        // edit
-        IconButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-            showUpdateProfileModelDailog(context, model);
-          },
-          icon: const Icon(FluentIcons.edit_16_regular),
-        ),
-        const SizedBox(
-          width: 8,
-        ),
-      ],
-    ),
+    child: ValueListenableBuilder<bool>(
+        valueListenable: isLoading.loadingNotifier,
+        builder: (context, value, child) {
+          return Stack(
+            children: [
+              FindProfileForm(
+                id: model.ref.id,
+                model: model,
+                actions: [
+                  // edit
+                  IconButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      showUpdateProfileModelDailog(context, model);
+                    },
+                    icon: const Icon(FluentIcons.edit_16_regular),
+                  ),
+                  const SizedBox(
+                    width: 8,
+                  ),
+                ],
+              ),
+              if (value == true)
+                Container(
+                  color: Colors.black.withOpacity(0.5),
+                  child: Center(
+                    child: CircularProgressIndicator.adaptive(),
+                  ),
+                ),
+            ],
+          );
+        }),
   );
-  await showDialog(useRootNavigator: false,
+  await showDialog(
+    useRootNavigator: false,
     context: context,
     builder: (context) {
       if (MediaQuery.of(context).size.width > 600) {
@@ -205,9 +231,3 @@ Future<void> showDetailsProfileModelDailog(BuildContext context, ProfileModel mo
     },
   );
 }
-
-
-
-
-
-

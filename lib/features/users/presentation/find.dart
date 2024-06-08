@@ -79,6 +79,7 @@ class _FindProfileFormState extends State<FindProfileForm> {
     }
   }
 
+  BooleanValueNotifier notifier = BooleanValueNotifier.instance;
   @override
   Widget build(BuildContext context) {
     return LoadingBox(
@@ -154,7 +155,9 @@ class _FindProfileFormState extends State<FindProfileForm> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Theme.of(context).scaffoldBackgroundColor.withOpacity(0.8),
+                                Theme.of(context)
+                                    .scaffoldBackgroundColor
+                                    .withOpacity(0.8),
                                 Colors.transparent,
                               ],
                               begin: Alignment.topCenter,
@@ -184,13 +187,19 @@ class _FindProfileFormState extends State<FindProfileForm> {
                                     ),
                                   ],
                                 ),
-                                child: CircleAvatar(
-                                  radius: 30,
-                                  backgroundImage: station?.photoUrl == null
-                                      ? null
-                                      : CachedNetworkImageProvider(
-                                          station!.photoUrl.toString(),
-                                        ),
+                                child: GestureDetector(
+                                  onTap: () {},
+                                  onDoubleTap: () {
+                                    notifier.toggle();
+                                  },
+                                  child: CircleAvatar(
+                                    radius: 30,
+                                    backgroundImage: station?.photoUrl == null
+                                        ? null
+                                        : CachedNetworkImageProvider(
+                                            station!.photoUrl.toString(),
+                                          ),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -229,6 +238,22 @@ class _FindProfileFormState extends State<FindProfileForm> {
   }
 }
 
+class BooleanValueNotifier {
+  ValueNotifier<bool> valueNotifier = ValueNotifier<bool>(false);
+  ValueNotifier<bool> loadingNotifier = ValueNotifier<bool>(false);
+
+  BooleanValueNotifier._notifier();
+
+  static final BooleanValueNotifier instance = BooleanValueNotifier._notifier();
+
+  void toggle() async {
+    loadingNotifier.value = true;
+    await Future.delayed(const Duration(seconds: 2));
+    loadingNotifier.value = false;
+    valueNotifier.value = !valueNotifier.value;
+  }
+}
+
 /// [ProfileSummary]
 class ProfileSummary extends StatefulWidget {
   const ProfileSummary({super.key, this.ref, this.model});
@@ -254,15 +279,19 @@ class _ProfileSummaryState extends State<ProfileSummary> {
         profile = widget.model;
       });
     } else if (widget.ref != null) {
-      var profile = await getModelDocument(path: widget.ref!, fromJson: ProfileModel.fromJson);
+      var profile = await getModelDocument(
+          path: widget.ref!, fromJson: ProfileModel.fromJson);
       setState(() {
         this.profile = profile;
       });
     }
   }
 
-  double get profitsPercentage => double.tryParse((profile?.metadata["profitsPercentage"]).toString()) ?? 1.0;
+  double get profitsPercentage =>
+      double.tryParse((profile?.metadata["profitsPercentage"]).toString()) ??
+      1.0;
 
+  BooleanValueNotifier notifier = BooleanValueNotifier.instance;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -275,7 +304,9 @@ class _ProfileSummaryState extends State<ProfileSummary> {
                   MaterialPageRoute(
                     fullscreenDialog: true,
                     builder: (context) {
-                      return ImageViewer(image: CachedNetworkImageProvider(profile!.photoUrl.replaceAll("=s96-c", "=w1600")));
+                      return ImageViewer(
+                          image: CachedNetworkImageProvider(profile!.photoUrl
+                              .replaceAll("=s96-c", "=w1600")));
                     },
                   ),
                 );
@@ -285,7 +316,9 @@ class _ProfileSummaryState extends State<ProfileSummary> {
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 24),
           visualDensity: const VisualDensity(vertical: -3),
-          title: profile == null ? const TextPlaceholder() : Text(profile!.displayName.nullIfEmpty ?? "(No name)"),
+          title: profile == null
+              ? const TextPlaceholder()
+              : Text(profile!.displayName.nullIfEmpty ?? "(No name)"),
           subtitle: const Text(
             'Name',
             style: TextStyle(
@@ -308,7 +341,10 @@ class _ProfileSummaryState extends State<ProfileSummary> {
           leading: const Icon(FluentIcons.phone_20_regular),
           contentPadding: const EdgeInsets.symmetric(horizontal: 24),
           visualDensity: const VisualDensity(vertical: -3),
-          title: profile == null ? const TextPlaceholder() : Text(("+213${profile!.phoneNumber ?? ""}").nullIfEmpty ?? "(No phone number)"),
+          title: profile == null
+              ? const TextPlaceholder()
+              : Text(("+213${profile!.phoneNumber ?? ""}").nullIfEmpty ??
+                  "(No phone number)"),
           subtitle: const Text(
             'Phone',
             style: TextStyle(
@@ -328,7 +364,9 @@ class _ProfileSummaryState extends State<ProfileSummary> {
           leading: const Icon(FluentIcons.mail_24_regular),
           contentPadding: const EdgeInsets.symmetric(horizontal: 24),
           visualDensity: const VisualDensity(vertical: -3),
-          title: profile == null ? const TextPlaceholder() : Text(profile!.email.nullIfEmpty ?? "(No email)"),
+          title: profile == null
+              ? const TextPlaceholder()
+              : Text(profile!.email.nullIfEmpty ?? "(No email)"),
           subtitle: const Text(
             'Email',
             style: TextStyle(
@@ -348,7 +386,9 @@ class _ProfileSummaryState extends State<ProfileSummary> {
           leading: const Icon(FluentIcons.location_24_regular),
           contentPadding: const EdgeInsets.symmetric(horizontal: 24),
           visualDensity: const VisualDensity(vertical: -3),
-          title: profile == null ? const TextPlaceholder() : Text(profile!.address?.raw.nullIfEmpty ?? "(No address)"),
+          title: profile == null
+              ? const TextPlaceholder()
+              : Text(profile!.address?.raw.nullIfEmpty ?? "(No address)"),
           subtitle: const Text(
             'Address',
             style: TextStyle(
@@ -377,8 +417,11 @@ class _ProfileSummaryState extends State<ProfileSummary> {
               : IconButton(
                   onPressed: () async {
                     GlobalKey<FormState> formKey = GlobalKey<FormState>();
-                    var current = double.tryParse((profile!.metadata["profitsPercentage"]).toString());
-                    var controller = TextEditingController(text: (current != null ? current * 100 : 100).toString());
+                    var current = double.tryParse(
+                        (profile!.metadata["profitsPercentage"]).toString());
+                    var controller = TextEditingController(
+                        text:
+                            (current != null ? current * 100 : 100).toString());
 
                     var loading = false;
                     await showDialog<double>(
@@ -394,7 +437,8 @@ class _ProfileSummaryState extends State<ProfileSummary> {
                                   padding: const EdgeInsets.all(12),
                                   child: Column(
                                     children: [
-                                      const Text('Enter the new profits percentage'),
+                                      const Text(
+                                          'Enter the new profits percentage'),
                                       const SizedBox(height: 12),
                                       TextFormField(
                                         controller: controller,
@@ -403,7 +447,8 @@ class _ProfileSummaryState extends State<ProfileSummary> {
                                           labelText: 'Profits Percentage',
                                           prefixText: '%',
                                         ),
-                                        validator: FormBuilderValidators.compose([
+                                        validator:
+                                            FormBuilderValidators.compose([
                                           FormBuilderValidators.required(),
                                           FormBuilderValidators.numeric(),
                                           FormBuilderValidators.min(0),
@@ -412,7 +457,8 @@ class _ProfileSummaryState extends State<ProfileSummary> {
                                       ),
                                       const SizedBox(height: 12),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
                                         children: [
                                           TextButton(
                                             onPressed: () {
@@ -426,32 +472,49 @@ class _ProfileSummaryState extends State<ProfileSummary> {
                                           else
                                             TextButton(
                                               onPressed: () async {
-                                                if (!formKey.currentState!.validate()) {
+                                                if (!formKey.currentState!
+                                                    .validate()) {
                                                   return;
                                                 }
                                                 setState(() {
                                                   loading = true;
                                                 });
-                                                var newProfitsPercentage = double.tryParse(controller.text);
-                                                if (newProfitsPercentage != null) {
+                                                var newProfitsPercentage =
+                                                    double.tryParse(
+                                                        controller.text);
+                                                if (newProfitsPercentage !=
+                                                    null) {
                                                   try {
-                                                    var result = await profile!.ref.update({
-                                                      "metadata.profitsPercentage": newProfitsPercentage / 100,
+                                                    var result = await profile!
+                                                        .ref
+                                                        .update({
+                                                      "metadata.profitsPercentage":
+                                                          newProfitsPercentage /
+                                                              100,
                                                     });
-                                                    profile = profile!.copyWith(metadata: {
+                                                    profile = profile!
+                                                        .copyWith(metadata: {
                                                       ...profile!.metadata,
-                                                      "profitsPercentage": newProfitsPercentage / 100,
+                                                      "profitsPercentage":
+                                                          newProfitsPercentage /
+                                                              100,
                                                     });
-                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
                                                       const SnackBar(
-                                                        content: Text('Updated!'),
+                                                        content:
+                                                            Text('Updated!'),
                                                       ),
                                                     );
                                                     Navigator.of(context).pop();
                                                   } catch (e) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
                                                       const SnackBar(
-                                                        content: Text('Failed!'),
+                                                        content:
+                                                            Text('Failed!'),
                                                       ),
                                                     );
                                                   }
@@ -489,9 +552,12 @@ class _ProfileSummaryState extends State<ProfileSummary> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("${profitsPercentage * (double.tryParse((profile?.customClaims["wallet"]?["balance"]).toString()) ?? 0)} DZD"),
-                    Text("<- ${profitsPercentage * (double.tryParse((profile?.customClaims["wallet"]?["icoming"]).toString()) ?? 0)} DZD"),
-                    Text("-> ${profitsPercentage * (double.tryParse((profile?.customClaims["wallet"]?["outgoing"]).toString()) ?? 0)} DZD"),
+                    Text(
+                        "${profitsPercentage * (double.tryParse((profile?.customClaims["wallet"]?["balance"]).toString()) ?? 0)} DZD"),
+                    Text(
+                        "<- ${profitsPercentage * (double.tryParse((profile?.customClaims["wallet"]?["icoming"]).toString()) ?? 0)} DZD"),
+                    Text(
+                        "-> ${profitsPercentage * (double.tryParse((profile?.customClaims["wallet"]?["outgoing"]).toString()) ?? 0)} DZD"),
                   ],
                 ),
           subtitle: const Text(
@@ -503,7 +569,8 @@ class _ProfileSummaryState extends State<ProfileSummary> {
           ),
           trailing: IconButton(
             onPressed: () {
-              tryCopy(context, profile?.customClaims["wallet"]?["balance"]?.toString());
+              tryCopy(context,
+                  profile?.customClaims["wallet"]?["balance"]?.toString());
             },
             icon: const Icon(FluentIcons.copy_24_regular),
           ),
@@ -517,11 +584,12 @@ class _ProfileSummaryState extends State<ProfileSummary> {
           visualDensity: VisualDensity(vertical: -3),
           title: Text('Sessions'),
         ),
-        for (var session in [
-          ...?profile?.sessions.entries
-        ])
+        for (var session in [...?profile?.sessions.entries])
           ListTile(
-            leading: !session.value.valid ? const Icon(FluentIcons.circle_off_20_regular, color: Colors.red) : const Icon(Icons.done_all, color: Colors.green),
+            leading: !session.value.valid
+                ? const Icon(FluentIcons.circle_off_20_regular,
+                    color: Colors.red)
+                : const Icon(Icons.done_all, color: Colors.green),
             contentPadding: const EdgeInsets.symmetric(horizontal: 24),
             visualDensity: const VisualDensity(vertical: -3),
             title: Text(session.key),
@@ -666,14 +734,22 @@ class _ProfileSummaryState extends State<ProfileSummary> {
           ),
         ),
         // advanced
-        // const ListTile(
-        //   enabled: false,
-        //   leading: Icon(FluentIcons.settings_20_regular),
-        //   contentPadding: EdgeInsets.symmetric(horizontal: 24),
-        //   visualDensity: VisualDensity(vertical: -3),
-        //   title: Text('Advanced'),
-        // ),
-        // JsonView.map(profile?.toJson() ?? {})
+        const ListTile(
+          enabled: false,
+          leading: Icon(FluentIcons.settings_20_regular),
+          contentPadding: EdgeInsets.symmetric(horizontal: 24),
+          visualDensity: VisualDensity(vertical: -3),
+          title: Text('Advanced'),
+        ),
+        ValueListenableBuilder<bool>(
+            valueListenable: notifier.valueNotifier,
+            builder: (context, value, child) {
+              return value == true
+                  ? JsonView.map(profile?.toJson() ?? {})
+                  : const SizedBox(
+                      height: 10,
+                    );
+            })
       ],
     );
   }
@@ -726,13 +802,15 @@ class ImageViewer extends StatelessWidget {
                     onPressed: () {
                       controller.rotation -= pi / 2;
                     },
-                    icon: const Icon(FluentIcons.arrow_rotate_counterclockwise_24_regular),
+                    icon: const Icon(
+                        FluentIcons.arrow_rotate_counterclockwise_24_regular),
                   ),
                   IconButton(
                     onPressed: () {
                       controller.rotation += pi / 2;
                     },
-                    icon: const Icon(FluentIcons.arrow_rotate_clockwise_16_regular),
+                    icon: const Icon(
+                        FluentIcons.arrow_rotate_clockwise_16_regular),
                   ),
                 ],
               ),
