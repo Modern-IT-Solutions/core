@@ -1,6 +1,6 @@
 name: core
 description: core package
-version: 0.0.2
+version: 0.0.3
 homepage:
 publish_to: none
 
@@ -79,7 +79,8 @@ dependencies:
   motif: ^0.0.6
   image_picker: ^1.0.7
   record: ^5.0.4
-  audioplayers: ^5.2.1
+  #audioplayers: ^6.0.0
+  audioplayers: ^5.1.0
   fl_chart: ^0.66.2
 
 dependency_overrides:
