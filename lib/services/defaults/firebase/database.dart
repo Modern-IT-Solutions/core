@@ -312,9 +312,12 @@ class DatabaseService extends Service {
     required String path,
     required Map<String, dynamic> data,
     bool merge = false,
+    bool setMetadate = true,
   }) async {
     var doc = FirebaseFirestore.instance.doc(path);
-    var dataa = {
+    Map<String, dynamic> dataa = {};
+    if (setMetadate) {
+      dataa = {
       'updatedAt': FieldValue.serverTimestamp(),
       'createdAt': FieldValue.serverTimestamp(),
       'deletedAt': null,
@@ -324,6 +327,7 @@ class DatabaseService extends Service {
       "__createdBy": getCurrentProfile()?.uid,
       "__updatedBy": getCurrentProfile()?.uid,
     };
+    }
     final document = await doc.set(dataa, SetOptions(merge: merge));
     final cachedDocument = CachedDocument(
       ref: doc.path,
@@ -344,11 +348,14 @@ class DatabaseService extends Service {
   Future<CachedDocument> updateDocument({
     required String path,
     required Map<String, dynamic> data,
+    bool setMetadate = true,
   }) async {
     await FirebaseFirestore.instance.doc(path).update({
       ...data,
-      'updatedAt': FieldValue.serverTimestamp(),
-      "__updatedBy": getCurrentProfile()?.uid
+      if (setMetadate) ...{
+        'updatedAt': FieldValue.serverTimestamp(),
+        "__updatedBy": getCurrentProfile()?.uid
+      }
     });
     final cachedDocument = CachedDocument(
       ref: path,

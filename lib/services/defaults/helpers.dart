@@ -231,11 +231,13 @@ Future<CachedDocument> setDocument({
   required String path,
   required Map<String, dynamic> data,
   bool merge = false,
+  bool setMetadate = true,
 }) async {
   return await Services.instance.get<DatabaseService>()!.setDocument(
         path: path,
         data: data,
         merge: merge,
+        setMetadate: setMetadate
       );
 }
 
@@ -243,10 +245,12 @@ Future<CachedDocument> setDocument({
 Future<CachedDocument> updateDocument({
   required String path,
   required Map<String, dynamic> data,
+  bool setMetadate = true,
 }) async {
   return await Services.instance.get<DatabaseService>()!.updateDocument(
         path: path,
         data: data,
+        setMetadate: setMetadate,
       );
 }
 

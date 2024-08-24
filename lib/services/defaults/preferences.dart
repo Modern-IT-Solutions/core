@@ -89,12 +89,22 @@ class PreferencesService extends Service {
 
   Future<void> setOptions(Map<String, dynamic> options) async {
     await updateDocument(
-      path: "preferences/options", data: options);
+      path: "preferences/options", data: options,
+      setMetadate: false,
+    );
   }
 
   Future<void> setEvents(Map<String, dynamic> events) async {
     await setDocument(
       path: "preferences/events", data: events,
+      setMetadate: false,
+    );
+  }
+
+  Future<void> setHomeSections(Map<String, dynamic> sections) async {
+    await setDocument(
+      path: "preferences/homeSections", data: sections,
+      setMetadate: false,
     );
   }
 
