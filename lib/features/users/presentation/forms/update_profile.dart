@@ -500,7 +500,7 @@ class _UpdateProfileFormState extends State<UpdateProfileForm> {
                             },
                             validator: FormBuilderValidators.compose([
                               //
-                              FormBuilderValidators.minLength(6, allowEmpty: true),
+                              FormBuilderValidators.minLength(6, checkNullOrEmpty: true),
                             ]),
                             decoration: InputDecoration(
                               errorText: _errors['password'],
