@@ -600,6 +600,60 @@ class _ProfileSummaryState extends State<ProfileSummary> {
                 fontSize: 14,
               ),
             ),
+            // force logout (invalidate the session)
+            trailing: IconButton(
+              onPressed: () async {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Force Logout'),
+                      content: const Text(
+                          'Are you sure you want to force logout this session?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            try {
+                              var result = await profile!.ref.update({
+                                "sessions.${session.key}.valid": false,
+                              });
+                              // set the session to invalid
+                              profile = profile!.copyWith(
+                                sessions: {
+                                  ...profile!.sessions,
+                                  session.key: session.value.copyWith(valid: false),
+                                },
+                              );
+                              setState(() {});
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Session invalidated!'),
+                                ),
+                              );
+                              Navigator.of(context).pop();
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Failed!'),
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text('Force Logout'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              icon: const Icon(Icons.logout),
+            ),
           ),
         const Divider(),
         // metadata

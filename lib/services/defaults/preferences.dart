@@ -9,6 +9,7 @@ import 'firebase/database.dart';
 import 'helpers.dart';
 import 'service.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 
@@ -95,17 +96,25 @@ class PreferencesService extends Service {
   }
 
   Future<void> setEvents(Map<String, dynamic> events) async {
-    await setDocument(
-      path: "preferences/events", data: events,
-      setMetadate: false,
-    );
+    await FirebaseFirestore.instance.collection("preferences").doc("events").set(events);
+    // await setDocument(
+    //   path: "preferences/events", data: events,
+    //   setMetadate: false,
+    // );
   }
 
   Future<void> setHomeSections(Map<String, dynamic> sections) async {
-    await setDocument(
-      path: "preferences/homeSections", data: sections,
-      setMetadate: false,
-    );
+    await FirebaseFirestore.instance.collection("preferences").doc("homeSections").set(sections);
+    // await updateDocument(
+    //   path: "preferences/homeSections", data: {
+    //     "sections": "sections",
+    //   },
+    //   setMetadate: false,
+    // );
+  }
+
+  Future<void> setHomeAds(Map<String, dynamic> ads) async {
+    await FirebaseFirestore.instance.collection("preferences").doc("homeAds").set(ads);
   }
 
 
